@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<!--  -->
+	<parent>
+		<groupId>cn.ucaner.alpaca</groupId>
+		<artifactId>alpaca-pay</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	
+	<!--  -->
+	<artifactId>alpaca-pay-web-merchant</artifactId>
+	<packaging>war</packaging>
+	<name>alpaca-pay-web-merchant</name>
+	<url>http://alpaca-pay-web-merchant.ucaner.cn</url>
+	
+	<!--  -->
+	<dependencies>
+	
+		<!-- alpaca-pay-common-core -->
+		<dependency>
+			<groupId>cn.ucaner.alpaca</groupId>
+			<artifactId>alpaca-pay-common-core</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		
+		<!--  alpaca-pay-service-->
+		<dependency>
+			<groupId>cn.ucaner.alpaca</groupId>
+			<artifactId>alpaca-pay-service</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+	
+	
+		<!--  -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- json -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.5.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.5.1</version>
+		</dependency>
+
+		<!-- Shiro libs Begin -->
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-core</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-ehcache</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-web</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-spring</artifactId>
+			<version>1.2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.2</version>
+		</dependency>
+		<!-- Shiro libs End -->
+		
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>6.0.37</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>jsp-api</artifactId>
+			<version>6.0.37</version>
+			<scope>provided</scope>
+		</dependency>
+		
+	</dependencies>
+	
+	<!-- merchant Build -->
+	<build>
+	  <finalName>alpaca-pay-web-merchant</finalName>
+	  
+	  <!--plugins  -->
+	  <plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<uniqueVersion>false</uniqueVersion>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.8</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.2</version>
+				<configuration>
+					<failOnError>true</failOnError>
+					<verbose>true</verbose>
+					<fork>true</fork>
+					<compilerArgument>-nowarn</compilerArgument>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- tomcat -->
+			<plugin>  
+				<groupId>org.apache.tomcat.maven</groupId>  
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>  
+					<!-- 这里配置端口号和访问路径 -->  
+					<port>9090</port>  
+					<path>/</path>  
+				</configuration>  
+			</plugin>
+			  
+		</plugins>
+		
+	</build>
+</project>

@@ -1,0 +1,1045 @@
+DROP TABLE IF EXISTS RP_ACCOUNT;
+
+DROP TABLE IF EXISTS RP_ACCOUNT_HISTORY;
+
+DROP TABLE IF EXISTS RP_PAY_PRODUCT;
+
+DROP TABLE IF EXISTS RP_PAY_WAY;
+
+DROP TABLE IF EXISTS RP_SETT_DAILY_COLLECT;
+
+DROP TABLE IF EXISTS RP_SETT_RECORD;
+
+DROP TABLE IF EXISTS RP_SETT_RECORD_ANNEX;
+
+DROP TABLE IF EXISTS RP_USER_BANK_ACCOUNT;
+
+DROP TABLE IF EXISTS RP_USER_INFO;
+
+DROP TABLE IF EXISTS RP_USER_PAY_CONFIG;
+
+DROP TABLE IF EXISTS RP_USER_PAY_INFO;
+
+DROP TABLE IF EXISTS RP_ACCOUNT_CHECK_BATCH;
+
+DROP TABLE IF EXISTS RP_ACCOUNT_CHECK_MISTAKE;
+
+DROP TABLE IF EXISTS RP_ACCOUNT_CHECK_MISTAKE_SCRATCH_POOL;
+
+DROP TABLE IF EXISTS RP_NOTIFY_RECORD;
+
+DROP TABLE IF EXISTS RP_NOTIFY_RECORD_LOG;
+
+DROP TABLE IF EXISTS RP_REFUND_RECORD;
+
+DROP TABLE IF EXISTS RP_TRADE_PAYMENT_ORDER;
+
+DROP TABLE IF EXISTS RP_TRADE_PAYMENT_RECORD;
+
+DROP TABLE IF EXISTS SEQ_TABLE;
+
+/*==============================================================*/
+/* TABLE: RP_ACCOUNT                                            */
+/*==============================================================*/
+CREATE TABLE RP_ACCOUNT
+(
+   ID                   VARCHAR(50) NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDIT_TIME            DATETIME,
+   VERSION              BIGINT NOT NULL,
+   REMARK               VARCHAR(200),
+   ACCOUNT_NO           VARCHAR(50) NOT NULL,
+   BALANCE              DECIMAL(20,6) NOT NULL,
+   UNBALANCE            DECIMAL(20,6) NOT NULL,
+   SECURITY_MONEY       DECIMAL(20,6) NOT NULL,
+   STATUS               VARCHAR(36) NOT NULL,
+   TOTAL_INCOME         DECIMAL(20,6) NOT NULL,
+   TOTAL_EXPEND         DECIMAL(20,6) NOT NULL,
+   TODAY_INCOME         DECIMAL(20,6) NOT NULL,
+   TODAY_EXPEND         DECIMAL(20,6) NOT NULL,
+   ACCOUNT_TYPE         VARCHAR(50) NOT NULL,
+   SETT_AMOUNT          DECIMAL(20,6) NOT NULL,
+   USER_NO              VARCHAR(50),
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_ACCOUNT COMMENT '资金账户表';
+
+/*==============================================================*/
+/* TABLE: RP_ACCOUNT_HISTORY                                    */
+/*==============================================================*/
+CREATE TABLE RP_ACCOUNT_HISTORY
+(
+   ID                   VARCHAR(50) NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDIT_TIME            DATETIME,
+   VERSION              BIGINT NOT NULL,
+   REMARK               VARCHAR(200),
+   ACCOUNT_NO           VARCHAR(50) NOT NULL,
+   AMOUNT               DECIMAL(20,6) NOT NULL,
+   BALANCE              DECIMAL(20,6) NOT NULL,
+   FUND_DIRECTION       VARCHAR(36) NOT NULL,
+   IS_ALLOW_SETT        VARCHAR(36) NOT NULL,
+   IS_COMPLETE_SETT     VARCHAR(36) NOT NULL,
+   REQUEST_NO           VARCHAR(36) NOT NULL,
+   BANK_TRX_NO          VARCHAR(30),
+   TRX_TYPE             VARCHAR(36) NOT NULL,
+   RISK_DAY             INT,
+   USER_NO              VARCHAR(50),
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_ACCOUNT_HISTORY COMMENT '资金账户流水表';
+
+/*==============================================================*/
+/* TABLE: RP_PAY_PRODUCT                                        */
+/*==============================================================*/
+CREATE TABLE RP_PAY_PRODUCT
+(
+   ID                   VARCHAR(50) NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDIT_TIME            DATETIME,
+   VERSION              BIGINT NOT NULL,
+   STATUS               VARCHAR(36) NOT NULL,
+   PRODUCT_CODE         VARCHAR(50) NOT NULL COMMENT '支付产品编号',
+   PRODUCT_NAME         VARCHAR(200) NOT NULL COMMENT '支付产品名称',
+   AUDIT_STATUS         VARCHAR(45),
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_PAY_PRODUCT COMMENT '支付产品表';
+
+/*==============================================================*/
+/* TABLE: RP_PAY_WAY                                            */
+/*==============================================================*/
+CREATE TABLE RP_PAY_WAY
+(
+   ID                   VARCHAR(50) NOT NULL COMMENT 'ID',
+   VERSION              BIGINT NOT NULL DEFAULT 0 COMMENT 'VERSION',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   PAY_WAY_CODE         VARCHAR(50) NOT NULL COMMENT '支付方式编号',
+   PAY_WAY_NAME         VARCHAR(100) NOT NULL COMMENT '支付方式名称',
+   PAY_TYPE_CODE        VARCHAR(50) NOT NULL COMMENT '支付类型编号',
+   PAY_TYPE_NAME        VARCHAR(100) NOT NULL COMMENT '支付类型名称',
+   PAY_PRODUCT_CODE     VARCHAR(50) COMMENT '支付产品编号',
+   STATUS               VARCHAR(36) NOT NULL COMMENT '状态(100:正常状态,101非正常状态)',
+   SORTS                INT DEFAULT 1000 COMMENT '排序(倒序排序,默认值1000)',
+   PAY_RATE             DOUBLE NOT NULL COMMENT '商户支付费率',
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_PAY_WAY COMMENT '支付方式';
+
+/*==============================================================*/
+/* TABLE: RP_SETT_DAILY_COLLECT                                 */
+/*==============================================================*/
+CREATE TABLE RP_SETT_DAILY_COLLECT
+(
+   ID                   VARCHAR(50) NOT NULL COMMENT 'ID',
+   VERSION              INT NOT NULL DEFAULT 0 COMMENT '版本号',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDIT_TIME            DATETIME NOT NULL COMMENT '修改时间',
+   ACCOUNT_NO           VARCHAR(20) NOT NULL COMMENT '账户编号',
+   USER_NAME            VARCHAR(200) COMMENT '用户姓名',
+   COLLECT_DATE         DATE NOT NULL COMMENT '汇总日期',
+   COLLECT_TYPE         VARCHAR(50) NOT NULL COMMENT '汇总类型(参考枚举:SETTDAILYCOLLECTTYPEENUM)',
+   TOTAL_AMOUNT         DECIMAL(24,10) NOT NULL COMMENT '交易总金额',
+   TOTAL_COUNT          INT NOT NULL COMMENT '交易总笔数',
+   SETT_STATUS          VARCHAR(50) NOT NULL COMMENT '结算状态(参考枚举:SETTDAILYCOLLECTSTATUSENUM)',
+   REMARK               VARCHAR(300) COMMENT '备注',
+   RISK_DAY             INT COMMENT '风险预存期天数',
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_SETT_DAILY_COLLECT COMMENT '每日待结算汇总';
+
+/*==============================================================*/
+/* TABLE: RP_SETT_RECORD                                        */
+/*==============================================================*/
+CREATE TABLE RP_SETT_RECORD
+(
+   ID                   VARCHAR(50) NOT NULL COMMENT 'ID',
+   VERSION              INT NOT NULL DEFAULT 0 COMMENT '版本号',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDIT_TIME            DATETIME NOT NULL COMMENT '修改时间',
+   SETT_MODE            VARCHAR(50) COMMENT '结算发起方式(参考SETTMODETYPEENUM)',
+   ACCOUNT_NO           VARCHAR(20) NOT NULL COMMENT '账户编号',
+   USER_NO              VARCHAR(20) COMMENT '用户编号',
+   USER_NAME            VARCHAR(200) COMMENT '用户姓名',
+   USER_TYPE            VARCHAR(50) COMMENT '用户类型',
+   SETT_DATE            DATE COMMENT '结算日期',
+   BANK_CODE            VARCHAR(20) COMMENT '银行编码',
+   BANK_NAME            VARCHAR(100) COMMENT '银行名称',
+   BANK_ACCOUNT_NAME    VARCHAR(60) COMMENT '开户名',
+   BANK_ACCOUNT_NO      VARCHAR(20) COMMENT '开户账户',
+   BANK_ACCOUNT_TYPE    VARCHAR(50) COMMENT '开户账户',
+   COUNTRY              VARCHAR(200) COMMENT '开户行所在国家',
+   PROVINCE             VARCHAR(50) COMMENT '开户行所在省份',
+   CITY                 VARCHAR(50) COMMENT '开户行所在城市',
+   AREAS                VARCHAR(50) COMMENT '开户行所在区',
+   BANK_ACCOUNT_ADDRESS VARCHAR(300) COMMENT '开户行全称',
+   MOBILE_NO            VARCHAR(20) COMMENT '收款人手机号',
+   SETT_AMOUNT          DECIMAL(24,10) COMMENT '结算金额',
+   SETT_FEE             DECIMAL(16,6) COMMENT '结算手续费',
+   REMIT_AMOUNT         DECIMAL(16,2) COMMENT '结算打款金额',
+   SETT_STATUS          VARCHAR(50) COMMENT '结算状态(参考枚举:SETTRECORDSTATUSENUM)',
+   REMIT_CONFIRM_TIME   DATETIME COMMENT '打款确认时间',
+   REMARK               VARCHAR(200) COMMENT '描述',
+   REMIT_REMARK         VARCHAR(200) COMMENT '打款备注',
+   OPERATOR_LOGINNAME   VARCHAR(50) COMMENT '操作员登录名',
+   OPERATOR_REALNAME    VARCHAR(50) COMMENT '操作员姓名',
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_SETT_RECORD COMMENT '结算记录';
+
+/*==============================================================*/
+/* TABLE: RP_SETT_RECORD_ANNEX                                  */
+/*==============================================================*/
+CREATE TABLE RP_SETT_RECORD_ANNEX
+(
+   ID                   VARCHAR(50) NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDIT_TIME            DATETIME,
+   VERSION              BIGINT NOT NULL,
+   REMARK               VARCHAR(200),
+   IS_DELETE            VARCHAR(36) NOT NULL,
+   ANNEX_NAME           VARCHAR(200),
+   ANNEX_ADDRESS        VARCHAR(500) NOT NULL,
+   SETTLEMENT_ID        VARCHAR(50) NOT NULL,
+   PRIMARY KEY (ID)
+);
+
+/*==============================================================*/
+/* TABLE: RP_USER_BANK_ACCOUNT                                  */
+/*==============================================================*/
+CREATE TABLE RP_USER_BANK_ACCOUNT
+(
+   ID                   VARCHAR(50) NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDIT_TIME            DATETIME,
+   VERSION              BIGINT NOT NULL,
+   REMARK               VARCHAR(200),
+   STATUS               VARCHAR(36) NOT NULL,
+   USER_NO              VARCHAR(50) NOT NULL,
+   BANK_NAME            VARCHAR(200) NOT NULL,
+   BANK_CODE            VARCHAR(50) NOT NULL,
+   BANK_ACCOUNT_NAME    VARCHAR(100) NOT NULL,
+   BANK_ACCOUNT_NO      VARCHAR(36) NOT NULL,
+   CARD_TYPE            VARCHAR(36) NOT NULL,
+   CARD_NO              VARCHAR(36) NOT NULL,
+   MOBILE_NO            VARCHAR(50) NOT NULL,
+   IS_DEFAULT           VARCHAR(36),
+   PROVINCE             VARCHAR(20),
+   CITY                 VARCHAR(20),
+   AREAS                VARCHAR(20),
+   STREET               VARCHAR(300),
+   BANK_ACCOUNT_TYPE    VARCHAR(36) NOT NULL,
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_USER_BANK_ACCOUNT COMMENT '用户银行账户表';
+
+/*==============================================================*/
+/* TABLE: RP_USER_INFO                                          */
+/*==============================================================*/
+CREATE TABLE RP_USER_INFO
+(
+   ID                   VARCHAR(50) NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   STATUS               VARCHAR(36) NOT NULL,
+   USER_NO              VARCHAR(50),
+   USER_NAME            VARCHAR(100),
+   ACCOUNT_NO           VARCHAR(50) NOT NULL,
+   PRIMARY KEY (ID),
+   UNIQUE KEY AK_KEY_2 (ACCOUNT_NO)
+);
+
+ALTER TABLE RP_USER_INFO COMMENT '该表用来存放用户的基本信息';
+
+/*==============================================================*/
+/* TABLE: RP_USER_PAY_CONFIG                                    */
+/*==============================================================*/
+CREATE TABLE RP_USER_PAY_CONFIG
+(
+   ID                   VARCHAR(50) NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDIT_TIME            DATETIME,
+   VERSION              BIGINT NOT NULL,
+   REMARK               VARCHAR(200),
+   STATUS               VARCHAR(36) NOT NULL,
+   AUDIT_STATUS         VARCHAR(45),
+   IS_AUTO_SETT         VARCHAR(36) NOT NULL DEFAULT 'NO',
+   PRODUCT_CODE         VARCHAR(50) NOT NULL COMMENT '支付产品编号',
+   PRODUCT_NAME         VARCHAR(200) NOT NULL COMMENT '支付产品名称',
+   USER_NO              VARCHAR(50),
+   USER_NAME            VARCHAR(100),
+   RISK_DAY             INT,
+   PAY_KEY              VARCHAR(50),
+   FUND_INTO_TYPE       VARCHAR(50),
+   PAY_SECRET           VARCHAR(50),
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_USER_PAY_CONFIG COMMENT '支付设置表';
+
+/*==============================================================*/
+/* TABLE: RP_USER_PAY_INFO                                      */
+/*==============================================================*/
+CREATE TABLE RP_USER_PAY_INFO
+(
+   ID_                  VARCHAR(50) NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDIT_TIME            DATETIME,
+   VERSION              BIGINT NOT NULL,
+   REMARK               VARCHAR(200),
+   STATUS               VARCHAR(36) NOT NULL,
+   APP_ID               VARCHAR(50) NOT NULL,
+   APP_SECTET           VARCHAR(100),
+   MERCHANT_ID          VARCHAR(50),
+   APP_TYPE             VARCHAR(50),
+   USER_NO              VARCHAR(50),
+   USER_NAME            VARCHAR(100),
+   PARTNER_KEY          VARCHAR(100),
+   PAY_WAY_CODE         VARCHAR(50) NOT NULL COMMENT '支付方式编号',
+   PAY_WAY_NAME         VARCHAR(100) NOT NULL COMMENT '支付方式名称',
+   PRIMARY KEY (ID_)
+);
+
+ALTER TABLE RP_USER_PAY_INFO COMMENT '该表用来存放用户开通的第三方支付信息';
+
+
+CREATE TABLE RP_ACCOUNT_CHECK_BATCH
+(
+   ID                   VARCHAR(50) NOT NULL,
+   VERSION              INT UNSIGNED NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDITOR               VARCHAR(100) COMMENT '修改者',
+   CREATER              VARCHAR(100) COMMENT '创建者',
+   EDIT_TIME            DATETIME COMMENT '最后修改时间',
+   STATUS               VARCHAR(30) NOT NULL,
+   REMARK               VARCHAR(500),
+   BATCH_NO             VARCHAR(30) NOT NULL,
+   BILL_DATE            DATE NOT NULL,
+   BILL_TYPE            VARCHAR(30),
+   HANDLE_STATUS        VARCHAR(10),
+   BANK_TYPE            VARCHAR(30),
+   MISTAKE_COUNT        INT(8),
+   UNHANDLE_MISTAKE_COUNT INT(8),
+   TRADE_COUNT          INT(8),
+   BANK_TRADE_COUNT     INT(8),
+   TRADE_AMOUNT         DECIMAL(20,6),
+   BANK_TRADE_AMOUNT    DECIMAL(20,6),
+   REFUND_AMOUNT        DECIMAL(20,6),
+   BANK_REFUND_AMOUNT   DECIMAL(20,6),
+   BANK_FEE             DECIMAL(20,6),
+   ORG_CHECK_FILE_PATH  VARCHAR(500),
+   RELEASE_CHECK_FILE_PATH VARCHAR(500),
+   RELEASE_STATUS       VARCHAR(15),
+   CHECK_FAIL_MSG       VARCHAR(300),
+   BANK_ERR_MSG         VARCHAR(300),
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_ACCOUNT_CHECK_BATCH COMMENT '对账批次表 RP_ACCOUNT_CHECK_BATCH';
+
+CREATE TABLE RP_ACCOUNT_CHECK_MISTAKE
+(
+   ID                   VARCHAR(50) NOT NULL,
+   VERSION              INT UNSIGNED NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDITOR               VARCHAR(100) COMMENT '修改者',
+   CREATER              VARCHAR(100) COMMENT '创建者',
+   EDIT_TIME            DATETIME COMMENT '最后修改时间',
+   STATUS               VARCHAR(30),
+   REMARK               VARCHAR(500),
+   ACCOUNT_CHECK_BATCH_NO VARCHAR(50) NOT NULL,
+   BILL_DATE            DATE NOT NULL,
+   BANK_TYPE            VARCHAR(30) NOT NULL,
+   ORDER_TIME           DATETIME,
+   MERCHANT_NAME        VARCHAR(100),
+   MERCHANT_NO          VARCHAR(50),
+   ORDER_NO             VARCHAR(40),
+   TRADE_TIME           DATETIME,
+   TRX_NO               VARCHAR(20),
+   ORDER_AMOUNT         DECIMAL(20,6),
+   REFUND_AMOUNT        DECIMAL(20,6),
+   TRADE_STATUS         VARCHAR(30),
+   FEE                  DECIMAL(20,6),
+   BANK_TRADE_TIME      DATETIME,
+   BANK_ORDER_NO        VARCHAR(40),
+   BANK_TRX_NO          VARCHAR(40),
+   BANK_TRADE_STATUS    VARCHAR(30),
+   BANK_AMOUNT          DECIMAL(20,6),
+   BANK_REFUND_AMOUNT   DECIMAL(20,6),
+   BANK_FEE             DECIMAL(20,6),
+   ERR_TYPE             VARCHAR(30) NOT NULL,
+   HANDLE_STATUS        VARCHAR(10) NOT NULL,
+   HANDLE_VALUE         VARCHAR(1000),
+   HANDLE_REMARK        VARCHAR(1000),
+   OPERATOR_NAME        VARCHAR(100),
+   OPERATOR_ACCOUNT_NO  VARCHAR(50),
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_ACCOUNT_CHECK_MISTAKE COMMENT '对账差错表 RP_ACCOUNT_CHECK_MISTAKE';
+
+CREATE TABLE RP_ACCOUNT_CHECK_MISTAKE_SCRATCH_POOL
+(
+   ID                   VARCHAR(50) NOT NULL,
+   VERSION              INT UNSIGNED NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDITOR               VARCHAR(100) COMMENT '修改者',
+   CREATER              VARCHAR(100) COMMENT '创建者',
+   EDIT_TIME            DATETIME COMMENT '最后修改时间',
+   PRODUCT_NAME         VARCHAR(50) COMMENT '商品名称',
+   MERCHANT_ORDER_NO    VARCHAR(30) NOT NULL COMMENT '商户订单号',
+   TRX_NO               CHAR(20) NOT NULL COMMENT '支付流水号',
+   BANK_ORDER_NO        CHAR(20) COMMENT '银行订单号',
+   BANK_TRX_NO          VARCHAR(30) COMMENT '银行流水号',
+   ORDER_AMOUNT         DECIMAL(20,6) DEFAULT 0 COMMENT '订单金额',
+   PLAT_INCOME          DECIMAL(20,6) COMMENT '平台收入',
+   FEE_RATE             DECIMAL(20,6) COMMENT '费率',
+   PLAT_COST            DECIMAL(20,6) COMMENT '平台成本',
+   PLAT_PROFIT          DECIMAL(20,6) COMMENT '平台利润',
+   STATUS               VARCHAR(30) COMMENT '状态(参考枚举:PAYMENTRECORDSTATUSENUM)',
+   PAY_WAY_CODE         VARCHAR(50) COMMENT '支付通道编号',
+   PAY_WAY_NAME         VARCHAR(100) COMMENT '支付通道名称',
+   PAY_SUCCESS_TIME     DATETIME COMMENT '支付成功时间',
+   COMPLETE_TIME        DATETIME COMMENT '完成时间',
+   IS_REFUND            VARCHAR(30) DEFAULT '101' COMMENT '是否退款(100:是,101:否,默认值为:101)',
+   REFUND_TIMES         SMALLINT DEFAULT 0 COMMENT '退款次数(默认值为:0)',
+   SUCCESS_REFUND_AMOUNT DECIMAL(20,6) COMMENT '成功退款总金额',
+   REMARK               VARCHAR(500) COMMENT '备注',
+   BATCH_NO             VARCHAR(50),
+   BILL_DATE            DATETIME
+);
+
+ALTER TABLE RP_ACCOUNT_CHECK_MISTAKE_SCRATCH_POOL COMMENT '差错暂存池';
+
+CREATE TABLE RP_NOTIFY_RECORD
+(
+   ID                   VARCHAR(50) NOT NULL,
+   VERSION              INT NOT NULL,
+   CREATE_TIME          DATETIME NOT NULL,
+   EDITOR               VARCHAR(100) COMMENT '修改者',
+   CREATER              VARCHAR(100) COMMENT '创建者',
+   EDIT_TIME            DATETIME COMMENT '最后修改时间',
+   NOTIFY_TIMES         INT NOT NULL,
+   LIMIT_NOTIFY_TIMES   INT NOT NULL,
+   URL                  VARCHAR(2000) NOT NULL,
+   MERCHANT_ORDER_NO    VARCHAR(50) NOT NULL,
+   MERCHANT_NO          VARCHAR(50) NOT NULL,
+   STATUS               VARCHAR(50) NOT NULL COMMENT '100:成功 101:失败',
+   NOTIFY_TYPE          VARCHAR(30) COMMENT '通知类型',
+   PRIMARY KEY (ID),
+   KEY AK_KEY_2 (MERCHANT_ORDER_NO)
+);
+
+ALTER TABLE RP_NOTIFY_RECORD COMMENT '通知记录表 RP_NOTIFY_RECORD';
+
+CREATE TABLE RP_NOTIFY_RECORD_LOG
+(
+   ID                   VARCHAR(50) NOT NULL,
+   VERSION              INT NOT NULL,
+   EDITOR               VARCHAR(100) COMMENT '修改者',
+   CREATER              VARCHAR(100) COMMENT '创建者',
+   EDIT_TIME            DATETIME COMMENT '最后修改时间',
+   CREATE_TIME          DATETIME NOT NULL,
+   NOTIFY_ID            VARCHAR(50) NOT NULL,
+   REQUEST              VARCHAR(2000) NOT NULL,
+   RESPONSE             VARCHAR(2000) NOT NULL,
+   MERCHANT_NO          VARCHAR(50) NOT NULL,
+   MERCHANT_ORDER_NO    VARCHAR(50) NOT NULL COMMENT '商户订单号',
+   HTTP_STATUS          VARCHAR(50) NOT NULL COMMENT 'HTTP状态',
+   PRIMARY KEY (ID)
+);
+
+ALTER TABLE RP_NOTIFY_RECORD_LOG COMMENT '通知记录日志表 RP_NOTIFY_RECORD_LOG';
+
+CREATE TABLE RP_REFUND_RECORD
+(
+   ID                   VARCHAR(50) NOT NULL COMMENT 'ID',
+   VERSION              INT NOT NULL COMMENT '版本号',
+   CREATE_TIME          DATETIME COMMENT '创建时间',
+   EDITOR               VARCHAR(100) COMMENT '修改者',
+   CREATER              VARCHAR(100) COMMENT '创建者',
+   EDIT_TIME            DATETIME COMMENT '最后修改时间',
+   ORG_MERCHANT_ORDER_NO VARCHAR(50) COMMENT '原商户订单号',
+   ORG_TRX_NO           VARCHAR(50) COMMENT '原支付流水号',
+   ORG_BANK_ORDER_NO    VARCHAR(50) COMMENT '原银行订单号',
+   ORG_BANK_TRX_NO      VARCHAR(50) COMMENT '原银行流水号',
+   MERCHANT_NAME        VARCHAR(100) COMMENT '商家名称',
+   MERCHANT_NO          VARCHAR(100) NOT NULL COMMENT '商家编号',
+   ORG_PRODUCT_NAME     VARCHAR(60) COMMENT '原商品名称',
+   ORG_BIZ_TYPE         VARCHAR(30) COMMENT '原业务类型',
+   ORG_PAYMENT_TYPE     VARCHAR(30) COMMENT '原支付方式类型',
+   REFUND_AMOUNT        DECIMAL(20,6) COMMENT '订单退款金额',
+   REFUND_TRX_NO        VARCHAR(50) NOT NULL COMMENT '退款流水号',
+   REFUND_ORDER_NO      VARCHAR(50) NOT NULL COMMENT '退款订单号',
+   BANK_REFUND_ORDER_NO VARCHAR(50) COMMENT '银行退款订单号',
+   BANK_REFUND_TRX_NO   VARCHAR(30) COMMENT '银行退款流水号',
+   RESULT_NOTIFY_URL    VARCHAR(500) COMMENT '退款结果通知URL',
+   REFUND_STATUS        VARCHAR(30) COMMENT '退款状态',
+   REFUND_FROM          VARCHAR(30) COMMENT '退款来源（分发平台）',
+   REFUND_WAY           VARCHAR(30) COMMENT '退款方式',
+   REFUND_REQUEST_TIME  DATETIME COMMENT '退款请求时间',
+   REFUND_SUCCESS_TIME  DATETIME COMMENT ' 退款成功时间',
+   REFUND_COMPLETE_TIME DATETIME COMMENT '退款完成时间',
+   REQUEST_APPLY_USER_ID VARCHAR(50) COMMENT '退款请求,申请人登录名',
+   REQUEST_APPLY_USER_NAME VARCHAR(90) COMMENT '退款请求,申请人姓名',
+   REFUND_REASON        VARCHAR(500) COMMENT '退款原因',
+   REMARK               VARCHAR(3000) COMMENT '备注',
+   PRIMARY KEY (ID),
+   UNIQUE KEY AK_KEY_2 (REFUND_TRX_NO)
+);
+
+ALTER TABLE RP_REFUND_RECORD COMMENT '退款记录表';
+
+CREATE TABLE RP_TRADE_PAYMENT_ORDER
+(
+   ID                   VARCHAR(50) NOT NULL COMMENT 'ID',
+   VERSION              INT NOT NULL DEFAULT 0 COMMENT '版本号',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDITOR               VARCHAR(100) COMMENT '修改者',
+   CREATER              VARCHAR(100) COMMENT '创建者',
+   EDIT_TIME            DATETIME COMMENT '最后修改时间',
+   STATUS               VARCHAR(50) COMMENT '状态(参考枚举:ORDERSTATUSENUM)',
+   PRODUCT_NAME         VARCHAR(300) COMMENT '商品名称',
+   MERCHANT_ORDER_NO    VARCHAR(30) NOT NULL COMMENT '商户订单号',
+   ORDER_AMOUNT         DECIMAL(20,6) DEFAULT 0 COMMENT '订单金额',
+   ORDER_FROM           VARCHAR(30) COMMENT '订单来源',
+   MERCHANT_NAME        VARCHAR(100) COMMENT '商家名称',
+   MERCHANT_NO          VARCHAR(100) NOT NULL COMMENT '商户编号',
+   ORDER_TIME           DATETIME COMMENT '下单时间',
+   ORDER_DATE           DATE COMMENT '下单日期',
+   ORDER_IP             VARCHAR(50) COMMENT '下单IP(客户端IP,在网关页面获取)',
+   ORDER_REFERER_URL    VARCHAR(100) COMMENT '从哪个页面链接过来的(可用于防诈骗)',
+   RETURN_URL           VARCHAR(600) COMMENT '页面回调通知URL',
+   NOTIFY_URL           VARCHAR(600) COMMENT '后台异步通知URL',
+   CANCEL_REASON        VARCHAR(600) COMMENT '订单撤销原因',
+   ORDER_PERIOD         SMALLINT COMMENT '订单有效期(单位分钟)',
+   EXPIRE_TIME          DATETIME COMMENT '到期时间',
+   PAY_WAY_CODE         VARCHAR(50) COMMENT '支付方式编号',
+   PAY_WAY_NAME         VARCHAR(100) COMMENT '支付方式名称',
+   REMARK               VARCHAR(200) COMMENT '支付备注',
+   TRX_TYPE             VARCHAR(30) COMMENT '交易业务类型  ：消费、充值等',
+   TRX_NO               VARCHAR(50) COMMENT '支付流水号',
+   PAY_TYPE_CODE        VARCHAR(50) COMMENT '支付类型编号',
+   PAY_TYPE_NAME        VARCHAR(100) COMMENT '支付类型名称',
+   FUND_INTO_TYPE       VARCHAR(30) COMMENT '资金流入类型',
+   IS_REFUND            VARCHAR(30) DEFAULT '101' COMMENT '是否退款(100:是,101:否,默认值为:101)',
+   REFUND_TIMES         INT DEFAULT 0 COMMENT '退款次数(默认值为:0)',
+   SUCCESS_REFUND_AMOUNT DECIMAL(20,6) COMMENT '成功退款总金额',
+   FIELD1               VARCHAR(500),
+   FIELD2               VARCHAR(500),
+   FIELD3               VARCHAR(500),
+   FIELD4               VARCHAR(500),
+   FIELD5               VARCHAR(500),
+   PRIMARY KEY (ID),
+   UNIQUE KEY AK_KEY_2 (MERCHANT_ORDER_NO, MERCHANT_NO)
+);
+
+ALTER TABLE RP_TRADE_PAYMENT_ORDER COMMENT 'APLACA PAY 龙果支付 支付订单表';
+
+CREATE TABLE RP_TRADE_PAYMENT_RECORD
+(
+   ID                   VARCHAR(50) NOT NULL COMMENT 'ID',
+   VERSION              INT NOT NULL DEFAULT 0 COMMENT '版本号',
+   CREATE_TIME          DATETIME COMMENT '创建时间',
+   STATUS               VARCHAR(30) COMMENT '状态(参考枚举:PAYMENTRECORDSTATUSENUM)',
+   EDITOR               VARCHAR(100) COMMENT '修改者',
+   CREATER              VARCHAR(100) COMMENT '创建者',
+   EDIT_TIME            DATETIME COMMENT '最后修改时间',
+   PRODUCT_NAME         VARCHAR(50) COMMENT '商品名称',
+   MERCHANT_ORDER_NO    VARCHAR(50) NOT NULL COMMENT '商户订单号',
+   TRX_NO               VARCHAR(50) NOT NULL COMMENT '支付流水号',
+   BANK_ORDER_NO        VARCHAR(50) COMMENT '银行订单号',
+   BANK_TRX_NO          VARCHAR(50) COMMENT '银行流水号',
+   MERCHANT_NAME        VARCHAR(300) COMMENT '商家名称',
+   MERCHANT_NO          VARCHAR(50) NOT NULL COMMENT '商家编号',
+   PAYER_USER_NO        VARCHAR(50) COMMENT '付款人编号',
+   PAYER_NAME           VARCHAR(60) COMMENT '付款人名称',
+   PAYER_PAY_AMOUNT     DECIMAL(20,6) DEFAULT 0 COMMENT '付款方支付金额',
+   PAYER_FEE            DECIMAL(20,6) DEFAULT 0 COMMENT '付款方手续费',
+   PAYER_ACCOUNT_TYPE   VARCHAR(30) COMMENT '付款方账户类型(参考账户类型枚举:ACCOUNTTYPEENUM)',
+   RECEIVER_USER_NO     VARCHAR(15) COMMENT '收款人编号',
+   RECEIVER_NAME        VARCHAR(60) COMMENT '收款人名称',
+   RECEIVER_PAY_AMOUNT  DECIMAL(20,6) DEFAULT 0 COMMENT '收款方支付金额',
+   RECEIVER_FEE         DECIMAL(20,6) DEFAULT 0 COMMENT '收款方手续费',
+   RECEIVER_ACCOUNT_TYPE VARCHAR(30) COMMENT '收款方账户类型(参考账户类型枚举:ACCOUNTTYPEENUM)',
+   ORDER_IP             VARCHAR(30) COMMENT '下单IP(客户端IP,从网关中获取)',
+   ORDER_REFERER_URL    VARCHAR(100) COMMENT '从哪个页面链接过来的(可用于防诈骗)',
+   ORDER_AMOUNT         DECIMAL(20,6) DEFAULT 0 COMMENT '订单金额',
+   PLAT_INCOME          DECIMAL(20,6) COMMENT '平台收入',
+   FEE_RATE             DECIMAL(20,6) COMMENT '费率',
+   PLAT_COST            DECIMAL(20,6) COMMENT '平台成本',
+   PLAT_PROFIT          DECIMAL(20,6) COMMENT '平台利润',
+   RETURN_URL           VARCHAR(600) COMMENT '页面回调通知URL',
+   NOTIFY_URL           VARCHAR(600) COMMENT '后台异步通知URL',
+   PAY_WAY_CODE         VARCHAR(50) COMMENT '支付方式编号',
+   PAY_WAY_NAME         VARCHAR(100) COMMENT '支付方式名称',
+   PAY_SUCCESS_TIME     DATETIME COMMENT '支付成功时间',
+   COMPLETE_TIME        DATETIME COMMENT '完成时间',
+   IS_REFUND            VARCHAR(30) DEFAULT '101' COMMENT '是否退款(100:是,101:否,默认值为:101)',
+   REFUND_TIMES         INT DEFAULT 0 COMMENT '退款次数(默认值为:0)',
+   SUCCESS_REFUND_AMOUNT DECIMAL(20,6) COMMENT '成功退款总金额',
+   TRX_TYPE             VARCHAR(30) COMMENT '交易业务类型  ：消费、充值等',
+   ORDER_FROM           VARCHAR(30) COMMENT '订单来源',
+   PAY_TYPE_CODE        VARCHAR(50) COMMENT '支付类型编号',
+   PAY_TYPE_NAME        VARCHAR(100) COMMENT '支付类型名称',
+   FUND_INTO_TYPE       VARCHAR(30) COMMENT '资金流入类型',
+   REMARK               VARCHAR(3000) COMMENT '备注',
+   FIELD1               VARCHAR(500),
+   FIELD2               VARCHAR(500),
+   FIELD3               VARCHAR(500),
+   FIELD4               VARCHAR(500),
+   FIELD5               VARCHAR(500),
+   BANK_RETURN_MSG      VARCHAR(2000) COMMENT '银行返回信息',
+   PRIMARY KEY (ID),
+   UNIQUE KEY AK_KEY_2 (TRX_NO)
+);
+
+ALTER TABLE RP_TRADE_PAYMENT_RECORD COMMENT '支付记录表';
+
+CREATE TABLE SEQ_TABLE (SEQ_NAME VARCHAR(50) NOT NULL, CURRENT_VALUE BIGINT DEFAULT '1000000002' NOT NULL, INCREMENT SMALLINT DEFAULT '1' NOT NULL, REMARK VARCHAR(100) NOT NULL, PRIMARY KEY (SEQ_NAME)) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+INSERT INTO SEQ_TABLE (SEQ_NAME, CURRENT_VALUE, INCREMENT, REMARK) VALUES ('ACCOUNT_NO_SEQ', 10000000, 1, '账户--账户编号');
+INSERT INTO SEQ_TABLE (SEQ_NAME, CURRENT_VALUE, INCREMENT, REMARK) VALUES ('ACTIVITY_NO_SEQ', 10000006, 1, '活动--活动编号');
+INSERT INTO SEQ_TABLE (SEQ_NAME, CURRENT_VALUE, INCREMENT, REMARK) VALUES ('USER_NO_SEQ', 10001113, 1, '用户--用户编号');
+INSERT INTO SEQ_TABLE (SEQ_NAME, CURRENT_VALUE, INCREMENT, REMARK) VALUES ('TRX_NO_SEQ', 10000000, 1, '交易—-支付流水号');
+INSERT INTO SEQ_TABLE (SEQ_NAME, CURRENT_VALUE, INCREMENT, REMARK) VALUES ('BANK_ORDER_NO_SEQ', 10000000, 1, '交易—-银行订单号');
+INSERT INTO SEQ_TABLE (SEQ_NAME, CURRENT_VALUE, INCREMENT, REMARK) VALUES ('RECONCILIATION_BATCH_NO_SEQ', 10000000, 1, '对账—-批次号');
+
+/*==============================================================*/
+/* CREATE FUNCTION                                              */
+/*==============================================================*/
+CREATE FUNCTION `FUN_SEQ`(SEQ VARCHAR(50)) RETURNS BIGINT(20)
+BEGIN
+     UPDATE SEQ_TABLE
+     SET CURRENT_VALUE = CURRENT_VALUE + INCREMENT
+     WHERE  SEQ_NAME=SEQ;
+     RETURN FUN_SEQ_CURRENT_VALUE(SEQ);
+END;
+
+
+CREATE FUNCTION `FUN_SEQ_CURRENT_VALUE`(SEQ VARCHAR(50)) RETURNS BIGINT(20)
+BEGIN
+    DECLARE VALUE INTEGER;
+    SET VALUE=0;
+    SELECT CURRENT_VALUE INTO VALUE
+    FROM SEQ_TABLE 
+    WHERE SEQ_NAME=SEQ;
+    RETURN VALUE;
+END;
+
+CREATE FUNCTION `FUN_SEQ_SET_VALUE`(SEQ VARCHAR(50), VALUE INTEGER) RETURNS BIGINT(20)
+BEGIN
+     UPDATE SEQ_TABLE 
+     SET CURRENT_VALUE=VALUE
+     WHERE SEQ_NAME=SEQ;
+     RETURN FUN_SEQ_CURRENT_VALUE(SEQ);
+END;
+
+CREATE FUNCTION  FUN_NOW()
+ RETURNS DATETIME
+BEGIN 
+RETURN NOW();
+END;
+
+
+-- 时间函数
+
+CREATE FUNCTION `FUN_DATE_ADD`(STR_DATE VARCHAR(10), STR_INTERVAL INTEGER) RETURNS DATE
+BEGIN
+     RETURN DATE_ADD(STR_DATE, INTERVAL STR_INTERVAL DAY);
+END;
+
+
+
+
+
+
+-- -----------------------------------------------------------------------------------------------------------------------------------
+--                                   注意：该脚本运行在MYSQL环境下，如果是其他数据库，如有需要请先修改，再执行。                    --
+--                                                                                           编写人：沈佳龙   （WWW.APLACA.COM）    --
+-- -----------------------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS PMS_MENU;
+
+DROP TABLE IF EXISTS PMS_MENU_ROLE;
+
+DROP TABLE IF EXISTS PMS_OPERATOR;
+
+DROP TABLE IF EXISTS PMS_OPERATOR_LOG;
+
+DROP TABLE IF EXISTS PMS_PERMISSION;
+
+DROP TABLE IF EXISTS PMS_ROLE;
+
+DROP TABLE IF EXISTS PMS_ROLE_OPERATOR;
+
+DROP TABLE IF EXISTS PMS_ROLE_PERMISSION;
+
+CREATE TABLE PMS_MENU
+(
+   ID                   BIGINT NOT NULL AUTO_INCREMENT,
+   VERSION              BIGINT NOT NULL,
+   CREATER              VARCHAR(50) NOT NULL COMMENT '创建人',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDITOR               VARCHAR(50) COMMENT '修改人',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   STATUS               VARCHAR(20) NOT NULL,
+   REMARK               VARCHAR(300),
+   IS_LEAF              VARCHAR(20),
+   LEVEL                SMALLINT,
+   PARENT_ID            BIGINT NOT NULL,
+   TARGET_NAME          VARCHAR(100),
+   NUMBER               VARCHAR(20),
+   NAME                 VARCHAR(100),
+   URL                  VARCHAR(100),
+   PRIMARY KEY (ID)
+)AUTO_INCREMENT = 1000;
+
+ALTER TABLE PMS_MENU COMMENT '菜单表';
+
+
+ALTER TABLE PMS_MENU COMMENT '菜单表';
+
+CREATE TABLE PMS_MENU_ROLE
+(
+   ID                   BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+   VERSION              BIGINT,
+   CREATER              VARCHAR(50) COMMENT '创建人',
+   CREATE_TIME          DATETIME COMMENT '创建时间',
+   EDITOR               VARCHAR(50) COMMENT '修改人',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   STATUS               VARCHAR(20),
+   REMARK               VARCHAR(300),
+   ROLE_ID              BIGINT NOT NULL,
+   MENU_ID              BIGINT NOT NULL,
+   PRIMARY KEY (ID),
+   KEY AK_KEY_2 (ROLE_ID, MENU_ID)
+) AUTO_INCREMENT = 1000;
+
+ALTER TABLE PMS_MENU_ROLE COMMENT '权限与角色关联表';
+
+CREATE TABLE PMS_OPERATOR
+(
+   ID                   BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+   VERSION              BIGINT NOT NULL,
+   CREATER              VARCHAR(50) NOT NULL COMMENT '创建人',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDITOR               VARCHAR(50) COMMENT '修改人',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   STATUS               VARCHAR(20) NOT NULL,
+   REMARK               VARCHAR(300),
+   REAL_NAME            VARCHAR(50) NOT NULL,
+   MOBILE_NO            VARCHAR(15) NOT NULL,
+   LOGIN_NAME           VARCHAR(50) NOT NULL,
+   LOGIN_PWD            VARCHAR(256) NOT NULL,
+   TYPE                 VARCHAR(20) NOT NULL,
+   SALT                 VARCHAR(50) NOT NULL,
+   PRIMARY KEY (ID),
+   KEY AK_KEY_2 (LOGIN_NAME)
+) AUTO_INCREMENT = 1000;
+
+ALTER TABLE PMS_OPERATOR COMMENT '操作员表';
+
+CREATE TABLE PMS_OPERATOR_LOG
+(
+   ID                   BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+   VERSION              BIGINT NOT NULL,
+   CREATER              VARCHAR(50) NOT NULL COMMENT '创建人',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDITOR               VARCHAR(50) COMMENT '修改人',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   STATUS               VARCHAR(20) NOT NULL,
+   REMARK               VARCHAR(300),
+   OPERATOR_ID          BIGINT NOT NULL,
+   OPERATOR_NAME        VARCHAR(50) NOT NULL,
+   OPERATE_TYPE         VARCHAR(50) NOT NULL COMMENT '操作类型（1:增加，2:修改，3:删除，4:查询）',
+   IP                   VARCHAR(100) NOT NULL,
+   CONTENT              VARCHAR(3000),
+   PRIMARY KEY (ID)
+) AUTO_INCREMENT = 1000;
+
+ALTER TABLE PMS_OPERATOR_LOG COMMENT '权限_操作员操作日志表';
+
+CREATE TABLE PMS_PERMISSION
+(
+   ID                   BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+   VERSION              BIGINT NOT NULL,
+   CREATER              VARCHAR(50) NOT NULL COMMENT '创建人',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDITOR               VARCHAR(50) COMMENT '修改人',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   STATUS               VARCHAR(20) NOT NULL,
+   REMARK               VARCHAR(300),
+   PERMISSION_NAME      VARCHAR(100) NOT NULL,
+   PERMISSION           VARCHAR(100) NOT NULL,
+   PRIMARY KEY (ID),
+   KEY AK_KEY_2 (PERMISSION),
+   KEY AK_KEY_3 (PERMISSION_NAME)
+) AUTO_INCREMENT = 1000;
+
+ALTER TABLE PMS_PERMISSION COMMENT '权限表';
+
+CREATE TABLE PMS_ROLE
+(
+   ID                   BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+   VERSION              BIGINT,
+   CREATER              VARCHAR(50) COMMENT '创建人',
+   CREATE_TIME          DATETIME COMMENT '创建时间',
+   EDITOR               VARCHAR(50) COMMENT '修改人',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   STATUS               VARCHAR(20),
+   REMARK               VARCHAR(300),
+   ROLE_CODE            VARCHAR(20) NOT NULL COMMENT '角色类型（1:超级管理员角色，0:普通操作员角色）',
+   ROLE_NAME            VARCHAR(100) NOT NULL,
+   PRIMARY KEY (ID),
+   KEY AK_KEY_2 (ROLE_NAME)
+) AUTO_INCREMENT = 1000;
+
+ALTER TABLE PMS_ROLE COMMENT '角色表';
+
+CREATE TABLE PMS_ROLE_OPERATOR
+(
+   ID                   BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+   VERSION              BIGINT NOT NULL,
+   CREATER              VARCHAR(50) NOT NULL COMMENT '创建人',
+   CREATE_TIME          DATETIME NOT NULL COMMENT '创建时间',
+   EDITOR               VARCHAR(50) COMMENT '修改人',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   STATUS               VARCHAR(20) NOT NULL,
+   REMARK               VARCHAR(300),
+   ROLE_ID              BIGINT NOT NULL,
+   OPERATOR_ID          BIGINT NOT NULL,
+   PRIMARY KEY (ID),
+   KEY AK_KEY_2 (ROLE_ID, OPERATOR_ID)
+) AUTO_INCREMENT = 1000;
+
+ALTER TABLE PMS_ROLE_OPERATOR COMMENT '操作员与角色关联表';
+
+CREATE TABLE PMS_ROLE_PERMISSION
+(
+   ID                   BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+   VERSION              BIGINT,
+   CREATER              VARCHAR(50) COMMENT '创建人',
+   CREATE_TIME          DATETIME COMMENT '创建时间',
+   EDITOR               VARCHAR(50) COMMENT '修改人',
+   EDIT_TIME            DATETIME COMMENT '修改时间',
+   STATUS               VARCHAR(20),
+   REMARK               VARCHAR(300),
+   ROLE_ID              BIGINT NOT NULL,
+   PERMISSION_ID        BIGINT NOT NULL,
+   PRIMARY KEY (ID),
+   KEY AK_KEY_2 (ROLE_ID, PERMISSION_ID)
+) AUTO_INCREMENT = 1000;
+
+ALTER TABLE PMS_ROLE_PERMISSION COMMENT '权限与角色关联表';
+
+
+
+
+
+-- ------------------------------STEP 1  菜单-------------------------------------------------
+-- 菜单初始化数据
+--  -- 菜单的初始化数据
+INSERT INTO PMS_MENU (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK, NAME, URL, NUMBER, IS_LEAF, LEVEL, PARENT_ID, TARGET_NAME) VALUES 
+(1,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '权限管理', '##', '001', 'NO', 1, 0, '#'),
+(2,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '菜单管理', 'PMS/MENU/LIST', '00101', 'YES', 2, 1, 'CDGL'),
+(3,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '权限管理', 'PMS/PERMISSION/LIST', '00102', 'YES',2, 1, 'QXGL'),
+(4,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '角色管理', 'PMS/ROLE/LIST', '00103', 'YES',2, 1, 'JSGL'),
+(5,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '操作员管理', 'PMS/OPERATOR/LIST', '00104', 'YES',2, 1, 'CZYGL'),
+
+(10,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '账户管理', '##', '002', 'NO', 1, 0, '#'),
+(12,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '账户信息', 'ACCOUNT/LIST', '00201', 'YES',2, 10, 'ZHXX'),
+(13,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '账户历史信息', 'ACCOUNT/HISTORYLIST', '00202', 'YES',2, 10, 'ZHLSXX'),
+
+
+(20,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '用户管理', '##', '003', 'NO', 1, 0, '#'),
+(22,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '用户信息', 'USER/INFO/LIST', '00301', 'YES',2, 20, 'YHXX'),
+
+(30,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '支付管理', '##', '004', 'NO', 1, 0, '#'),
+(32,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '支付产品信息', 'PAY/PRODUCT/LIST', '00401', 'YES',2, 30, 'ZFCPGL'),
+(33,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '用户支付配置', 'PAY/CONFIG/LIST', '00402', 'YES',2, 30, 'YHZFPZ'),
+
+(40,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '交易管理', '##', '005', 'NO', 1, 0, '#'),
+(42,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '支付订单管理', 'TRADE/LISTPAYMENTORDER', '00501', 'YES',2, 40, 'ZFDDGL'),
+(43,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '支付记录管理', 'TRADE/LISTPAYMENTRECORD', '00502', 'YES',2, 40, 'ZFJJGL'),
+
+(50,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '结算管理', '##', '006', 'NO', 1, 0, '#'),
+(52,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '结算记录管理', 'SETT/LIST', '00601', 'YES',2, 50, 'JSJLGL'),
+
+(60,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '对账管理', '##', '007', 'NO', 1, 0, '#'),
+(62,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '对账差错列表', 'RECONCILIATION/LIST/MISTAKE', '00701', 'YES',2, 60, 'DZCCLB'),
+(63,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '对账批次列表', 'RECONCILIATION/LIST/CHECKBATCH', '00702', 'YES',2, 60, 'DZPCLB'),
+(64,0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '', '对账缓冲池列表', 'RECONCILIATION/LIST/SCRATCHPOOL', '00703', 'YES',2, 60, 'DZHCCLB');
+
+-- ------------------------------STEP 2：权限功能点-------------------------------------------------
+-- 权限功能点的初始化数据
+
+
+INSERT INTO PMS_PERMISSION (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK, PERMISSION_NAME, PERMISSION) VALUES 
+ (1, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-菜单-查看','权限管理-菜单-查看','PMS:MENU:VIEW'),
+ (2, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-菜单-添加','权限管理-菜单-添加','PMS:MENU:ADD'),
+ (3, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-菜单-查看','权限管理-菜单-修改','PMS:MENU:EDIT'),
+ (4, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-菜单-删除','权限管理-菜单-删除','PMS:MENU:DELETE'),
+
+ (11, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-权限-查看','权限管理-权限-查看','PMS:PERMISSION:VIEW'),
+ (12, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-权限-添加','权限管理-权限-添加','PMS:PERMISSION:ADD'),
+ (13, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-权限-修改','权限管理-权限-修改','PMS:PERMISSION:EDIT'),
+ (14, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-权限-删除','权限管理-权限-删除','PMS:PERMISSION:DELETE'),
+
+ (21, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-角色-查看','权限管理-角色-查看','PMS:ROLE:VIEW'),
+ (22, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-角色-添加','权限管理-角色-添加','PMS:ROLE:ADD'),
+ (23, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-角色-修改','权限管理-角色-修改','PMS:ROLE:EDIT'),
+ (24, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-角色-删除','权限管理-角色-删除','PMS:ROLE:DELETE'),
+ (25, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-角色-分配权限','权限管理-角色-分配权限','PMS:ROLE:ASSIGNPERMISSION'),
+
+ (31, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-操作员-查看','权限管理-操作员-查看','PMS:OPERATOR:VIEW'),
+ (32, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-操作员-添加','权限管理-操作员-添加','PMS:OPERATOR:ADD'),
+ (33, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-操作员-查看','权限管理-操作员-修改','PMS:OPERATOR:EDIT'),
+ (34, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-操作员-冻结与解冻','权限管理-操作员-冻结与解冻','PMS:OPERATOR:CHANGESTATUS'),
+ (35, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','权限管理-操作员-重置密码','权限管理-操作员-重置密码','PMS:OPERATOR:RESETPWD'),
+
+
+ (51, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','账户管理-账户-查看','账户管理-账户-查看','ACCOUNT:ACCOUNTINFO:VIEW'),
+ (52, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','账户管理-账户-添加','账户管理-账户-添加','ACCOUNT:ACCOUNTINFO:ADD'),
+ (53, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','账户管理-账户-查看','账户管理-账户-修改','ACCOUNT:ACCOUNTINFO:EDIT'),
+ (54, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','账户管理-账户-删除','账户管理-账户-删除','ACCOUNT:ACCOUNTINFO:DELETE'),
+
+ (61, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','账户管理-账户历史-查看','账户管理-账户历史-查看','ACCOUNT:ACCOUNTHISTORY:VIEW'),
+
+ (71, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','用户管理-用户信息-查看','用户管理-用户信息-查看','USER:USERINFO:VIEW'),
+ (72, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','用户管理-用户信息-添加','用户管理-用户信息-添加','USER:USERINFO:ADD'),
+ (73, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','用户管理-用户信息-查看','用户管理-用户信息-修改','USER:USERINFO:EDIT'),
+ (74, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','用户管理-用户信息-删除','用户管理-用户信息-删除','USER:USERINFO:DELETE'),
+
+ (81, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付产品-查看','支付管理-支付产品-查看','PAY:PRODUCT:VIEW'),
+ (82, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付产品-添加','支付管理-支付产品-添加','PAY:PRODUCT:ADD'),
+ (83, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付产品-查看','支付管理-支付产品-修改','PAY:PRODUCT:EDIT'),
+ (84, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付产品-删除','支付管理-支付产品-删除','PAY:PRODUCT:DELETE'),
+
+ (85, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付方式-查看','支付管理-支付方式-查看','PAY:WAY:VIEW'),
+ (86, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付方式-添加','支付管理-支付方式-添加','PAY:WAY:ADD'),
+ (87, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付方式-查看','支付管理-支付方式-修改','PAY:WAY:EDIT'),
+ (88, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付方式-删除','支付管理-支付方式-删除','PAY:WAY:DELETE'),
+
+ (91, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付配置-查看','支付管理-支付配置-查看','PAY:CONFIG:VIEW'),
+ (92, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付配置-添加','支付管理-支付配置-添加','PAY:CONFIG:ADD'),
+ (93, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付配置-查看','支付管理-支付配置-修改','PAY:CONFIG:EDIT'),
+ (94, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','支付管理-支付配置-删除','支付管理-支付配置-删除','PAY:CONFIG:DELETE'),
+
+ (101, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','交易管理-订单-查看','交易管理-订单-查看','TRADE:ORDER:VIEW'),
+ (102, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','交易管理-订单-添加','交易管理-订单-添加','TRADE:ORDER:ADD'),
+ (103, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','交易管理-订单-查看','交易管理-订单-修改','TRADE:ORDER:EDIT'),
+ (104, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','交易管理-订单-删除','交易管理-订单-删除','TRADE:ORDER:DELETE'),
+
+ (111, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','交易管理-记录-查看','交易管理-记录-查看','TRADE:RECORD:VIEW'),
+ (112, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','交易管理-记录-添加','交易管理-记录-添加','TRADE:RECORD:ADD'),
+ (113, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','交易管理-记录-查看','交易管理-记录-修改','TRADE:RECORD:EDIT'),
+ (114, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','交易管理-记录-删除','交易管理-记录-删除','TRADE:RECORD:DELETE'),
+
+ (121, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','结算管理-记录-查看','结算管理-记录-查看','SETT:RECORD:VIEW'),
+ (122, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','结算管理-记录-添加','结算管理-记录-添加','SETT:RECORD:ADD'),
+ (123, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','结算管理-记录-查看','结算管理-记录-修改','SETT:RECORD:EDIT'),
+ (124, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','结算管理-记录-删除','结算管理-记录-删除','SETT:RECORD:DELETE'),
+
+ (131, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-差错-查看','对账管理-差错-查看','RECON:MISTAKE:VIEW'),
+ (132, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-差错-添加','对账管理-差错-添加','RECON:MISTAKE:ADD'),
+ (133, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-差错-查看','对账管理-差错-修改','RECON:MISTAKE:EDIT'),
+ (134, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-差错-删除','对账管理-差错-删除','RECON:MISTAKE:DELETE'),
+
+ (141, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-批次-查看','对账管理-批次-查看','RECON:BATCH:VIEW'),
+ (142, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-批次-添加','对账管理-批次-添加','RECON:BATCH:ADD'),
+ (143, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-批次-查看','对账管理-批次-修改','RECON:BATCH:EDIT'),
+ (144, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-批次-删除','对账管理-批次-删除','RECON:BATCH:DELETE'),
+
+ (151, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-缓冲池-查看','对账管理-缓冲池-查看','RECON:SCRATCHPOOL:VIEW'),
+ (152, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-缓冲池-添加','对账管理-缓冲池-添加','RECON:SCRATCHPOOL:ADD'),
+ (153, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-缓冲池-查看','对账管理-缓冲池-修改','RECON:SCRATCHPOOL:EDIT'),
+ (154, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','对账管理-缓冲池-删除','对账管理-缓冲池-删除','RECON:SCRATCHPOOL:DELETE');
+
+-- -----------------------------------STEP3：操作员--------------------------------------------
+-- -- 操作员的初始化数据
+--  ADMIN 超级管理员
+INSERT INTO PMS_OPERATOR (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK, LOGIN_NAME, LOGIN_PWD,REAL_NAME,MOBILE_NO,TYPE,SALT) 
+VALUES (1, 0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'ADMIN','2016-06-03 11:07:43', '超级管理员', 'ADMIN', 'D3C59D25033DBF980D29554025C23A75','超级管理员', '18620936193', 'ADMIN','8D78869F470951332959580424D4BF4F');
+
+--  GUEST  游客
+INSERT INTO PMS_OPERATOR (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK, LOGIN_NAME, LOGIN_PWD,REAL_NAME,MOBILE_NO,TYPE,SALT) 
+VALUES (2, 0, 'ACTIVE','APLACA','2016-06-03 11:07:43', 'GUEST','2016-06-03 11:07:43', '游客', 'GUEST', '3F0DBF580EE39EC03B632CB33935A363','游客', '18926215592', 'USER','183D9F2F0F2CE760E98427A5603D1C73');
+
+-- ------------------------------------STEP4：角色-------------------------------------------
+-- -- 角色的初始化数据
+INSERT INTO PMS_ROLE (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK, ROLE_CODE, ROLE_NAME) 
+VALUES (1, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'ADMIN', '2016-06-03 11:07:43','超级管理员角色','ADMIN', '超级管理员角色');
+
+INSERT INTO PMS_ROLE (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK, ROLE_CODE, ROLE_NAME) 
+VALUES (2, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'GUEST', '2016-06-03 11:07:43','游客角色','GUEST', '游客角色');
+
+-- ------------------------------------STEP5：操作员和角色关联-------------------------------------------
+-- -- 操作员与角色关联的初始化数据
+
+--  ADMIN  关联ADMIN 和TEST两个角色
+INSERT INTO PMS_ROLE_OPERATOR (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK,ROLE_ID,OPERATOR_ID) VALUES (1, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',1,1);
+INSERT INTO PMS_ROLE_OPERATOR (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK,ROLE_ID,OPERATOR_ID) VALUES (2, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,1);
+
+-- GUEST  关联游客角色  （游客角色只有查看交易记录的信息）
+INSERT INTO PMS_ROLE_OPERATOR (ID,VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK,ROLE_ID,OPERATOR_ID) VALUES (3, 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,2);
+
+-- -------------------------------------STEP6：角色和权限关联------------------------------------------
+-- -- 角色与用户功能点关联的初始化数据
+
+-- ADMIN（拥有所有的权限点）
+INSERT INTO PMS_ROLE_PERMISSION  (ROLE_ID, PERMISSION_ID) SELECT 1,ID FROM PMS_PERMISSION;
+
+
+-- GUEST （只有所有的查看权限）
+INSERT INTO PMS_ROLE_PERMISSION (VERSION,STATUS,CREATER,CREATE_TIME, EDITOR, EDIT_TIME, REMARK,ROLE_ID,PERMISSION_ID) 
+VALUES 
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,1),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,11),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,21),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,31),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,41),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,51),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,61),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,71),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,81),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,85),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,91),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,101),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,111),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,121),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,131),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,141),
+ ( 0,'ACTIVE', 'APLACA','2016-06-03 11:07:43', 'TEST', '2016-06-03 11:07:43','',2,151);
+
+-- -------------------------------------STEP7：角色和菜单关联------------------------------------------
+--  角色与信息关联初始化数据
+-- ADMIN
+
+INSERT INTO PMS_MENU_ROLE(ROLE_ID, MENU_ID) SELECT 1,ID FROM PMS_MENU;
+
+-- GUEST  所有的菜单（只有查看权限）
+INSERT INTO PMS_MENU_ROLE (ROLE_ID, MENU_ID) SELECT 2,ID FROM PMS_MENU;
+
+-- 2016.8.5 第三方支付信息表增加支付宝线下产品字段
+ALTER TABLE RP_USER_PAY_INFO ADD OFFLINE_APP_ID VARCHAR(50);
+ALTER TABLE RP_USER_PAY_INFO ADD RSA_PRIVATE_KEY VARCHAR(100);
+ALTER TABLE RP_USER_PAY_INFO ADD RSA_PUBLIC_KEY VARCHAR(100); 
+
+-- 2016.9.5 增加登录信息字段
+ALTER TABLE RP_USER_INFO ADD MOBILE VARCHAR(15);
+ALTER TABLE RP_USER_INFO ADD PASSWORD VARCHAR(50);
+
+-- 2017.4.4 用户信息表增加支付密码字段
+ALTER TABLE RP_USER_INFO ADD PAY_PWD VARCHAR(50) COMMENT '支付密码' DEFAULT '123456';
+
+-- 2017.4.5 增加用户支付配置表安全等级字段 商户服务器IP字段
+ALTER TABLE RP_USER_PAY_CONFIG ADD SECURITY_RATING VARCHAR(20)  COMMENT '安全等级' DEFAULT 'MD5';
+
+ALTER TABLE RP_USER_PAY_CONFIG ADD MERCHANT_SERVER_IP VARCHAR(200) COMMENT '商户服务器IP';

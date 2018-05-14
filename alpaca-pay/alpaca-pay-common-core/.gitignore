@@ -1,0 +1,6 @@
+#add ignore by Jason#
+/target/
+/.settings/
+/.classpath
+/.project
+/alpaca-pay-common-core.iml

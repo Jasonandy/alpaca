@@ -1,0 +1,5 @@
+#add ignore by Jason#
+/.settings/
+/.project
+/.idea/
+/alpaca.iml

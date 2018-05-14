@@ -1,0 +1,8 @@
+# ignored by Jason #
+/target/
+/.settings/
+/.classpath
+/.project
+/alpaca-common.iml
+# ignored by Jason #
+
