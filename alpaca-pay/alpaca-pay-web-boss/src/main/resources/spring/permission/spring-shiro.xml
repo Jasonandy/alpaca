@@ -82,7 +82,7 @@
 				/common/** = anon
 				/dwz/** =anon
 				/favicon.ico=anon
-				<!-- /login = rcCaptchaValidate,authc -->
+				/login = rcCaptchaValidate,authc
 				/login = anon
 				/logout = logout
 				/** = authc
