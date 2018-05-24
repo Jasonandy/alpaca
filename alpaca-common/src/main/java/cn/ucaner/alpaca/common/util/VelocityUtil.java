@@ -11,7 +11,15 @@ import java.io.File;
 import java.util.Properties;
 
 /**
- * Velocity工具类
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：VelocityUtil   
+* @Description：   <p>  Velocity工具类 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:12:28   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class VelocityUtil {
 

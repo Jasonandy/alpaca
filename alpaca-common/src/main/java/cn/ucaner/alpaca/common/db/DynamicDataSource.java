@@ -5,7 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 /**
- * 动态数据源（数据源切换）
+* @Package：cn.ucaner.alpaca.common.db   
+* @ClassName：DynamicDataSource   
+* @Description：   <p> 动态数据源（数据源切换） </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:24:41   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class DynamicDataSource extends AbstractRoutingDataSource {
 
@@ -22,7 +30,6 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
 
     /**
      * 设置数据源
-     *
      * @param dataSource
      */
     public static void setDataSource(String dataSource) {
@@ -31,7 +38,6 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
 
     /**
      * 获取数据源
-     *
      * @return
      */
     public static String getDataSource() {

@@ -10,7 +10,15 @@ import org.mybatis.generator.api.dom.xml.XmlElement;
 import java.util.List;
 
 /**
- * MySQL分页插件
+* @Package：cn.ucaner.alpaca.common.plugin   
+* @ClassName：PaginationPlugin   
+* @Description：   <p> MySQL分页插件 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:33:08   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class PaginationPlugin extends PluginAdapter {
 

@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SystemClock {
 	
     private final long period;
+    
     private final AtomicLong now;
     
     ExecutorService executor = Executors.newSingleThreadExecutor();

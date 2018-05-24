@@ -10,7 +10,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * rpc提供者和消费者日志打印
+* @Package：cn.ucaner.alpaca.common.aspect   
+* @ClassName：RpcLogAspect   
+* @Description：   <p> rpc提供者和消费者日志打印 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:21:49   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class RpcLogAspect {
 

@@ -6,7 +6,15 @@ import org.mybatis.generator.api.dom.java.Field;
 import org.mybatis.generator.internal.DefaultCommentGenerator;
 
 /**
- * 生成model中，字段增加注释
+* @Package：cn.ucaner.alpaca.common.plugin   
+* @ClassName：CommentGenerator   
+* @Description：   <p> 生成model/entity中-字段增加注释 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:30:53   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class CommentGenerator extends DefaultCommentGenerator {
 

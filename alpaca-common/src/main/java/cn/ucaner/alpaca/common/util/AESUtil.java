@@ -12,8 +12,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 /**
- * AES加解密工具类
- * Created by shuzheng on 2017/2/5.
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：AESUtil   
+* @Description：   <p> AES加解密工具类</p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:12:49   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class AESUtil {
 
@@ -118,7 +125,7 @@ public class AESUtil {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (IllegalBlockSizeException e) {
-            throw new RuntimeException("兄弟，配置文件中的密码需要使用AES加密，请使用com.zheng.common.util.AESUtil工具类修改这些值！");
+            throw new RuntimeException("兄弟，配置文件中的密码需要使用AES加密，请使用ccn.ucaner.alpaca.common.util.AESUtil工具类修改这些值！");
             //e.printStackTrace();
         } catch (BadPaddingException e) {
             e.printStackTrace();
@@ -128,9 +135,7 @@ public class AESUtil {
     }
 
     public static void main(String[] args) {
-        String[] keys = {
-                "", "123456"
-        };
+        String[] keys = {"", "123456"};
         System.out.println("key | AESEncode | AESDecode");
         for (String key : keys) {
             System.out.print(key + " | ");

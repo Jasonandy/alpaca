@@ -5,7 +5,15 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * 降级实现BaseService抽象类
+* @Package：cn.ucaner.alpaca.common.base   
+* @ClassName：BaseServiceMock   
+* @Description：   <p> 降级实现BaseService抽象类 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:23:54   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public abstract class BaseServiceMock<Mapper, Record, Example> implements BaseService<Record, Example> {
 

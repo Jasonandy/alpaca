@@ -8,7 +8,15 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Example类和model类实现序列化插件
+* @Package：cn.ucaner.alpaca.common.plugin   
+* @ClassName：SerializablePlugin   
+* @Description：   <p> Example类和model类实现序列化插件 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:33:49   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class SerializablePlugin extends PluginAdapter {
     private FullyQualifiedJavaType serializable = new FullyQualifiedJavaType("java.io.Serializable");

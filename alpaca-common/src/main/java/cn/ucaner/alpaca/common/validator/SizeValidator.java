@@ -6,7 +6,15 @@ import com.baidu.unbiz.fluentvalidator.ValidatorContext;
 import com.baidu.unbiz.fluentvalidator.ValidatorHandler;
 
 /**
- * 校验数字大小
+* @Package：cn.ucaner.alpaca.common.validator   
+* @ClassName：SizeValidator   
+* @Description：   <p> 校验数字大小 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:37:58   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class SizeValidator extends ValidatorHandler<Integer> implements Validator<Integer> {
 

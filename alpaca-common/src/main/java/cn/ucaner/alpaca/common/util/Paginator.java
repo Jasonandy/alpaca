@@ -4,7 +4,15 @@ package cn.ucaner.alpaca.common.util;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 分页实体类
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：Paginator   
+* @Description：   <p> 分页实体类 PageBean</p>
+* @Author： - wubin   
+* @CreatTime：2018年5月24日 下午2:09:48   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class Paginator {
 

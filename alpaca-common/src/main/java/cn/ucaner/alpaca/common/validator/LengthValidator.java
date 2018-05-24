@@ -6,7 +6,15 @@ import com.baidu.unbiz.fluentvalidator.ValidatorContext;
 import com.baidu.unbiz.fluentvalidator.ValidatorHandler;
 
 /**
- * 长度校验
+* @Package：cn.ucaner.alpaca.common.validator   
+* @ClassName：LengthValidator   
+* @Description：   <p> 长度校验 </p>
+* @Author： - wubin   
+* @CreatTime：2018年5月24日 下午2:34:18   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class LengthValidator extends ValidatorHandler<String> implements Validator<String> {
 

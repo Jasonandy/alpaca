@@ -6,7 +6,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * request工具类
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：RequestUtil   
+* @Description：   <p> request工具类</p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:11:06   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class RequestUtil {
 
@@ -18,7 +26,7 @@ public class RequestUtil {
 	 */
 	public String removeParam(HttpServletRequest request, String paramName) {
 		String queryString = "";
-		Enumeration keys = request.getParameterNames();
+		Enumeration<?> keys = request.getParameterNames();
 		while (keys.hasMoreElements()) {
 			String key = (String) keys.nextElement();
 			if (key.equals(paramName)) {
@@ -86,7 +94,7 @@ public class RequestUtil {
 	 */
 	public static Map<String, String> getParameterMap(HttpServletRequest request) {
 		Map<String, String> result = new HashMap<>();
-		Enumeration parameterNames = request.getParameterNames();
+		Enumeration<?> parameterNames = request.getParameterNames();
 		while (parameterNames.hasMoreElements()) {
 			String parameterName = (String) parameterNames.nextElement();
 			result.put(parameterName, request.getParameter(parameterName));

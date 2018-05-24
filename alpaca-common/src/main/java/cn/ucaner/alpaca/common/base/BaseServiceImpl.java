@@ -15,7 +15,15 @@ import cn.ucaner.alpaca.common.db.DynamicDataSource;
 import cn.ucaner.alpaca.common.util.SpringContextUtil;
 
 /**
- * 实现BaseService抽象类
+* @Package：cn.ucaner.alpaca.common.base   
+* @ClassName：BaseServiceImpl   
+* @Description：   <p> 实现BaseService抽象类 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:23:41   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public abstract class BaseServiceImpl<Mapper, Record, Example> implements BaseService<Record, Example> {
 

@@ -10,7 +10,15 @@ import redis.clients.jedis.JedisPoolConfig;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Redis 工具类
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：RedisUtil   
+* @Description：   <p> Redis 工具类 </p>
+* @Author： - Jason   
+* @CreatTime：2018年5月24日 下午2:10:47   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class RedisUtil {
 

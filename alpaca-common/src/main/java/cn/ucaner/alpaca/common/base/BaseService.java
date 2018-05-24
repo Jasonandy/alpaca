@@ -5,7 +5,15 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * BaseService接口
+* @Package：cn.ucaner.alpaca.common.base   
+* @ClassName：BaseService   
+* @Description：   <p>  BaseService接口 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:23:21   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public interface BaseService<Record, Example> {
 

@@ -6,7 +6,15 @@ import com.baidu.unbiz.fluentvalidator.ValidatorContext;
 import com.baidu.unbiz.fluentvalidator.ValidatorHandler;
 
 /**
- * 校验不为null
+* @Package：cn.ucaner.alpaca.common.validator   
+* @ClassName：NotNullValidator   
+* @Description：   <p> 校验不为null </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:34:33   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class NotNullValidator extends ValidatorHandler<String> implements Validator<String> {
 

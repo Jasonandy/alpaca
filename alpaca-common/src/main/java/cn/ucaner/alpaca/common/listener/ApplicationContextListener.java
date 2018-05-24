@@ -12,7 +12,15 @@ import cn.ucaner.alpaca.common.annotation.BaseService;
 import cn.ucaner.alpaca.common.base.BaseInterface;
 
 /**
- * spring容器初始化完成事件
+* @Package：cn.ucaner.alpaca.common.listener   
+* @ClassName：ApplicationContextListener   
+* @Description：   <p> spring容器初始化完成事件    -- 监听器ContextRefreshedEvent事件触发init   </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:26:33   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class ApplicationContextListener implements ApplicationListener<ContextRefreshedEvent> {
 
@@ -28,6 +36,7 @@ public class ApplicationContextListener implements ApplicationListener<ContextRe
             for(Object service : baseServices.values()) {
                 LOGGER.debug(">>>>> {}.initMapper()", service.getClass().getName());
                 try {
+                	//@BaseService 注解初始化   - initMapper
                     Method initMapper = service.getClass().getMethod("initMapper");
                     initMapper.invoke(service);
                 } catch (Exception e) {
@@ -36,11 +45,12 @@ public class ApplicationContextListener implements ApplicationListener<ContextRe
                 }
             }
 
-            // 系统入口初始化
+            // 系统入口初始化 BaseInterface 接口初始化
             Map<String, BaseInterface> baseInterfaceBeans = contextRefreshedEvent.getApplicationContext().getBeansOfType(BaseInterface.class);
             for(Object service : baseInterfaceBeans.values()) {
                 LOGGER.debug(">>>>> {}.init()", service.getClass().getName());
                 try {
+                	//系统初始化  - init 
                     Method init = service.getClass().getMethod("init");
                     init.invoke(service);
                 } catch (Exception e) {

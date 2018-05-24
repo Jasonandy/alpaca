@@ -7,7 +7,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC工具类
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：JdbcUtil   
+* @Description：   <p> JDBC工具类 </p>
+* @Author： - Jason   
+* @CreatTime：2018年5月24日 下午2:07:58   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class JdbcUtil {
 
@@ -30,7 +38,7 @@ public class JdbcUtil {
 	}
 
 	// 更新数据
-	public boolean updateByParams(String sql, List params) throws SQLException {
+	public boolean updateByParams(String sql, List<?> params) throws SQLException {
 		// 影响行数
 		int result = -1;
 		pstmt = conn.prepareStatement(sql);
@@ -46,8 +54,8 @@ public class JdbcUtil {
 	}
 
 	// 查询多条记录
-	public List<Map> selectByParams(String sql, List params) throws SQLException {
-		List<Map> list = new ArrayList<> ();
+	public List<Map<String, Object>> selectByParams(String sql, List<?> params) throws SQLException {
+		List<Map<String, Object>> list = new ArrayList<> ();
 		int index = 1;
 		pstmt = conn.prepareStatement(sql);
 		if (null != params && !params.isEmpty()) {
@@ -59,7 +67,7 @@ public class JdbcUtil {
 		ResultSetMetaData metaData = rs.getMetaData();
 		int colsLen = metaData.getColumnCount();
 		while (rs.next()) {
-			Map map = new HashMap(colsLen);
+			Map<String, Object> map = new HashMap<String, Object>(colsLen);
 			for (int i = 0; i < colsLen; i ++) {
 				String columnName = metaData.getColumnName(i + 1);
 				Object columnValue = rs.getObject(columnName);

@@ -8,8 +8,15 @@ import java.io.OutputStream;
 import java.util.Random;
 
 /**
- * 验证码工具类
- * Created by ZhangShuzheng on 2017/6/28.
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：CaptchaUtil   
+* @Description：   <p> 验证码工具类 </p>
+* @Author： - Jason   
+* @CreatTime：2018年5月24日 下午2:14:02   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class CaptchaUtil {
 	// 图片的宽度。

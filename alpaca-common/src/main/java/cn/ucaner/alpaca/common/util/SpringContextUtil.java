@@ -7,8 +7,15 @@ import org.springframework.context.ApplicationContextAware;
 import java.util.Map;
 
 /**
- * 资源文件读取工具
- *
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：SpringContextUtil   
+* @Description：   <p> 资源文件读取工具 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:11:38   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class SpringContextUtil implements ApplicationContextAware {
 
@@ -77,7 +84,7 @@ public class SpringContextUtil implements ApplicationContextAware {
 	 * @param beanName
 	 * @return
 	 */
-	public static Class getType(String beanName) {
+	public static Class<?> getType(String beanName) {
 		return context.getType(beanName);
 	}
 

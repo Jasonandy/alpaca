@@ -6,6 +6,15 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：JarUtil   
+* @Description：   <p> JarUtil </p>
+* @Author： - Jason   
+* @CreatTime：2018年5月24日 下午2:07:36   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class JarUtil {
 

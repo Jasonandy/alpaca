@@ -1,9 +1,17 @@
 package cn.ucaner.alpaca.common.util;
 
 import java.security.MessageDigest;
-import java.util.UUID;
 
 /**
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：MD5Util   
+* @Description：   <p> MD5Util </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:15:37   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class MD5Util {
 

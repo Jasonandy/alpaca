@@ -5,7 +5,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * cookie操作工具类
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：CookieUtil   
+* @Description：   <p> cookie操作工具类 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:14:20   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class CookieUtil {
 

@@ -6,7 +6,15 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * 资源文件读取工具
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：PropertiesFileUtil   
+* @Description：   <p> 资源文件读取工具 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:10:05   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class PropertiesFileUtil {
 

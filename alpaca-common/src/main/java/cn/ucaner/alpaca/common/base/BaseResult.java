@@ -1,7 +1,15 @@
 package cn.ucaner.alpaca.common.base;
 
 /**
- * 统一返回结果类
+* @Package：cn.ucaner.alpaca.common.base   
+* @ClassName：BaseResult   
+* @Description：   <p> 统一返回结果类 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:23:04   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class BaseResult {
 

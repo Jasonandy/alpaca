@@ -1,7 +1,15 @@
 package cn.ucaner.alpaca.common.db;
 
 /**
- * 多数据源枚举
+* @Package：cn.ucaner.alpaca.common.db   
+* @ClassName：DataSourceEnum   
+* @Description：   <p> 多数据源枚举 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:24:14   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public enum DataSourceEnum {
 
@@ -12,6 +20,7 @@ public enum DataSourceEnum {
 
 	// 数据源名称
 	private String name;
+	
 	// 是否是默认数据源
 	private boolean master;
 

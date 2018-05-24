@@ -8,6 +8,15 @@ import javax.jms.*;
 import java.io.Serializable;
 
 /**
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：JmsUtil   
+* @Description：   <p> JmsUtil</p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:14:58   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class JmsUtil {
 

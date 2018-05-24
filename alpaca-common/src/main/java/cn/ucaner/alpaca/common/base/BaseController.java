@@ -12,7 +12,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import cn.ucaner.alpaca.common.util.PropertiesFileUtil;
 
 /**
- * 控制器基类
+* @Package：cn.ucaner.alpaca.common.base   
+* @ClassName：BaseController   
+* @Description：   <p> 控制器基类</p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:22:39   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public abstract class BaseController {
 

@@ -5,12 +5,26 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import cn.ucaner.alpaca.common.util.AESUtil;
 
 /**
- * 支持加密配置文件插件
+* @Package：cn.ucaner.alpaca.common.plugin   
+* @ClassName：EncryptPropertyPlaceholderConfigurer   
+* @Description：   <p> 支持加密配置文件插件 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:31:18   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class EncryptPropertyPlaceholderConfigurer extends PropertyPlaceholderConfigurer {
 
+	/**
+	 * 需要加密的propertyNames[]
+	 */
 	private String[] propertyNames = {
-		"master.jdbc.password", "slave.jdbc.password", "generator.jdbc.password", "master.redis.password"
+		"master.jdbc.password", 
+		"slave.jdbc.password",
+		"generator.jdbc.password",
+		"master.redis.password"
 	};
 
 	/**

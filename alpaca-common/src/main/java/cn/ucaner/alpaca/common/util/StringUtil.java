@@ -7,7 +7,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * String 工具类
+* @Package：cn.ucaner.alpaca.common.util   
+* @ClassName：StringUtil   
+* @Description：   <p> String 工具类 </p>
+* @Author： -    
+* @CreatTime：2018年5月24日 下午2:12:01   
+* @Modify By：   
+* @ModifyTime：  2018年5月24日
+* @Modify marker：   
+* @version    V1.0
  */
 public class StringUtil {
 
