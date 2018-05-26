@@ -23,10 +23,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.URLUtil;
 

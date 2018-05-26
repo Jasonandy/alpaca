@@ -17,11 +17,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -40,19 +42,26 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.file.FileCopier;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.file.FileReader;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.file.FileReader.ReaderHandler;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.file.FileWriter;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.file.LineSeparator;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.ResourceUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.CharUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.ReUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.URLUtil;
 
@@ -67,12 +76,14 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.URLUtil;
 * @Modify marker：   
 * @version    V1.0
  */
-public final class FileUtil {
+public class FileUtil {
 
-	/** The Unix separator character. */
-	private static final char UNIX_SEPARATOR = '/';
-	/** The Windows separator character. */
-	private static final char WINDOWS_SEPARATOR = '\\';
+	/** 类Unix路径分隔符 */
+	private static final char UNIX_SEPARATOR = CharUtil.SLASH;
+	/** Windows路径分隔符 */
+	private static final char WINDOWS_SEPARATOR = CharUtil.BACKSLASH;
+	/** Windows下文件名中的无效字符 */
+	private static Pattern FILE_NAME_INVALID_PATTERN_WIN = Pattern.compile("[\\\\/:*?\"<>|]");
 
 	/** Class文件扩展名 */
 	public static final String CLASS_EXT = ".class";
@@ -90,7 +101,7 @@ public final class FileUtil {
 	 * @since 3.0.9
 	 */
 	public static boolean isWindows() {
-		return '\\' == File.separatorChar;
+		return WINDOWS_SEPARATOR == File.separatorChar;
 	}
 
 	/**
@@ -104,6 +115,7 @@ public final class FileUtil {
 		if (path == null) {
 			return null;
 		}
+
 		path = getAbsolutePath(path);
 
 		File file = file(path);
@@ -176,6 +188,19 @@ public final class FileUtil {
 	 * 递归遍历目录以及子目录中的所有文件<br>
 	 * 如果提供file为文件，直接返回过滤结果
 	 * 
+	 * @param path 当前遍历文件或目录的路径
+	 * @param fileFilter 文件过滤规则对象，选择要保留的文件，只对文件有效，不过滤目录
+	 * @return 文件列表
+	 * @since 3.2.0
+	 */
+	public static List<File> loopFiles(String path, FileFilter fileFilter) {
+		return loopFiles(file(path), fileFilter);
+	}
+
+	/**
+	 * 递归遍历目录以及子目录中的所有文件<br>
+	 * 如果提供file为文件，直接返回过滤结果
+	 * 
 	 * @param file 当前遍历文件或目录
 	 * @param fileFilter 文件过滤规则对象，选择要保留的文件，只对文件有效，不过滤目录
 	 * @return 文件列表
@@ -189,8 +214,11 @@ public final class FileUtil {
 		}
 
 		if (file.isDirectory()) {
-			for (File tmp : file.listFiles()) {
-				fileList.addAll(loopFiles(tmp, fileFilter));
+			final File[] subFiles = file.listFiles();
+			if(ArrayUtil.isNotEmpty(subFiles)) {
+				for (File tmp : subFiles) {
+					fileList.addAll(loopFiles(tmp, fileFilter));
+				}
 			}
 		} else {
 			if (null == fileFilter || fileFilter.accept(file)) {
@@ -199,6 +227,17 @@ public final class FileUtil {
 		}
 
 		return fileList;
+	}
+
+	/**
+	 * 递归遍历目录以及子目录中的所有文件
+	 * 
+	 * @param path 当前遍历文件或目录的路径
+	 * @return 文件列表
+	 * @since 3.2.0
+	 */
+	public static List<File> loopFiles(String path) {
+		return loopFiles(file(path));
 	}
 
 	/**
@@ -223,12 +262,8 @@ public final class FileUtil {
 		if (path == null) {
 			return null;
 		}
-		path = getAbsolutePath(path);
-		if (false == path.endsWith(String.valueOf(UNIX_SEPARATOR))) {
-			path = path + UNIX_SEPARATOR;
-		}
-
 		List<String> paths = new ArrayList<String>();
+
 		int index = path.lastIndexOf(FileUtil.JAR_PATH_EXT);
 		if (index == -1) {
 			// 普通目录路径
@@ -239,6 +274,11 @@ public final class FileUtil {
 				}
 			}
 		} else {
+			// jar文件
+			path = getAbsolutePath(path);
+			if (false == path.endsWith(String.valueOf(UNIX_SEPARATOR))) {
+				path = path + UNIX_SEPARATOR;
+			}
 			// jar文件中的路径
 			index = index + FileUtil.JAR_FILE_EXT.length();
 			JarFile jarFile = null;
@@ -305,6 +345,53 @@ public final class FileUtil {
 	}
 
 	/**
+	 * 通过多层目录参数创建文件
+	 * 
+	 * @param directory 父目录
+	 * @param names 元素名（多层目录名）
+	 * @return the file 文件
+	 * @since 4.0.6
+	 */
+	public static File file(File directory, String... names) {
+		Assert.notNull(directory, "directorydirectory must not be null");
+		if (ArrayUtil.isEmpty(names)) {
+			return directory;
+		}
+
+		File file = directory;
+		for (String name : names) {
+			if (null != name) {
+				file = new File(file, name);
+			}
+		}
+		return file;
+	}
+
+	/**
+	 * 通过多层目录创建文件
+	 * 
+	 * 元素名（多层目录名）
+	 * 
+	 * @return the file 文件
+	 * @since 4.0.6
+	 */
+	public static File file(String... names) {
+		if (ArrayUtil.isEmpty(names)) {
+			return null;
+		}
+
+		File file = null;
+		for (String name : names) {
+			if (file == null) {
+				file = new File(name);
+			} else {
+				file = new File(file, name);
+			}
+		}
+		return file;
+	}
+
+	/**
 	 * 创建File对象
 	 * 
 	 * @param uri 文件URI
@@ -325,6 +412,46 @@ public final class FileUtil {
 	 */
 	public static File file(URL url) {
 		return new File(URLUtil.toURI(url));
+	}
+
+	/**
+	 * 获取临时文件路径（绝对路径）
+	 * 
+	 * @return 临时文件路径
+	 * @since 4.0.6
+	 */
+	public static String getTmpDirPath() {
+		return System.getProperty("java.io.tmpdir");
+	}
+
+	/**
+	 * 获取临时文件目录
+	 * 
+	 * @return 临时文件目录
+	 * @since 4.0.6
+	 */
+	public static File getTmpDir() {
+		return file(getTmpDirPath());
+	}
+
+	/**
+	 * 获取用户路径（绝对路径）
+	 * 
+	 * @return 用户路径
+	 * @since 4.0.6
+	 */
+	public static String getUserHomePath() {
+		return System.getProperty("user.home");
+	}
+
+	/**
+	 * 获取用户目录
+	 * 
+	 * @return 用户目录
+	 * @since 4.0.6
+	 */
+	public static File getUserHomeDir() {
+		return file(getUserHomePath());
 	}
 
 	/**
@@ -355,12 +482,12 @@ public final class FileUtil {
 	 * @return 如果存在匹配文件返回true
 	 */
 	public static boolean exist(String directory, String regexp) {
-		File file = new File(directory);
-		if (!file.exists()) {
+		final File file = new File(directory);
+		if (false == file.exists()) {
 			return false;
 		}
 
-		String[] fileList = file.list();
+		final String[] fileList = file.list();
 		if (fileList == null) {
 			return false;
 		}
@@ -582,6 +709,20 @@ public final class FileUtil {
 			throw new IORuntimeException(e);
 		}
 		return true;
+	}
+	
+	/**
+	 * 清空文件夹<br>
+	 * 注意：清空文件夹时不会判断文件夹是否为空，如果不空则递归删除子文件或文件夹<br>
+	 * 某个文件删除失败会终止删除操作
+	 * 
+	 * @param dirPath 文件夹路径
+	 * @return 成功与否
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.8
+	 */
+	public static boolean clean(String dirPath) throws IORuntimeException {
+		return clean(file(dirPath));
 	}
 
 	/**
@@ -892,34 +1033,32 @@ public final class FileUtil {
 	 * @return 绝对路径
 	 */
 	public static String getAbsolutePath(String path, Class<?> baseClass) {
+		String normalPath;
 		if (path == null) {
-			path = StrUtil.EMPTY;
+			normalPath = StrUtil.EMPTY;
 		} else {
-			path = normalize(path);
-
-			if (StrUtil.C_SLASH == path.charAt(0) || path.matches("^[a-zA-Z]:/.*")) {
+			normalPath = normalize(path);
+			if (isAbsolutePath(normalPath)) {
 				// 给定的路径已经是绝对路径了
-				return path;
+				return normalPath;
 			}
 		}
-
-		// 兼容Spring风格的ClassPath路径，去除前缀，不区分大小写
-		path = StrUtil.removePrefixIgnoreCase(path, "classpath:");
-		path = StrUtil.removePrefix(path, StrUtil.SLASH);
 
 		// 相对于ClassPath路径
-		final URL url = ClassUtil.getResourceUrl(path, baseClass);
+		final URL url = ResourceUtil.getResource(normalPath, baseClass);
 		if (null != url) {
-			// since 3.0.8 解决中文或空格路径被编码的问题
-			return URLUtil.getDecodedPath(url);
-		} else {
-			// 如果资源不存在，则返回一个拼接的资源绝对路径
-			final String classPath = ClassUtil.getClassPath();
-			if (null == classPath) {
-				throw new NullPointerException("ClassPath is null !");
-			}
-			return classPath.concat(path);
+			// 对于jar中文件包含file:前缀，需要去掉此类前缀，在此做标准化，since 3.0.8 解决中文或空格路径被编码的问题
+			return FileUtil.normalize(URLUtil.getDecodedPath(url));
 		}
+
+		// 如果资源不存在，则返回一个拼接的资源绝对路径
+		final String classPath = ClassUtil.getClassPath();
+		if (null == classPath) {
+			throw new NullPointerException("ClassPath is null !");
+		}
+
+		// 资源不存在的情况下使用标准化路径有问题，使用原始路径拼接后标准化路径
+		return normalize(classPath.concat(path));
 	}
 
 	/**
@@ -960,6 +1099,10 @@ public final class FileUtil {
 	 * @return 是否已经是绝对路径
 	 */
 	public static boolean isAbsolutePath(String path) {
+		if (StrUtil.isEmpty(path)) {
+			return false;
+		}
+
 		if (StrUtil.C_SLASH == path.charAt(0) || path.matches("^[a-zA-Z]:/.*")) {
 			// 给定的路径已经是绝对路径了
 			return true;
@@ -1067,6 +1210,101 @@ public final class FileUtil {
 	}
 
 	/**
+	 * 比较两个文件内容是否相同<br>
+	 * 首先比较长度，长度一致再比较内容<br>
+	 * 此方法来自Apache Commons io
+	 *
+	 * @param file1 文件1
+	 * @param file2 文件2
+	 * @return 两个文件内容一致返回true，否则false
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.6
+	 */
+	public static boolean contentEquals(File file1, File file2) throws IORuntimeException {
+		boolean file1Exists = file1.exists();
+		if (file1Exists != file2.exists()) {
+			return false;
+		}
+
+		if (false == file1Exists) {
+			// 两个文件都不存在，返回true
+			return true;
+		}
+
+		if (file1.isDirectory() || file2.isDirectory()) {
+			// 不比较目录
+			throw new IORuntimeException("Can't compare directories, only files");
+		}
+
+		if (file1.length() != file2.length()) {
+			// 文件长度不同
+			return false;
+		}
+
+		if (equals(file1, file2)) {
+			// 同一个文件
+			return true;
+		}
+
+		InputStream input1 = null;
+		InputStream input2 = null;
+		try {
+			input1 = getInputStream(file1);
+			input2 = getInputStream(file2);
+			return IoUtil.contentEquals(input1, input2);
+
+		} finally {
+			IoUtil.close(input1);
+			IoUtil.close(input2);
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	/**
+	 * 比较两个文件内容是否相同<br>
+	 * 首先比较长度，长度一致再比较内容，比较内容采用按行读取，每行比较<br>
+	 * 此方法来自Apache Commons io
+	 *
+	 * @param file1 文件1
+	 * @param file2 文件2
+	 * @param charset 编码，null表示使用平台默认编码 两个文件内容一致返回true，否则false
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.6
+	 */
+	public static boolean contentEqualsIgnoreEOL(File file1, File file2, Charset charset) throws IORuntimeException {
+		boolean file1Exists = file1.exists();
+		if (file1Exists != file2.exists()) {
+			return false;
+		}
+
+		if (!file1Exists) {
+			// 两个文件都不存在，返回true
+			return true;
+		}
+
+		if (file1.isDirectory() || file2.isDirectory()) {
+			// 不比较目录
+			throw new IORuntimeException("Can't compare directories, only files");
+		}
+
+		if (equals(file1, file2)) {
+			// 同一个文件
+			return true;
+		}
+
+		Reader input1 = null;
+		Reader input2 = null;
+		try {
+			input1 = getReader(file1, charset);
+			input2 = getReader(file2, charset);
+			return IoUtil.contentEqualsIgnoreEOL(input1, input2);
+		} finally {
+			IoUtil.close(input1);
+			IoUtil.close(input2);
+		}
+	}
+
+	/**
 	 * 文件路径是否相同<br>
 	 * 取两个文件的绝对路径比较，在Windows下忽略大小写，在Linux下不忽略。
 	 * 
@@ -1143,6 +1381,7 @@ public final class FileUtil {
 	 * </ol>
 	 * 
 	 * 栗子：
+	 * 
 	 * <pre>
 	 * "/foo//" =》 "/foo/"
 	 * "/foo/./" =》 "/foo/"
@@ -1168,14 +1407,28 @@ public final class FileUtil {
 		if (path == null) {
 			return null;
 		}
-		String pathToUse = path.replaceAll("[/\\\\]{1,}", "/").trim();
+
+		// 兼容Spring风格的ClassPath路径，去除前缀，不区分大小写
+		String pathToUse = StrUtil.removePrefixIgnoreCase(path, "classpath:");
+		// 去除file:前缀
+		pathToUse = StrUtil.removePrefixIgnoreCase(pathToUse, "file:");
+		// 统一使用斜杠
+		pathToUse = pathToUse.replaceAll("[/\\\\]{1,}", "/").trim();
 
 		int prefixIndex = pathToUse.indexOf(StrUtil.COLON);
 		String prefix = "";
 		if (prefixIndex > -1) {
+			// 可能Windows风格路径
 			prefix = pathToUse.substring(0, prefixIndex + 1);
+			if (StrUtil.startWith(prefix, StrUtil.C_SLASH)) {
+				// 去除类似于/C:这类路径开头的斜杠
+				prefix = prefix.substring(1);
+			}
 			if (false == prefix.contains("/")) {
 				pathToUse = pathToUse.substring(prefixIndex + 1);
+			} else {
+				// 如果前缀中包含/,说明非Windows风格path
+				prefix = StrUtil.EMPTY;
 			}
 		}
 		if (pathToUse.startsWith(StrUtil.SLASH)) {
@@ -1196,7 +1449,7 @@ public final class FileUtil {
 				tops++;
 			} else {
 				if (tops > 0) {
-					// Merging path element with element corresponding to top path.
+					// 有上级目录标记时按照个数依次跳过
 					tops--;
 				} else {
 					// Normal path element found.
@@ -1205,7 +1458,7 @@ public final class FileUtil {
 			}
 		}
 
-		return prefix + CollectionUtil.join(pathElements, StrUtil.SLASH);
+		return prefix + CollUtil.join(pathElements, StrUtil.SLASH);
 	}
 
 	/**
@@ -1233,9 +1486,11 @@ public final class FileUtil {
 	 * 获得相对子路径，忽略大小写
 	 * 
 	 * 栗子：
+	 * 
 	 * <pre>
 	 * dirPath: d:/aaa/bbb    filePath: d:/aaa/bbb/ccc     =》    ccc
 	 * dirPath: d:/Aaa/bbb    filePath: d:/aaa/bbb/ccc.txt     =》    ccc.txt
+	 * dirPath: d:/Aaa/bbb    filePath: d:/aaa/bbb/     =》    ""
 	 * </pre>
 	 * 
 	 * @param dirPath 父路径
@@ -1243,16 +1498,13 @@ public final class FileUtil {
 	 * @return 相对子路径
 	 */
 	public static String subPath(String dirPath, String filePath) {
-		if (StrUtil.isEmpty(dirPath)) {
-		}
-
 		if (StrUtil.isNotEmpty(dirPath) && StrUtil.isNotEmpty(filePath)) {
-			dirPath = normalize(dirPath);
+			
+			dirPath = StrUtil.removeSuffix(normalize(dirPath), "/");
 			filePath = normalize(filePath);
 
-			if (filePath != null && filePath.toLowerCase().startsWith(dirPath.toLowerCase())) {
-				filePath = filePath.substring(dirPath.length() + 1);
-			}
+			final String result = StrUtil.removePrefixIgnoreCase(filePath, dirPath);
+			return StrUtil.removePrefix(result, "/");
 		}
 		return filePath;
 	}
@@ -1437,16 +1689,28 @@ public final class FileUtil {
 	/**
 	 * 获得输入流
 	 * 
+	 * @param path Path
+	 * @return 输入流
+	 * @throws IORuntimeException 文件未找到
+	 * @since 4.0.0
+	 */
+	public static BufferedInputStream getInputStream(Path path) throws IORuntimeException {
+		try {
+			return new BufferedInputStream(Files.newInputStream(path));
+		} catch (IOException e) {
+			throw new IORuntimeException(e);
+		}
+	}
+
+	/**
+	 * 获得输入流
+	 * 
 	 * @param file 文件
 	 * @return 输入流
 	 * @throws IORuntimeException 文件未找到
 	 */
 	public static BufferedInputStream getInputStream(File file) throws IORuntimeException {
-		try {
-			return new BufferedInputStream(new FileInputStream(file));
-		} catch (IOException e) {
-			throw new IORuntimeException(e);
-		}
+		return new BufferedInputStream(IoUtil.toStream(file));
 	}
 
 	/**
@@ -1478,6 +1742,18 @@ public final class FileUtil {
 	/**
 	 * 获得一个文件读取器
 	 * 
+	 * @param path 文件Path
+	 * @return BufferedReader对象
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.0
+	 */
+	public static BufferedReader getUtf8Reader(Path path) throws IORuntimeException {
+		return getReader(path, CharsetUtil.CHARSET_UTF_8);
+	}
+
+	/**
+	 * 获得一个文件读取器
+	 * 
 	 * @param file 文件
 	 * @return BufferedReader对象
 	 * @throws IORuntimeException IO异常
@@ -1495,6 +1771,19 @@ public final class FileUtil {
 	 */
 	public static BufferedReader getUtf8Reader(String path) throws IORuntimeException {
 		return getReader(path, CharsetUtil.CHARSET_UTF_8);
+	}
+
+	/**
+	 * 获得一个文件读取器
+	 * 
+	 * @param path 文件Path
+	 * @param charset 字符集
+	 * @return BufferedReader对象
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.0
+	 */
+	public static BufferedReader getReader(Path path, Charset charset) throws IORuntimeException {
+		return IoUtil.getReader(getInputStream(path), charset);
 	}
 
 	/**
@@ -1557,6 +1846,19 @@ public final class FileUtil {
 	 */
 	public static byte[] readBytes(File file) throws IORuntimeException {
 		return FileReader.create(file).readBytes();
+	}
+
+	/**
+	 * 读取文件所有数据<br>
+	 * 文件的长度不能超过Integer.MAX_VALUE
+	 * 
+	 * @param filePath 文件路径
+	 * @return 字节码
+	 * @throws IORuntimeException IO异常
+	 * @since 3.2.0
+	 */
+	public static byte[] readBytes(String filePath) throws IORuntimeException {
+		return readBytes(file(filePath));
 	}
 
 	/**
@@ -2112,6 +2414,23 @@ public final class FileUtil {
 		return new PrintWriter(getWriter(file, charset, isAppend));
 	}
 
+	/**
+	 * 获取当前系统的换行分隔符
+	 * 
+	 * <pre>
+	 * Windows: \r\n
+	 * Mac: \r
+	 * Linux: \n
+	 * </pre>
+	 * 
+	 * @return 换行符
+	 * @since 4.0.5
+	 */
+	public static String getLineSeparator() {
+		return System.lineSeparator();
+		// return System.getProperty("line.separator");
+	}
+
 	// -------------------------------------------------------------------------------------------- out end
 
 	/**
@@ -2271,6 +2590,34 @@ public final class FileUtil {
 	}
 
 	/**
+	 * 将列表写入文件，覆盖模式，编码为UTF-8
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param list 列表
+	 * @param path 绝对路径
+	 * @return 目标文件
+	 * @throws IORuntimeException IO异常
+	 * @since 3.2.0
+	 */
+	public static <T> File writeUtf8Lines(Collection<T> list, String path) throws IORuntimeException {
+		return writeLines(list, path, CharsetUtil.CHARSET_UTF_8);
+	}
+
+	/**
+	 * 将列表写入文件，覆盖模式，编码为UTF-8
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param list 列表
+	 * @param file 绝对路径
+	 * @return 目标文件
+	 * @throws IORuntimeException IO异常
+	 * @since 3.2.0
+	 */
+	public static <T> File writeUtf8Lines(Collection<T> list, File file) throws IORuntimeException {
+		return writeLines(list, file, CharsetUtil.CHARSET_UTF_8);
+	}
+
+	/**
 	 * 将列表写入文件，覆盖模式
 	 * 
 	 * @param <T> 集合元素类型
@@ -2297,7 +2644,37 @@ public final class FileUtil {
 	public static <T> File writeLines(Collection<T> list, String path, Charset charset) throws IORuntimeException {
 		return writeLines(list, path, charset, false);
 	}
-	
+
+	/**
+	 * 将列表写入文件，覆盖模式
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param list 列表
+	 * @param file 文件
+	 * @param charset 字符集
+	 * @return 目标文件
+	 * @throws IORuntimeException IO异常
+	 * @since 4.2.0
+	 */
+	public static <T> File writeLines(Collection<T> list, File file, String charset) throws IORuntimeException {
+		return writeLines(list, file, charset, false);
+	}
+
+	/**
+	 * 将列表写入文件，覆盖模式
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param list 列表
+	 * @param file 文件
+	 * @param charset 字符集
+	 * @return 目标文件
+	 * @throws IORuntimeException IO异常
+	 * @since 4.2.0
+	 */
+	public static <T> File writeLines(Collection<T> list, File file, Charset charset) throws IORuntimeException {
+		return writeLines(list, file, charset, false);
+	}
+
 	/**
 	 * 将列表写入文件，追加模式
 	 * 
@@ -2445,6 +2822,37 @@ public final class FileUtil {
 	}
 
 	/**
+	 * 将Map写入文件，每个键值对为一行，一行中键与值之间使用kvSeparator分隔
+	 * 
+	 * @param map Map
+	 * @param file 文件
+	 * @param kvSeparator 键和值之间的分隔符，如果传入null使用默认分隔符" = "
+	 * @param isAppend 是否追加
+	 * @return 目标文件
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.5
+	 */
+	public static File writeUtf8Map(Map<?, ?> map, File file, String kvSeparator, boolean isAppend) throws IORuntimeException {
+		return FileWriter.create(file, CharsetUtil.CHARSET_UTF_8).writeMap(map, kvSeparator, isAppend);
+	}
+
+	/**
+	 * 将Map写入文件，每个键值对为一行，一行中键与值之间使用kvSeparator分隔
+	 * 
+	 * @param map Map
+	 * @param file 文件
+	 * @param charset 字符集编码
+	 * @param kvSeparator 键和值之间的分隔符，如果传入null使用默认分隔符" = "
+	 * @param isAppend 是否追加
+	 * @return 目标文件
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.5
+	 */
+	public static File writeMap(Map<?, ?> map, File file, Charset charset, String kvSeparator, boolean isAppend) throws IORuntimeException {
+		return FileWriter.create(file, charset).writeMap(map, kvSeparator, isAppend);
+	}
+
+	/**
 	 * 写数据到文件中
 	 * 
 	 * @param data 数据
@@ -2582,7 +2990,62 @@ public final class FileUtil {
 	 * @since 3.1.0
 	 */
 	public static File convertLineSeparator(File file, Charset charset, LineSeparator lineSeparator) {
-	final List<String> lines = readLines(file, charset);
+		final List<String> lines = readLines(file, charset);
 		return FileWriter.create(file, charset).writeLines(lines, lineSeparator, false);
+	}
+
+	/**
+	 * 清除文件名中的在Windows下不支持的非法字符，包括： \ / : * ? " &lt; &gt; |
+	 * 
+	 * @param fileName 文件名（必须不包括路径，否则路径符将被替换）
+	 * @return 清理后的文件名
+	 * @since 3.3.1
+	 */
+	public static String cleanInvalid(String fileName) {
+		return StrUtil.isBlank(fileName) ? fileName : ReUtil.delAll(FILE_NAME_INVALID_PATTERN_WIN, fileName);
+	}
+
+	/**
+	 * 文件名中是否包含在Windows下不支持的非法字符，包括： \ / : * ? " &lt; &gt; |
+	 * 
+	 * @param fileName 文件名（必须不包括路径，否则路径符将被替换）
+	 * @return 是否包含非法字符
+	 * @since 3.3.1
+	 */
+	public static boolean containsInvalid(String fileName) {
+		return StrUtil.isBlank(fileName) ? false : ReUtil.contains(FILE_NAME_INVALID_PATTERN_WIN, fileName);
+	}
+
+	/**
+	 * 计算文件CRC32校验码
+	 * 
+	 * @param file 文件，不能为目录
+	 * @return CRC32值
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.6
+	 */
+	public static long checksumCRC32(File file) throws IORuntimeException {
+		return checksum(file, new CRC32()).getValue();
+	}
+
+	/**
+	 * 计算文件校验码
+	 * 
+	 * @param file 文件，不能为目录
+	 * @param checksum {@link Checksum}
+	 * @return Checksum
+	 * @throws IORuntimeException IO异常
+	 * @since 4.0.6
+	 */
+	public static Checksum checksum(File file, Checksum checksum) throws IORuntimeException {
+		Assert.notNull(file, "File is null !");
+		if (file.isDirectory()) {
+			throw new IllegalArgumentException("Checksums can't be computed on directories");
+		}
+		try {
+			return IoUtil.checksum(new FileInputStream(file), checksum);
+		} catch (FileNotFoundException e) {
+			throw new IORuntimeException(e);
+		}
 	}
 }

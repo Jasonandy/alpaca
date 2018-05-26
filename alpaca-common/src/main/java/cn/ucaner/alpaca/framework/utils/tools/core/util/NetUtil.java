@@ -10,6 +10,8 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.core.util;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -18,12 +20,17 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Validator;
 
 /**
@@ -151,7 +158,7 @@ public class NetUtil {
 			URL absoluteUrl = new URL(absoluteBasePath);
 			return new URL(absoluteUrl, relativePath).toString();
 		} catch (Exception e) {
-			throw new UtilException(StrUtil.format("To absolute url [{}] base [{}] error!", relativePath, absoluteBasePath), e);
+			throw new UtilException(e, "To absolute url [{}] base [{}] error!", relativePath, absoluteBasePath);
 		}
 	}
 
@@ -246,7 +253,7 @@ public class NetUtil {
 		try {
 			networkInterfaces = NetworkInterface.getNetworkInterfaces();
 		} catch (SocketException e) {
-			throw new UtilException(e.getMessage(), e);
+			throw new UtilException(e);
 		}
 
 		if (networkInterfaces == null) {
@@ -333,14 +340,16 @@ public class NetUtil {
 
 	/**
 	 * 获得本机MAC地址
+	 * 
 	 * @return 本机MAC地址
 	 */
 	public static String getLocalMacAddress() {
 		return getMacAddress(getLocalhost());
 	}
-	
+
 	/**
 	 * 获得指定地址信息中的MAC地址，使用分隔符“-”
+	 * 
 	 * @param inetAddress {@link InetAddress}
 	 * @return MAC地址，用-分隔
 	 */
@@ -365,7 +374,7 @@ public class NetUtil {
 		} catch (SocketException e) {
 			throw new UtilException(e);
 		}
-		if(null != mac){
+		if (null != mac) {
 			final StringBuilder sb = new StringBuilder();
 			String s;
 			for (int i = 0; i < mac.length; i++) {
@@ -379,6 +388,81 @@ public class NetUtil {
 			return sb.toString();
 		}
 		return null;
+	}
+
+	/**
+	 * 创建 {@link InetSocketAddress}
+	 * 
+	 * @param host 域名或IP地址
+	 * @param port 端口
+	 * @return {@link InetSocketAddress}
+	 * @since 3.3.0
+	 */
+	public static InetSocketAddress createAddress(String host, int port) {
+		return new InetSocketAddress(host, port);
+	}
+
+	/**
+	 * 
+	 * 简易的使用Socket发送数据
+	 * 
+	 * @param host Server主机
+	 * @param port Server端口
+	 * @param isBlock 是否阻塞方式
+	 * @param data 需要发送的数据
+	 * @throws IORuntimeException IO异常
+	 * @since 3.3.0
+	 */
+	public static void netCat(String host, int port, boolean isBlock, ByteBuffer data) throws IORuntimeException {
+		try (SocketChannel channel = SocketChannel.open(createAddress(host, port))) {
+			channel.configureBlocking(isBlock);
+			channel.write(data);
+		} catch (IOException e) {
+			throw new IORuntimeException(e);
+		}
+	}
+
+	/**
+	 * 
+	 * 使用普通Socket发送数据
+	 * 
+	 * @param host Server主机
+	 * @param port Server端口
+	 * @param data 数据
+	 * @throws IOException IO异常
+	 * @since 3.3.0
+	 */
+	public static void netCat(String host, int port, byte[] data) throws IORuntimeException {
+		OutputStream out = null;
+		try (Socket socket = new Socket(host, port)) {
+			out = socket.getOutputStream();
+			out.write(data);
+			out.flush();
+		} catch (IOException e) {
+			throw new IORuntimeException(e);
+		} finally {
+			IoUtil.close(out);
+		}
+	}
+
+	/**
+	 * 是否在CIDR规则配置范围内<br>
+	 * 方法来自：【成都】小邓
+	 * 
+	 * @param ip 需要验证的IP
+	 * @param cidr CIDR规则
+	 * @return 是否在范围内
+	 * @since 4.0.6
+	 */
+	public static boolean isInRange(String ip, String cidr) {
+		String[] ips = StrUtil.splitToArray(ip, '.');
+		int ipAddr = (Integer.parseInt(ips[0]) << 24) | (Integer.parseInt(ips[1]) << 16) | (Integer.parseInt(ips[2]) << 8) | Integer.parseInt(ips[3]);
+		int type = Integer.parseInt(cidr.replaceAll(".*/", ""));
+		int mask = 0xFFFFFFFF << (32 - type);
+		String cidrIp = cidr.replaceAll("/.*", "");
+		String[] cidrIps = cidrIp.split("\\.");
+		int cidrIpAddr = (Integer.parseInt(cidrIps[0]) << 24) | (Integer.parseInt(cidrIps[1]) << 16) | (Integer.parseInt(cidrIps[2]) << 8) | Integer.parseInt(cidrIps[3]);
+		return (ipAddr & mask) == (cidrIpAddr & mask);
 	}
 
 	// ----------------------------------------------------------------------------------------- Private method start

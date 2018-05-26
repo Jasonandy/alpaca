@@ -22,8 +22,8 @@ package cn.ucaner.alpaca.framework.utils.tools.db.meta;
 * @version    V1.0
  */
 public enum TableType {
-	TABLE("TABLE"),//表
-	VIEW("VIEW"),//视图
+	TABLE("TABLE"),
+	VIEW("VIEW"),
 	SYSTEM_TABLE ("SYSTEM TABLE"),
 	GLOBAL_TEMPORARY("GLOBAL TEMPORARY"),
 	LOCAL_TEMPORARY("LOCAL TEMPORARY"),
@@ -44,5 +44,10 @@ public enum TableType {
 	 */
 	public String value(){
 		return this.value;
+	}
+	
+	@Override
+	public String toString() {
+		return this.value();
 	}
 }

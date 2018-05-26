@@ -10,10 +10,12 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.db.ds.pooled;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.dialect.DriverUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.DSFactory;
 import cn.ucaner.alpaca.framework.utils.tools.setting.Setting;
 
@@ -66,6 +68,12 @@ public class DbSetting {
 			throw new DbRuntimeException("No Hutool pool config for group: [{}]", group);
 		}
 
+		// 初始化SQL显示
+		final boolean isShowSql = Convert.toBool(config.remove("showSql"), false);
+		final boolean isFormatSql = Convert.toBool(config.remove("formatSql"), false);
+		final boolean isShowParams = Convert.toBool(config.remove("showParams"), false);
+		DbUtil.setShowSqlGlobal(isShowSql, isFormatSql, isShowParams);
+
 		final DbConfig dbConfig = new DbConfig();
 
 		// 基本信息
@@ -80,7 +88,7 @@ public class DbSetting {
 		if (StrUtil.isNotBlank(driver)) {
 			dbConfig.setDriver(driver);
 		} else {
-			dbConfig.setDriver(DbUtil.identifyDriver(url));
+			dbConfig.setDriver(DriverUtil.identifyDriver(url));
 		}
 
 		// 连接池相关信息

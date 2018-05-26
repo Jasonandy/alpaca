@@ -10,7 +10,10 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.core.util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -18,9 +21,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.ResourceUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
 
@@ -126,7 +132,7 @@ public class URLUtil {
 		try {
 			return file.toURI().toURL();
 		} catch (MalformedURLException e) {
-			throw new UtilException("Error occured when get URL!", e);
+			throw new UtilException(e, "Error occured when get URL!");
 		}
 	}
 
@@ -144,7 +150,7 @@ public class URLUtil {
 				urls[i] = files[i].toURI().toURL();
 			}
 		} catch (MalformedURLException e) {
-			throw new UtilException("Error occured when get URL!", e);
+			throw new UtilException(e, "Error occured when get URL!");
 		}
 
 		return urls;
@@ -360,4 +366,30 @@ public class URLUtil {
 				url.getPath().toLowerCase().endsWith(FileUtil.JAR_FILE_EXT));
 	}
 
+	/**
+	 * 从URL中获取流
+	 * @param url {@link URL}
+	 * @return InputStream流
+	 * @since 3.2.1
+	 */
+	public static InputStream getStream(URL url) {
+		Assert.notNull(url);
+		try {
+			return url.openStream();
+		} catch (IOException e) {
+			throw new IORuntimeException(e);
+		}
+	}
+	
+	/**
+	 * 获得Reader
+	 * 
+	 * @param url {@link URL}
+	 * @param charset 编码
+	 * @return {@link BufferedReader}
+	 * @since 3.2.1
+	 */
+	public static BufferedReader getReader(URL url, Charset charset){
+		return IoUtil.getReader(getStream(url), charset);
+	}
 }

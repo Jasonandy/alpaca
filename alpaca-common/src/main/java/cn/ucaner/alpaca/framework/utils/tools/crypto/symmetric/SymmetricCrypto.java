@@ -20,6 +20,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.PBEParameterSpec;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.codec.Base64;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
@@ -105,9 +106,25 @@ public class SymmetricCrypto {
 	 * @since 3.1.2
 	 */
 	public SymmetricCrypto(String algorithm, SecretKey key) {
-		init(algorithm, key);
+		this(algorithm, key, null);
 	}
-	//------------------------------------------------------------------ Constructor end
+
+	/**
+	 * 构造
+	 * 
+	 * @param algorithm 算法
+	 * @param key 密钥
+	 * @param paramsSpec 算法参数，例如加盐等
+	 * @since 3.3.0
+	 */
+	public SymmetricCrypto(String algorithm, SecretKey key, AlgorithmParameterSpec paramsSpec) {
+		init(algorithm, key);
+		if (null != paramsSpec) {
+			setParams(paramsSpec);
+		}
+	}
+
+	// ------------------------------------------------------------------ Constructor end
 	/**
 	 * 初始化
 	 * @param algorithm 算法
@@ -169,7 +186,18 @@ public class SymmetricCrypto {
 	public String encryptHex(byte[] data){
 		return HexUtil.encodeHexStr(encrypt(data));
 	}
-	
+
+	/**
+	 * 加密
+	 * 
+	 * @param data 数据
+	 * @return 加密后的Base64
+	 * @since 4.0.1
+	 */
+	public String encryptBase64(byte[] data) {
+		return Base64.encode(encrypt(data));
+	}
+
 	/**
 	 * 加密
 	 * @param data 被加密的字符串
@@ -189,7 +217,18 @@ public class SymmetricCrypto {
 	public String encryptHex(String data, String charset){
 		return HexUtil.encodeHexStr(encrypt(data, charset));
 	}
-	
+
+	/**
+	 * 加密
+	 * 
+	 * @param data 被加密的字符串
+	 * @param charset 编码
+	 * @return 加密后的Base64
+	 */
+	public String encryptBase64(String data, String charset) {
+		return Base64.encode(encrypt(data, charset));
+	}
+
 	/**
 	 * 加密，使用UTF-8编码
 	 * @param data 被加密的字符串
@@ -207,7 +246,17 @@ public class SymmetricCrypto {
 	public String encryptHex(String data){
 		return HexUtil.encodeHexStr(encrypt(data));
 	}
-	
+
+	/**
+	 * 加密，使用UTF-8编码
+	 * 
+	 * @param data 被加密的字符串
+	 * @return 加密后的Base64
+	 */
+	public String encryptBase64(String data) {
+		return Base64.encode(encrypt(data));
+	}
+
 	/**
 	 * 加密
 	 * @param data 被加密的字符串
@@ -226,7 +275,18 @@ public class SymmetricCrypto {
 	public String encryptHex(InputStream data){
 		return HexUtil.encodeHexStr(encrypt(data));
 	}
-	//--------------------------------------------------------------------------------- Decrypt
+
+	/**
+	 * 加密
+	 * 
+	 * @param data 被加密的字符串
+	 * @return 加密后的Base64
+	 */
+	public String encryptBase64(InputStream data) {
+		return Base64.encode(encrypt(data));
+	}
+
+	// --------------------------------------------------------------------------------- Decrypt
 	/**
 	 * 解密
 	 * @param bytes 被解密的bytes
@@ -247,86 +307,129 @@ public class SymmetricCrypto {
 			lock.unlock();
 		}
 	}
-	
+
 	/**
-	 * 解密
+	 * 解密为字符串
+	 * 
 	 * @param bytes 被解密的bytes
 	 * @param charset 解密后的charset
 	 * @return 解密后的String
 	 */
-	public String decryptStr(byte[] bytes, Charset charset){
+	public String decryptStr(byte[] bytes, Charset charset) {
 		return StrUtil.str(decrypt(bytes), charset);
 	}
-	
+
 	/**
-	 * 解密
+	 * 解密为字符串，默认UTF-8编码
+	 * 
 	 * @param bytes 被解密的bytes
 	 * @return 解密后的String
 	 */
-	public String decryptStr(byte[] bytes){
+	public String decryptStr(byte[] bytes) {
 		return decryptStr(bytes, CharsetUtil.CHARSET_UTF_8);
 	}
-	
+
 	/**
-	 * 解密
-	 * @param data 被解密的String
+	 * 解密Hex表示的字符串
+	 * 
+	 * @param data 被解密的String，必须为16进制字符串表示形式
 	 * @return 解密后的bytes
 	 */
 	public byte[] decrypt(String data) {
 		return decrypt(HexUtil.decodeHex(data));
 	}
-	
+
 	/**
-	 * 解密
+	 * 解密Base64表示的字符串
+	 * 
+	 * @param data 被解密的String，必须为Base64形式
+	 * @return 解密后的bytes
+	 * @since 4.0.1
+	 */
+	public byte[] decryptFromBase64(String data) {
+		return decrypt(Base64.decode(data));
+	}
+
+	/**
+	 * 解密Hex表示的字符串
+	 * 
 	 * @param data 被解密的String
 	 * @param charset 解密后的charset
 	 * @return 解密后的String
 	 */
-	public String decryptStr(String data, Charset charset){
+	public String decryptStr(String data, Charset charset) {
 		return StrUtil.str(decrypt(data), charset);
 	}
-	
+
 	/**
-	 * 解密
+	 * 解密Base64表示的字符串
+	 * 
+	 * @param data 被解密的String，必须为Base64形式
+	 * @param charset 解密后的charset
+	 * @return 解密后的String
+	 * @since 4.0.1
+	 */
+	public String decryptStrFromBase64(String data, Charset charset) {
+		return StrUtil.str(decrypt(Base64.decode(data, charset)), charset);
+	}
+
+	/**
+	 * 解密Hex表示的字符串，默认UTF-8编码
+	 * 
 	 * @param data 被解密的String
 	 * @return 解密后的String
 	 */
-	public String decryptStr(String data){
+	public String decryptStr(String data) {
 		return decryptStr(data, CharsetUtil.CHARSET_UTF_8);
 	}
-	
+
 	/**
-	 * 解密
+	 * 解密Base64表示的字符串，默认UTF-8编码
+	 * 
+	 * @param data 被解密的String
+	 * @return 解密后的String
+	 * @since 4.0.1
+	 */
+	public String decryptStrFromBase64(String data) {
+		return decryptStrFromBase64(data, CharsetUtil.CHARSET_UTF_8);
+	}
+
+	/**
+	 * 解密，不会关闭流
+	 * 
 	 * @param data 被解密的bytes
 	 * @return 解密后的bytes
 	 * @throws IORuntimeException IO异常
 	 */
-	public byte[] decrypt(InputStream data) throws IORuntimeException{
+	public byte[] decrypt(InputStream data) throws IORuntimeException {
 		return decrypt(IoUtil.readBytes(data));
 	}
-	
+
 	/**
-	 * 解密
+	 * 解密，不会关闭流
+	 * 
 	 * @param data 被解密的InputStream
 	 * @param charset 解密后的charset
 	 * @return 解密后的String
 	 */
-	public String decryptStr(InputStream data, Charset charset){
+	public String decryptStr(InputStream data, Charset charset) {
 		return StrUtil.str(decrypt(data), charset);
 	}
-	
+
 	/**
 	 * 解密
+	 * 
 	 * @param data 被解密的InputStream
 	 * @return 解密后的String
 	 */
-	public String decryptStr(InputStream data){
+	public String decryptStr(InputStream data) {
 		return decryptStr(data, CharsetUtil.CHARSET_UTF_8);
 	}
-	
-	//--------------------------------------------------------------------------------- Getters
+
+	// --------------------------------------------------------------------------------- Getters
 	/**
 	 * 获得对称密钥
+	 * 
 	 * @return 获得对称密钥
 	 */
 	public SecretKey getSecretKey() {
@@ -335,6 +438,7 @@ public class SymmetricCrypto {
 
 	/**
 	 * 获得加密或解密器
+	 * 
 	 * @return 加密或解密
 	 */
 	public Cipher getClipher() {

@@ -44,9 +44,10 @@ public class JSONTokener {
 	/** 源 */
 	private Reader reader;
 
-	//------------------------------------------------------------------------------------ Constructor start
+	// ------------------------------------------------------------------------------------ Constructor start
 	/**
-	 *从Reader中构建
+	 * 从Reader中构建
+	 * 
 	 * @param reader Reader
 	 */
 	public JSONTokener(Reader reader) {
@@ -68,7 +69,8 @@ public class JSONTokener {
 	}
 
 	/**
-	 *从字符串中构建
+	 * 从字符串中构建
+	 * 
 	 * @param s JSON字符串
 	 */
 	public JSONTokener(String s) {
@@ -87,25 +89,6 @@ public class JSONTokener {
 		this.character -= 1;
 		this.usePrevious = true;
 		this.eof = false;
-	}
-
-	/**
-	 * Get the hex value of a character (base16).
-	 * 
-	 * @param c A character between '0' and '9' or between 'A' and 'F' or between 'a' and 'f'.
-	 * @return An int between 0 and 15, or -1 if c was not a hex digit.
-	 */
-	public static int dehexchar(char c) {
-		if (c >= '0' && c <= '9') {
-			return c - '0';
-		}
-		if (c >= 'A' && c <= 'F') {
-			return c - ('A' - 10);
-		}
-		if (c >= 'a' && c <= 'f') {
-			return c - ('a' - 10);
-		}
-		return -1;
 	}
 
 	/**
@@ -221,7 +204,7 @@ public class JSONTokener {
 	 * 返回当前位置到指定引号前的所有字符，反斜杠的转义符也会被处理。<br>
 	 * 标准的JSON是不允许使用单引号包含字符串的，但是此实现允许。
 	 * 
-	 * @param quote 字符引号, 包括  <code>"</code>（双引号） 或 <code>'</code>（单引号）。
+	 * @param quote 字符引号, 包括 <code>"</code>（双引号） 或 <code>'</code>（单引号）。
 	 * @return 截止到引号前的字符串
 	 * @throws JSONException 出现无结束的字符串时抛出此异常
 	 */
@@ -231,46 +214,46 @@ public class JSONTokener {
 		for (;;) {
 			c = this.next();
 			switch (c) {
-				case 0:
-				case '\n':
-				case '\r':
-					throw this.syntaxError("Unterminated string");
-				case '\\'://转义符
-					c = this.next();
-					switch (c) {
-						case 'b':
-							sb.append('\b');
-							break;
-						case 't':
-							sb.append('\t');
-							break;
-						case 'n':
-							sb.append('\n');
-							break;
-						case 'f':
-							sb.append('\f');
-							break;
-						case 'r':
-							sb.append('\r');
-							break;
-						case 'u'://Unicode符
-							sb.append((char) Integer.parseInt(this.next(4), 16));
-							break;
-						case '"':
-						case '\'':
-						case '\\':
-						case '/':
-							sb.append(c);
-							break;
-						default:
-							throw this.syntaxError("Illegal escape.");
-					}
+			case 0:
+			case '\n':
+			case '\r':
+				throw this.syntaxError("Unterminated string");
+			case '\\':// 转义符
+				c = this.next();
+				switch (c) {
+				case 'b':
+					sb.append('\b');
+					break;
+				case 't':
+					sb.append('\t');
+					break;
+				case 'n':
+					sb.append('\n');
+					break;
+				case 'f':
+					sb.append('\f');
+					break;
+				case 'r':
+					sb.append('\r');
+					break;
+				case 'u':// Unicode符
+					sb.append((char) Integer.parseInt(this.next(4), 16));
+					break;
+				case '"':
+				case '\'':
+				case '\\':
+				case '/':
+					sb.append(c);
 					break;
 				default:
-					if (c == quote) {
-						return sb.toString();
-					}
-					sb.append(c);
+					throw this.syntaxError("Illegal escape.");
+				}
+				break;
+			default:
+				if (c == quote) {
+					return sb.toString();
+				}
+				sb.append(c);
 			}
 		}
 	}
@@ -329,15 +312,15 @@ public class JSONTokener {
 		String string;
 
 		switch (c) {
-			case '"':
-			case '\'':
-				return this.nextString(c);
-			case '{':
-				this.back();
-				return new JSONObject(this);
-			case '[':
-				this.back();
-				return new JSONArray(this);
+		case '"':
+		case '\'':
+			return this.nextString(c);
+		case '{':
+			this.back();
+			return new JSONObject(this);
+		case '[':
+			this.back();
+			return new JSONArray(this);
 		}
 
 		/*
@@ -360,10 +343,10 @@ public class JSONTokener {
 	}
 
 	/**
-	 * Skip characters until the next character is the requested character. If the requested character is not found, no characters are skipped.
+	 * Skip characters until the next character is the requested character. If the requested character is not found, no characters are skipped. 在遇到指定字符前，跳过其它字符。如果字符未找到，则不跳过任何字符。
 	 * 
-	 * @param to A character to skip to.
-	 * @return The requested character, or zero if the requested character is not found.
+	 * @param to 需要定位的字符
+	 * @return 定位的字符，如果字符未找到返回0
 	 */
 	public char skipTo(char to) throws JSONException {
 		char c;
@@ -420,16 +403,16 @@ public class JSONTokener {
 					jsonArray.add(this.nextValue());
 				}
 				switch (this.nextClean()) {
-					case ',':
-						if (this.nextClean() == ']') {
-							return jsonArray;
-						}
-						this.back();
-						break;
-					case ']':
+				case ',':
+					if (this.nextClean() == ']') {
 						return jsonArray;
-					default:
-						throw this.syntaxError("Expected a ',' or ']'");
+					}
+					this.back();
+					break;
+				case ']':
+					return jsonArray;
+				default:
+					throw this.syntaxError("Expected a ',' or ']'");
 				}
 			}
 		}

@@ -1,14 +1,15 @@
 package cn.ucaner.alpaca.framework.utils.tools.core.convert.impl;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.AbstractConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.ConverterRegistry;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.map.MapUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.convert.impl   
@@ -24,20 +25,19 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 public class MapConverter extends AbstractConverter<Map<?, ?>> {
 	
 	/** Map类型 */
-	private final Class<?> mapType;
+	private final Type mapType;
 	/** 键类型 */
-	private final Class<?> keyType;
+	private final Type keyType;
 	/** 值类型 */
-	private final Class<?> valueType;
+	private final Type valueType;
 	
 	/**
-	 * 构造
+	 * 构造，Map的key和value泛型类型自动获取
+	 * 
 	 * @param mapType Map类型
 	 */
-	public MapConverter(Class<?> mapType) {
-		this.mapType = mapType;
-		this.keyType = ClassUtil.getTypeArgument(mapType, 0);
-		this.valueType = ClassUtil.getTypeArgument(mapType, 1);
+	public MapConverter(Type mapType) {
+		this(mapType, TypeUtil.getTypeArgument(mapType, 0), TypeUtil.getTypeArgument(mapType, 1));
 	}
 	
 	/**
@@ -46,24 +46,23 @@ public class MapConverter extends AbstractConverter<Map<?, ?>> {
 	 * @param keyType 键类型
 	 * @param valueType 值类型
 	 */
-	public MapConverter(Class<?> mapType, Class<?> keyType, Class<?> valueType) {
+	public MapConverter(Type mapType, Type keyType, Type valueType) {
 		this.mapType = mapType;
 		this.keyType = keyType;
 		this.valueType = valueType;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Map<?, ?> convertInternal(Object value) {
-		Map map = CollectionUtil.createMap(mapType);
-		
-		Class<?> valueType = value.getClass();
+		Map map = null;
 		if(value instanceof Map){
+			map = MapUtil.createMap(TypeUtil.getClass(this.mapType));
 			convertMapToMap((Map)value, map);
-		}else if(BeanUtil.isBean(valueType)){
-			BeanUtil.beanToMap(map);
+		}else if(BeanUtil.isBean(value.getClass())){
+			map = BeanUtil.beanToMap(value);
 		}else{
-			throw new UnsupportedOperationException(StrUtil.format("Unsupport toMap value type: {}", valueType.getName()));
+			throw new UnsupportedOperationException(StrUtil.format("Unsupport toMap value type: {}", value.getClass().getName()));
 		}
 		return map;
 	}
@@ -75,8 +74,18 @@ public class MapConverter extends AbstractConverter<Map<?, ?>> {
 	 */
 	private void convertMapToMap(Map<?, ?> srcMap, Map<Object, Object> targetMap){
 		final ConverterRegistry convert = ConverterRegistry.getInstance();
+		Object key;
+		Object value;
 		for (Entry<?, ?> entry : srcMap.entrySet()) {
-			targetMap.put(convert.convert(this.keyType, entry.getKey()), convert.convert(this.valueType, entry.getValue()));
+			key = (null == this.keyType) ? entry.getKey() : convert.convert(this.keyType, entry.getKey());
+			value = (null == this.valueType) ? entry.getValue() : convert.convert(this.keyType, entry.getValue());
+			targetMap.put(key, value);
 		}
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public Class<Map<?, ?>> getTargetType() {
+		return (Class<Map<?, ?>>) TypeUtil.getClass(this.mapType);
 	}
 }

@@ -27,6 +27,7 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 * @version    V1.0
  */
 public class ScriptRuntimeException extends RuntimeException {
+	
 	private static final long serialVersionUID = 8247610319171014183L;
 
 	private String fileName;

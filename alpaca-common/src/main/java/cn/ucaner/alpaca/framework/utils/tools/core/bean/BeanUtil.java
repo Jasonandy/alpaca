@@ -18,24 +18,24 @@ import java.beans.PropertyEditorManager;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanDesc.PropDesc;
-import cn.ucaner.alpaca.framework.utils.tools.core.collection.CaseInsensitiveMap;
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.copier.BeanCopier;
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.copier.CopyOptions;
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.copier.ValueProvider;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
-import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
+import cn.ucaner.alpaca.framework.utils.tools.core.lang.Editor;
+import cn.ucaner.alpaca.framework.utils.tools.core.map.CaseInsensitiveMap;
+import cn.ucaner.alpaca.framework.utils.tools.core.map.MapUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.bean   
@@ -204,38 +204,48 @@ public class BeanUtil {
 
 	/**
 	 * 获得字段值，通过反射直接获得字段值，并不调用getXXX方法<br>
-	 * 对象同样支持Map类型，fieldName即为key
+	 * 对象同样支持Map类型，fieldNameOrIndex即为key
 	 * 
 	 * @param bean Bean对象
-	 * @param fieldName 字段名
+	 * @param fieldNameOrIndex 字段名或序号，序号支持负数
 	 * @return 字段值
 	 */
-	public static Object getFieldValue(Object bean, String fieldName) {
-		if (null == bean || StrUtil.isBlank(fieldName)) {
+	public static Object getFieldValue(Object bean, String fieldNameOrIndex) {
+		if (null == bean || null == fieldNameOrIndex) {
 			return null;
 		}
 
 		if (bean instanceof Map) {
-			return ((Map<?, ?>) bean).get(fieldName);
-		} else if (bean instanceof List) {
-			return ((List<?>) bean).get(Integer.parseInt(fieldName));
+			return ((Map<?, ?>) bean).get(fieldNameOrIndex);
 		} else if (bean instanceof Collection) {
-			return ((Collection<?>) bean).toArray()[Integer.parseInt(fieldName)];
+			return CollUtil.get((Collection<?>)bean, Integer.parseInt(fieldNameOrIndex));
 		} else if (ArrayUtil.isArray(bean)) {
-			return Array.get(bean, Integer.parseInt(fieldName));
+			return ArrayUtil.get(bean, Integer.parseInt(fieldNameOrIndex));
 		} else {// 普通Bean对象
-			Field field;
-			try {
-				field = ClassUtil.getDeclaredField(bean.getClass(), fieldName);
-				if (null != field) {
-					field.setAccessible(true);
-					return field.get(bean);
-				}
-			} catch (Exception e) {
-				throw new UtilException(e);
-			}
+			return ReflectUtil.getFieldValue(bean, fieldNameOrIndex);
 		}
-		return null;
+	}
+
+	/**
+	 * 设置字段值，，通过反射设置字段值，并不调用setXXX方法<br>
+	 * 对象同样支持Map类型，fieldNameOrIndex即为key
+	 * 
+	 * @param bean Bean
+	 * @param fieldNameOrIndex 字段名或序号，序号支持负数
+	 * @param value 值
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void setFieldValue(Object bean, String fieldNameOrIndex, Object value) {
+		if (bean instanceof Map) {
+			((Map) bean).put(fieldNameOrIndex, value);
+		} else if (bean instanceof List) {
+			((List) bean).set(Convert.toInt(fieldNameOrIndex), value);
+		} else if (ArrayUtil.isArray(bean)) {
+			Array.set(bean, Convert.toInt(fieldNameOrIndex), value);
+		} else {
+			// 普通Bean对象
+			ReflectUtil.setFieldValue(bean, fieldNameOrIndex, value);
+		}
 	}
 
 	/**
@@ -244,11 +254,23 @@ public class BeanUtil {
 	 * @param bean Bean对象，支持Map、List、Collection、Array
 	 * @param expression 表达式，例如：person.friend[5].name
 	 * @return Bean属性值
-	 * @see BeanResolver#resolveBean(Object, String)
+	 * @see BeanPath#get(Object)
 	 * @since 3.0.7
 	 */
 	public static Object getProperty(Object bean, String expression) {
-		return BeanResolver.resolveBean(bean, expression);
+		return BeanPath.create(expression).get(bean);
+	}
+
+	/**
+	 * 解析Bean中的属性值
+	 * 
+	 * @param bean Bean对象，支持Map、List、Collection、Array
+	 * @param expression 表达式，例如：person.friend[5].name
+	 * @see BeanPath#get(Object)
+	 * @since 4.0.6
+	 */
+	public static void setProperty(Object bean, String expression, Object value) {
+		BeanPath.create(expression).set(bean, value);
 	}
 
 	// --------------------------------------------------------------------------------------------- mapToBean
@@ -281,28 +303,19 @@ public class BeanUtil {
 
 	// --------------------------------------------------------------------------------------------- fillBeanWithMap
 	/**
-	 * 使用Map填充Bean对象
+	 * Map转换为Bean对象
 	 * 
 	 * @param <T> Bean类型
-	 * @param map Map
-	 * @param bean Bean
-	 * @param copyOptions 属性复制选项 {@link CopyOptions}
+	 * @param map {@link Map}
+	 * @param beanClass Bean Class
+	 * @param copyOptions 转Bean选项
 	 * @return Bean
 	 */
-	public static <T> T fillBeanWithMap(final Map<?, ?> map, T bean, CopyOptions copyOptions) {
-		return fillBean(bean, new ValueProvider<String>() {
-			@Override
-			public Object value(String key, Type valueType) {
-				return map.get(key);
-			}
-
-			@Override
-			public boolean containsKey(String key) {
-				return map.containsKey(key);
-			}
-		}, copyOptions);
+	public static <T> T mapToBean(Map<?, ?> map, Class<T> beanClass, CopyOptions copyOptions) {
+		return fillBeanWithMap(map, ReflectUtil.newInstance(beanClass), copyOptions);
 	}
 
+	// --------------------------------------------------------------------------------------------- fillBeanWithMap
 	/**
 	 * 使用Map填充Bean对象
 	 * 
@@ -312,8 +325,8 @@ public class BeanUtil {
 	 * @param isIgnoreError 是否忽略注入错误
 	 * @return Bean
 	 */
-	public static <T> T fillBeanWithMap(final Map<?, ?> map, T bean, final boolean isIgnoreError) {
-		return fillBeanWithMap(map, bean, CopyOptions.create().setIgnoreError(isIgnoreError));
+	public static <T> T fillBeanWithMap(Map<?, ?> map, T bean, boolean isIgnoreError) {
+		return fillBeanWithMap(map, bean, false, isIgnoreError);
 	}
 
 	/**
@@ -327,21 +340,7 @@ public class BeanUtil {
 	 * @return Bean
 	 */
 	public static <T> T fillBeanWithMap(Map<?, ?> map, T bean, boolean isToCamelCase, boolean isIgnoreError) {
-		if (isToCamelCase) {
-			final Map<Object, Object> map2 = new HashMap<Object, Object>();
-			for (Entry<?, ?> entry : map.entrySet()) {
-				final Object key = entry.getKey();
-				if (null != key && key instanceof String) {
-					final String keyStr = (String) key;
-					map2.put(StrUtil.toCamelCase(keyStr), entry.getValue());
-				} else {
-					map2.put(key, entry.getValue());
-				}
-			}
-			return fillBeanWithMap(map2, bean, isIgnoreError);
-		} else {
-			return fillBeanWithMap(map, bean, isIgnoreError);
-		}
+		return fillBeanWithMap(map, bean, isToCamelCase, CopyOptions.create().setIgnoreError(isIgnoreError));
 	}
 
 	/**
@@ -353,70 +352,43 @@ public class BeanUtil {
 	 * @param isIgnoreError 是否忽略注入错误
 	 * @return Bean
 	 */
-	public static <T> T fillBeanWithMapIgnoreCase(Map<?, ?> map, T bean, final boolean isIgnoreError) {
-		return fillBeanWithMap(new CaseInsensitiveMap<>(map), bean, isIgnoreError);
+	public static <T> T fillBeanWithMapIgnoreCase(Map<?, ?> map, T bean, boolean isIgnoreError) {
+		return fillBeanWithMap(map, bean, CopyOptions.create().setIgnoreCase(true).setIgnoreError(isIgnoreError));
 	}
 
 	// --------------------------------------------------------------------------------------------- fillBeanWithRequestParam
 	/**
-	 * ServletRequest 参数转Bean
+	 * 使用Map填充Bean对象
 	 * 
 	 * @param <T> Bean类型
-	 * @param request ServletRequest
+	 * @param map Map
 	 * @param bean Bean
-	 * @param copyOptions 注入时的设置
+	 * @param copyOptions 属性复制选项 {@link CopyOptions}
 	 * @return Bean
 	 * @since 3.0.4
 	 */
-	public static <T> T fillBeanWithRequestParam(final javax.servlet.ServletRequest request, T bean, CopyOptions copyOptions) {
-		final String beanName = StrUtil.lowerFirst(bean.getClass().getSimpleName());
-		return fillBean(bean, new ValueProvider<String>() {
-			@Override
-			public Object value(String key, Type valueType) {
-				String value = request.getParameter(key);
-				if (StrUtil.isEmpty(value)) {
-					// 使用类名前缀尝试查找值
-					value = request.getParameter(beanName + StrUtil.DOT + key);
-					if (StrUtil.isEmpty(value)) {
-						// 此处取得的值为空时跳过，包括null和""
-						value = null;
-					}
-				}
-				return value;
-			}
-
-			@Override
-			public boolean containsKey(String key) {
-				// 对于Servlet来说，返回值null意味着无此参数
-				return null != request.getParameter(key);
-			}
-		}, copyOptions);
+	public static <T> T fillBeanWithMap(Map<?, ?> map, T bean, CopyOptions copyOptions) {
+		return fillBeanWithMap(map, bean, false, copyOptions);
 	}
 
 	/**
-	 * ServletRequest 参数转Bean
+	 * 使用Map填充Bean对象
 	 * 
 	 * @param <T> Bean类型
-	 * @param request ServletRequest
+	 * @param map Map
 	 * @param bean Bean
-	 * @param isIgnoreError 是否忽略注入错误
+	 * @param isToCamelCase 是否将Map中的下划线风格key转换为驼峰风格
+	 * @param copyOptions 属性复制选项 {@link CopyOptions}
 	 * @return Bean
 	 */
-	public static <T> T fillBeanWithRequestParam(final javax.servlet.ServletRequest request, T bean, final boolean isIgnoreError) {
-		return fillBeanWithRequestParam(request, bean, CopyOptions.create().setIgnoreError(isIgnoreError));
-	}
-
-	/**
-	 * ServletRequest 参数转Bean
-	 * 
-	 * @param <T> Bean类型
-	 * @param request ServletRequest
-	 * @param beanClass Bean Class
-	 * @param isIgnoreError 是否忽略注入错误
-	 * @return Bean
-	 */
-	public static <T> T requestParamToBean(javax.servlet.ServletRequest request, Class<T> beanClass, boolean isIgnoreError) {
-		return fillBeanWithRequestParam(request, ReflectUtil.newInstance(beanClass), isIgnoreError);
+	public static <T> T fillBeanWithMap(Map<?, ?> map, T bean, boolean isToCamelCase, CopyOptions copyOptions) {
+		if (MapUtil.isEmpty(map)) {
+			return bean;
+		}
+		if (isToCamelCase) {
+			map = MapUtil.toCamelCaseMap(map);
+		}
+		return BeanCopier.create(map, bean, copyOptions).copy();
 	}
 
 	// --------------------------------------------------------------------------------------------- fillBean
@@ -447,57 +419,7 @@ public class BeanUtil {
 			return bean;
 		}
 
-		Class<?> actualEditable = bean.getClass();
-		if (copyOptions.editable != null) {
-			// 检查限制类是否为target的父类或接口
-			if (false == copyOptions.editable.isInstance(bean)) {
-				throw new IllegalArgumentException(StrUtil.format("Target class [{}] not assignable to Editable class [{}]", bean.getClass().getName(), copyOptions.editable.getName()));
-			}
-			actualEditable = copyOptions.editable;
-		}
-		HashSet<String> ignoreSet = copyOptions.ignoreProperties != null ? CollectionUtil.newHashSet(copyOptions.ignoreProperties) : null;
-
-		final Collection<PropDesc> props = BeanUtil.getBeanDesc(actualEditable).getProps();
-		String fieldName;
-		Object value;
-		Method setterMethod;
-		Class<?> propClass;
-		for (PropDesc prop : props) {
-			// 获取值
-			fieldName = prop.getFieldName();
-			if ((null != ignoreSet && ignoreSet.contains(fieldName)) || false == valueProvider.containsKey(fieldName)) {
-				continue;// 属性值被忽略或值提供者无此key时跳过
-			}
-			setterMethod = prop.getSetter();
-			// 此处对valueProvider传递的为Type对象，而非Class，因为Type中包含泛型类型信息
-			value = valueProvider.value(fieldName, TypeUtil.getFirstParamType(setterMethod));
-			if (null == value && copyOptions.ignoreNullValue) {
-				continue;// 当允许跳过空时，跳过
-			}
-
-			try {
-				// valueProvider在没有对值做转换且当类型不匹配的时候，执行默认转换
-				propClass = prop.getFieldClass();
-				if (false == propClass.isInstance(value)) {
-					value = Convert.convert(propClass, value);
-					if (null == value && copyOptions.ignoreNullValue) {
-						continue;// 当允许跳过空时，跳过
-					}
-				}
-
-				// 执行set方法注入值
-				if (null != setterMethod) {
-					setterMethod.invoke(bean, value);
-				}
-			} catch (Exception e) {
-				if (copyOptions.ignoreError) {
-					continue;// 忽略注入失败
-				} else {
-					throw new UtilException(e, "Inject [{}] error!", prop.getFieldName());
-				}
-			}
-		}
-		return bean;
+		return BeanCopier.create(valueProvider, bean, copyOptions).copy();
 	}
 
 	// --------------------------------------------------------------------------------------------- beanToMap
@@ -508,27 +430,69 @@ public class BeanUtil {
 	 * @param bean bean对象
 	 * @return Map
 	 */
-	public static <T> Map<String, Object> beanToMap(T bean) {
+	public static Map<String, Object> beanToMap(Object bean) {
 		return beanToMap(bean, false, false);
 	}
 
 	/**
 	 * 对象转Map
 	 * 
-	 * @param <T> Bean类型
 	 * @param bean bean对象
 	 * @param isToUnderlineCase 是否转换为下划线模式
 	 * @param ignoreNullValue 是否忽略值为空的字段
 	 * @return Map
 	 */
-	public static <T> Map<String, Object> beanToMap(T bean, boolean isToUnderlineCase, boolean ignoreNullValue) {
+	public static Map<String, Object> beanToMap(Object bean, boolean isToUnderlineCase, boolean ignoreNullValue) {
+		return beanToMap(bean, new HashMap<String, Object>(), isToUnderlineCase, ignoreNullValue);
+	}
 
+	/**
+	 * 对象转Map
+	 * 
+	 * @param bean bean对象
+	 * @param targetMap 目标的Map
+	 * @param isToUnderlineCase 是否转换为下划线模式
+	 * @param ignoreNullValue 是否忽略值为空的字段
+	 * @return Map
+	 */
+	public static Map<String, Object> beanToMap(Object bean, Map<String, Object> targetMap, final boolean isToUnderlineCase, boolean ignoreNullValue) {
 		if (bean == null) {
 			return null;
 		}
-		final Map<String, Object> map = new HashMap<String, Object>();
+
+		return beanToMap(bean, targetMap, ignoreNullValue, new Editor<String>() {
+
+			@Override
+			public String edit(String key) {
+				return isToUnderlineCase ? StrUtil.toUnderlineCase(key) : key;
+			}
+		});
+	}
+
+	/**
+	 * 对象转Map<br>
+	 * 通过实现{@link Editor} 可以自定义字段值，如果这个Editor返回null则忽略这个字段，以便实现：
+	 * 
+	 * <pre>
+	 * 1. 字段筛选，可以去除不需要的字段
+	 * 2. 字段变换，例如实现驼峰转下划线
+	 * 3. 自定义字段前缀或后缀等等
+	 * </pre>
+	 * 
+	 * @param bean bean对象
+	 * @param targetMap 目标的Map
+	 * @param ignoreNullValue 是否忽略值为空的字段
+	 * @param keyEditor 属性字段（Map的key）编辑器，用于筛选、编辑key
+	 * @return Map
+	 * @since 4.0.5
+	 */
+	public static Map<String, Object> beanToMap(Object bean, Map<String, Object> targetMap, boolean ignoreNullValue, Editor<String> keyEditor) {
+		if (bean == null) {
+			return null;
+		}
 
 		final Collection<PropDesc> props = BeanUtil.getBeanDesc(bean.getClass()).getProps();
+
 		String key;
 		Method getter;
 		Object value;
@@ -545,11 +509,14 @@ public class BeanUtil {
 					continue;
 				}
 				if (false == ignoreNullValue || (null != value && false == value.equals(bean))) {
-					map.put(isToUnderlineCase ? StrUtil.toUnderlineCase(key) : key, value);
+					key = keyEditor.edit(key);
+					if (null != key) {
+						targetMap.put(key, value);
+					}
 				}
 			}
 		}
-		return map;
+		return targetMap;
 	}
 
 	// --------------------------------------------------------------------------------------------- copyProperties
@@ -600,167 +567,58 @@ public class BeanUtil {
 		if (null == copyOptions) {
 			copyOptions = new CopyOptions();
 		}
-		final boolean ignoreError = copyOptions.ignoreError;
+		BeanCopier.create(source, target, copyOptions).copy();
+	}
 
-		final Map<String, PropDesc> sourcePdMap = BeanUtil.getBeanDesc(source.getClass()).getPropMap(ignoreCase);
-		fillBean(target, new ValueProvider<String>() {
-			@Override
-			public Object value(String key, Type valueType) {
-				final PropDesc sourcePd = sourcePdMap.get(key);
-				if (null != sourcePd) {
-					final Method getter = sourcePd.getGetter();
-					if (null != getter) {
-						try {
-							return getter.invoke(source);
-						} catch (Exception e) {
-							if (false == ignoreError) {
-								throw new UtilException(e, "Inject [{}] error!", key);
-							}
-						}
+	/**
+	 * 给定的Bean的类名是否匹配指定类名字符串<br>
+	 * 如果isSimple为{@code false}，则只匹配类名而忽略包名，例如：cn.hutool.TestEntity只匹配TestEntity<br>
+	 * 如果isSimple为{@code true}，则匹配包括包名的全类名，例如：cn.hutool.TestEntity匹配cn.hutool.TestEntity
+	 * 
+	 * @param bean Bean
+	 * @param beanClassName Bean的类名
+	 * @param isSimple 是否只匹配类名而忽略包名，true表示忽略包名
+	 * @return 是否匹配
+	 * @since 4.0.6
+	 */
+	public static boolean isMatchName(Object bean, String beanClassName, boolean isSimple) {
+		return ClassUtil.getClassName(bean, isSimple).equals(isSimple ? StrUtil.upperFirst(beanClassName) : beanClassName);
+	}
+
+	/**
+	 * 把Bean里面的String属性做trim操作。
+	 * 
+	 * 通常bean直接用来绑定页面的input，用户的输入可能首尾存在空格，通常保存数据库前需要把首尾空格去掉
+	 * 
+	 * @param <T> Bean类型
+	 * @param bean Bean对象
+	 * @param ignoreFields 不需要trim的Field名称列表（不区分大小写）
+	 */
+	public static <T> T trimStrFields(T bean, String... ignoreFields) {
+		if (bean == null) {
+			return bean;
+		}
+		
+		final Field[] fields = ReflectUtil.getFields(bean.getClass());
+		for (Field field : fields) {
+			if (ignoreFields != null && ArrayUtil.containsIgnoreCase(ignoreFields, field.getName())) {
+				// 不处理忽略的Fields
+				continue;
+			}
+			if (String.class.equals(field.getType())) {
+				// 只有String的Field才处理
+				final String val = (String) ReflectUtil.getFieldValue(bean, field);
+				if(null != val) {
+					final String trimVal = StrUtil.trim(val);
+					if (false == val.equals(trimVal)) {
+						// Field Value不为null，且首尾有空格才处理
+						ReflectUtil.setFieldValue(bean, field, trimVal);
 					}
 				}
-				return null;
 			}
-
-			@Override
-			public boolean containsKey(String key) {
-				return sourcePdMap.containsKey(key);
-			}
-
-		}, copyOptions);
+		}
+		
+		return bean;
 	}
 
-	/**
-	 * 值提供者，用于提供Bean注入时参数对应值得抽象接口<br>
-	 * 继承或匿名实例化此接口<br>
-	 * 在Bean注入过程中，Bean获得字段名，通过外部方式根据这个字段名查找相应的字段值，然后注入Bean<br>
-	 * 
-	 * @author Looly
-	 * @param <T> KEY类型，一般情况下为 {@link String}
-	 *
-	 */
-	public static interface ValueProvider<T> {
-		/**
-		 * 获取值<br>
-		 * 返回值一般需要匹配被注入类型，如果不匹配会调用默认转换 {@link Convert#convert(Class, Object)}实现转换
-		 * 
-		 * @param key Bean对象中参数名
-		 * @param valueType 被注入的值得类型
-		 * @return 对应参数名的值
-		 */
-		public Object value(T key, Type valueType);
-
-		/**
-		 * 是否包含指定KEY，如果不包含则忽略注入
-		 * 
-		 * @param key Bean对象中参数名
-		 * @return 是否包含指定KEY
-		 */
-		public boolean containsKey(T key);
-	}
-
-	// --------------------------------------------------------------------------------------------------------------------------------------
-	/**
-	 * 属性拷贝选项<br>
-	 * 包括：<br>
-	 * 1、限制的类或接口，必须为目标对象的实现接口或父类，用于限制拷贝的属性，例如一个类我只想复制其父类的一些属性，就可以将editable设置为父类<br>
-	 * 2、是否忽略空值，当源对象的值为null时，true: 忽略而不注入此值，false: 注入null<br>
-	 * 3、忽略的属性列表，设置一个属性列表，不拷贝这些属性值<br>
-	 * 
-	 * @author Looly
-	 */
-	public static class CopyOptions {
-		/** 限制的类或接口，必须为目标对象的实现接口或父类，用于限制拷贝的属性，例如一个类我只想复制其父类的一些属性，就可以将editable设置为父类 */
-		private Class<?> editable;
-		/** 是否忽略空值，当源对象的值为null时，true: 忽略而不注入此值，false: 注入null */
-		private boolean ignoreNullValue;
-		/** 忽略的属性列表，设置一个属性列表，不拷贝这些属性值 */
-		private String[] ignoreProperties;
-		/** 是否忽略字段注入错误 */
-		private boolean ignoreError;
-
-		/**
-		 * 创建拷贝选项
-		 * 
-		 * @return 拷贝选项
-		 */
-		public static CopyOptions create() {
-			return new CopyOptions();
-		}
-
-		/**
-		 * 创建拷贝选项
-		 * 
-		 * @param editable 限制的类或接口，必须为目标对象的实现接口或父类，用于限制拷贝的属性
-		 * @param ignoreNullValue 是否忽略空值，当源对象的值为null时，true: 忽略而不注入此值，false: 注入null
-		 * @param ignoreProperties 忽略的属性列表，设置一个属性列表，不拷贝这些属性值
-		 * @return 拷贝选项
-		 */
-		public static CopyOptions create(Class<?> editable, boolean ignoreNullValue, String... ignoreProperties) {
-			return new CopyOptions(editable, ignoreNullValue, ignoreProperties);
-		}
-
-		/**
-		 * 构造拷贝选项
-		 */
-		public CopyOptions() {
-		}
-
-		/**
-		 * 构造拷贝选项
-		 * 
-		 * @param editable 限制的类或接口，必须为目标对象的实现接口或父类，用于限制拷贝的属性
-		 * @param ignoreNullValue 是否忽略空值，当源对象的值为null时，true: 忽略而不注入此值，false: 注入null
-		 * @param ignoreProperties 忽略的属性列表，设置一个属性列表，不拷贝这些属性值
-		 */
-		public CopyOptions(Class<?> editable, boolean ignoreNullValue, String... ignoreProperties) {
-			this.editable = editable;
-			this.ignoreNullValue = ignoreNullValue;
-			this.ignoreProperties = ignoreProperties;
-		}
-
-		/**
-		 * 设置限制的类或接口，必须为目标对象的实现接口或父类，用于限制拷贝的属性
-		 * 
-		 * @param editable 限制的类或接口
-		 * @return CopyOptions
-		 */
-		public CopyOptions setEditable(Class<?> editable) {
-			this.editable = editable;
-			return this;
-		}
-
-		/**
-		 * 设置是否忽略空值，当源对象的值为null时，true: 忽略而不注入此值，false: 注入null
-		 * 
-		 * @param ignoreNullVall 是否忽略空值，当源对象的值为null时，true: 忽略而不注入此值，false: 注入null
-		 * @return CopyOptions
-		 */
-		public CopyOptions setIgnoreNullValue(boolean ignoreNullVall) {
-			this.ignoreNullValue = ignoreNullVall;
-			return this;
-		}
-
-		/**
-		 * 设置忽略的属性列表，设置一个属性列表，不拷贝这些属性值
-		 * 
-		 * @param ignoreProperties 忽略的属性列表，设置一个属性列表，不拷贝这些属性值
-		 * @return CopyOptions
-		 */
-		public CopyOptions setIgnoreProperties(String... ignoreProperties) {
-			this.ignoreProperties = ignoreProperties;
-			return this;
-		}
-
-		/**
-		 * 设置是否忽略字段的注入错误
-		 * 
-		 * @param ignoreError 是否忽略
-		 * @return CopyOptions
-		 */
-		public CopyOptions setIgnoreError(boolean ignoreError) {
-			this.ignoreError = ignoreError;
-			return this;
-		}
-	}
 }

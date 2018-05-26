@@ -13,11 +13,15 @@ package cn.ucaner.alpaca.framework.utils.tools.json;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil.CopyOptions;
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.copier.CopyOptions;
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.copier.ValueProvider;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.ConvertException;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.ConverterRegistry;
@@ -40,11 +44,13 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 * @version    V1.0
  */
 final class InternalJSONUtil {
-	
-	private InternalJSONUtil() {}
-	
+
+	private InternalJSONUtil() {
+	}
+
 	/**
 	 * 写入值到Writer
+	 * 
 	 * @param writer Writer
 	 * @param value 值
 	 * @param indentFactor
@@ -58,14 +64,16 @@ final class InternalJSONUtil {
 			writer.write("null");
 		} else if (value instanceof JSON) {
 			((JSON) value).write(writer, indentFactor, indent);
-		}else if (value instanceof Map) {
+		} else if (value instanceof Map) {
 			new JSONObject((Map<?, ?>) value).write(writer, indentFactor, indent);
-		} else if (value instanceof Collection) {
-			new JSONArray((Collection<?>) value).write(writer, indentFactor, indent);
-		} else if (value.getClass().isArray()) {
+		} else if (value instanceof Iterable || value instanceof Iterator || value.getClass().isArray()) {
 			new JSONArray(value).write(writer, indentFactor, indent);
 		} else if (value instanceof Number) {
 			writer.write(NumberUtil.toStr((Number) value));
+		}else if (value instanceof Date) {
+			writer.write(String.valueOf(((Date) value).getTime()));
+		}else if (value instanceof Calendar) {
+			writer.write(String.valueOf(((Calendar) value).getTimeInMillis()));
 		} else if (value instanceof Boolean) {
 			writer.write(value.toString());
 		} else if (value instanceof JSONString) {
@@ -104,10 +112,9 @@ final class InternalJSONUtil {
 			throw new JSONException("JSON does not allow non-finite numbers.");
 		}
 	}
-	
+
 	/**
-	 * 值转为String，用于JSON中。
-	 * If the object has an value.toJSONString() method, then that method will be used to produce the JSON text. <br>
+	 * 值转为String，用于JSON中。 If the object has an value.toJSONString() method, then that method will be used to produce the JSON text. <br>
 	 * The method is required to produce a strictly conforming text. <br>
 	 * If the object does not contain a toJSONString method (which is the most common case), then a text will be produced by other means. <br>
 	 * If the value is an array or Collection, then a JSONArray will be made from it and its toJSONString method will be called. <br>
@@ -201,7 +208,7 @@ final class InternalJSONUtil {
 	 * @param value 值
 	 * @return JSONObject
 	 */
-	protected static JSONObject propertyPut(JSONObject jsonObject, Object key, Object value){
+	protected static JSONObject propertyPut(JSONObject jsonObject, Object key, Object value) {
 		String keyStr = Convert.toStr(key);
 		String[] path = StrUtil.split(keyStr, StrUtil.DOT);
 		int last = path.length - 1;
@@ -218,50 +225,64 @@ final class InternalJSONUtil {
 		target.put(path[last], value);
 		return jsonObject;
 	}
-	
+
 	/**
-	 * JSON或者
+	 * JSON转Bean，忽略字段的大小写<br>
+	 * 首先在JSON中查找与Bean字段相同的名称的键的值，如果不存在，继续查找字段名转下划线后的值
+	 * 
 	 * @param jsonObject JSON对象
 	 * @param bean 目标Bean
 	 * @param ignoreError 是否忽略转换错误
 	 * @return 目标Bean
 	 */
-	protected static <T> T toBean(final JSONObject jsonObject, T bean, final boolean ignoreError){
-		return BeanUtil.fillBean(bean, new BeanUtil.ValueProvider<String>(){
+	protected static <T> T toBean(final JSONObject jsonObject, T bean, final boolean ignoreError) {
+		return BeanUtil.fillBean(bean, new ValueProvider<String>() {
 
 			@Override
 			public Object value(String key, Type valueType) {
-				return jsonConvert(valueType, jsonObject.get(key), ignoreError);
+				Object value = jsonObject.get(key);
+				if(null == value) {
+					value = jsonObject.get(StrUtil.toUnderlineCase(key));
+				}
+				
+				return jsonConvert(valueType, value, ignoreError);
 			}
 
 			@Override
 			public boolean containsKey(String key) {
-				return jsonObject.containsKey(key);
+				if(jsonObject.containsKey(key)) {
+					return true;
+				}else if(jsonObject.containsKey(StrUtil.toUnderlineCase(key))) {
+					return true;
+				}
+				return false;
 			}
-			
-		}, CopyOptions.create().setIgnoreError(ignoreError));
+
+		}, CopyOptions.create().setIgnoreCase(true).setIgnoreError(ignoreError));
 	}
-	
+
 	/**
 	 * JSONArray转数组
+	 * 
 	 * @param jsonArray JSONArray
 	 * @param arrayClass 数组元素类型
 	 * @param ignoreError 是否忽略转换异常
 	 * @return 数组对象
 	 */
-	protected static Object[] toArray(final JSONArray jsonArray, Class<?> arrayClass, boolean ignoreError){
+	protected static Object[] toArray(final JSONArray jsonArray, Class<?> arrayClass, boolean ignoreError) {
 		final Class<?> componentType = arrayClass.isArray() ? arrayClass.getComponentType() : arrayClass;
 		final Object[] objArray = ArrayUtil.newArray(componentType, jsonArray.size());
-		for(int i = 0; i < objArray.length; i++){
+		for (int i = 0; i < objArray.length; i++) {
 			objArray[i] = jsonConvert(componentType, jsonArray.get(i), ignoreError);
 		}
-		
+
 		return objArray;
 	}
 	
 	/**
 	 * JSON递归转换<br>
 	 * 首先尝试JDK类型转换，如果失败尝试JSON转Bean
+	 * 
 	 * @param type 目标类型
 	 * @param value 值
 	 * @param ignoreError 是否忽略转换错误
@@ -279,38 +300,46 @@ final class InternalJSONUtil {
 		if(null == rowType) {
 			throw new IllegalArgumentException(StrUtil.format("Can not know Class of Type {} !", type));
 		}
-		
+
+		if (JSON.class.isAssignableFrom(rowType)) {
+			// 目标为JSON格式
+			return JSONUtil.parse(value);
+		}
+
 		Object targetValue = null;
-		//非标准转换格式
-		if(value instanceof JSONObject){
-			targetValue = ((JSONObject)value).toBean(rowType, ignoreError);
-		}else if(value instanceof JSONArray){
-			final JSONArray jsonArrayValue = (JSONArray)value;
-			if(rowType.isArray()){
-				//目标为数组
-				targetValue = jsonArrayValue.toArray(rowType, ignoreError);
-			}else{
-				targetValue = (new CollectionConverter(type)).convert(value, null);
+		// 非标准转换格式
+		if (value instanceof JSONObject) {
+			targetValue = ((JSONObject) value).toBean(rowType, ignoreError);
+		} else if (value instanceof JSONArray) {
+			if (rowType.isArray()) {
+				// 目标为数组
+				targetValue = ((JSONArray) value).toArray(rowType, ignoreError);
+			} else {
+				targetValue = (new CollectionConverter(rowType, TypeUtil.getTypeArgument(type))).convert(value, null);
 			}
 		}
-		
-		//子对象递归转换
-		if(null == targetValue){
+
+		// 标准格式转换
+		if (null == targetValue) {
 			try {
 				targetValue = ConverterRegistry.getInstance().convert(rowType, value);
 			} catch (ConvertException e) {
-				if(ignoreError) {
+				if (ignoreError) {
 					return null;
-				}else {
-					throw e;
 				}
+				throw e;
 			}
 		}
-		
-		if(null == targetValue && false == ignoreError){
-			throw new ConvertException("Can not convert to type [{}]", rowType.getName());
+
+		if (null == targetValue && false == ignoreError) {
+			if (value instanceof CharSequence && StrUtil.isBlank((CharSequence) value)) {
+				// 对于传入空字符串的情况，如果转换的目标对象是非字符串或非原书类型，转换器会返回false。
+				// 此处特殊处理，认为返回null属于正常情况
+				return null;
+			}
+			throw new ConvertException("Can not convert [{}] to type [{}]", value, rowType.getName());
 		}
-		
+
 		return targetValue;
 	}
 }

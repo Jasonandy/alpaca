@@ -16,6 +16,7 @@ import java.util.Comparator;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ObjectUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.comparator   
@@ -33,10 +34,16 @@ public class FieldComparator<T> implements Comparator<T>, Serializable {
 
 	private final Field field;
 
+	/**
+	 * 构造
+	 * 
+	 * @param beanClass Bean类
+	 * @param fieldName 字段名
+	 */
 	public FieldComparator(Class<T> beanClass, String fieldName) {
 		this.field = ClassUtil.getDeclaredField(beanClass, fieldName);
 		if(this.field == null){
-			throw new IllegalArgumentException("字段"+ fieldName+ "在类"+beanClass+"中不存在");
+			throw new IllegalArgumentException(StrUtil.format("Field [{}] not found in Class [{}]", fieldName, beanClass.getName()));
 		}
 	}
 

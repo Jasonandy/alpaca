@@ -376,4 +376,15 @@ public class DigestUtil {
 	public static HMac hmac(HmacAlgorithm algorithm, SecretKey key) {
 		return new HMac(algorithm, key);
 	}
+	
+	/**
+	 * 新建摘要器
+	 * 
+	 * @param algorithm 签名算法
+	 * @return Digester
+	 * @since 4.0.1
+	 */
+	public static Digester digester(DigestAlgorithm algorithm) {
+		return new Digester(algorithm);
+	}
 }

@@ -12,6 +12,7 @@ package cn.ucaner.alpaca.framework.utils.tools.log;
 
 import java.io.Serializable;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.ExceptionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.log.level.Level;
 
@@ -51,17 +52,17 @@ public abstract class AbstractLog implements Log, Serializable{
 
 	@Override
 	public void trace(Throwable t) {
-		this.trace(t, t.getMessage());
+		this.trace(t, ExceptionUtil.getSimpleMessage(t));
 	}
 	
 	@Override
 	public void debug(Throwable t) {
-		this.debug(t, t.getMessage());
+		this.debug(t, ExceptionUtil.getSimpleMessage(t));
 	}
 	
 	@Override
 	public void info(Throwable t) {
-		this.info(t, t.getMessage());
+		this.info(t, ExceptionUtil.getSimpleMessage(t));
 	}
 	
 	@Override

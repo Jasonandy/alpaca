@@ -11,6 +11,8 @@
 package cn.ucaner.alpaca.framework.utils.tools.cron;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.NoResourceException;
+import cn.ucaner.alpaca.framework.utils.tools.cron.pattern.CronPattern;
 import cn.ucaner.alpaca.framework.utils.tools.cron.task.Task;
 import cn.ucaner.alpaca.framework.utils.tools.setting.Setting;
 import cn.ucaner.alpaca.framework.utils.tools.setting.SettingRuntimeException;
@@ -36,9 +38,10 @@ public final class CronUtil {
 	
 	private final static Scheduler scheduler = new Scheduler();
 	private static Setting crontabSetting;
-	
-	private CronUtil() {}
-	
+
+	private CronUtil() {
+	}
+
 	/**
 	 * 自定义定时任务配置文件
 	 * @param cronSetting 定时任务配置文件 
@@ -54,8 +57,8 @@ public final class CronUtil {
 	public static void setCronSetting(String cronSettingPath) {
 		try {
 			crontabSetting = new Setting(cronSettingPath, Setting.DEFAULT_CHARSET, false);
-		} catch (SettingRuntimeException e) {
-			//ignore setting file parse error
+		} catch (SettingRuntimeException | NoResourceException e) {
+			// ignore setting file parse error and no config error
 		}
 	}
 	
@@ -71,8 +74,8 @@ public final class CronUtil {
 	 * 设置是否支持年匹配，默认不使用
 	 * @param isMatchYear <code>true</code>支持，<code>false</code>不支持
 	 */
-	public static void setMatchYear(boolean isMatchYear) {
-		scheduler.setMatchYear(isMatchYear);
+	public static String schedule(String schedulingPattern, Task task) {
+		return scheduler.schedule(schedulingPattern, task);
 	}
 	
 	/**
@@ -81,8 +84,9 @@ public final class CronUtil {
 	 * @param task 任务
 	 * @return 定时任务ID
 	 */
-	public static String schedule(String schedulingPattern, Task task) {
-		return scheduler.schedule(schedulingPattern, task);
+	public static String schedule(String id, String schedulingPattern, Task task) {
+		scheduler.schedule(id, schedulingPattern, task);
+		return id;
 	}
 	
 	/**
@@ -107,14 +111,25 @@ public final class CronUtil {
 	 * 移除任务
 	 * @param schedulerId 任务ID
 	 */
-	public void remove(String schedulerId){
+	public static void remove(String schedulerId) {
 		scheduler.deschedule(schedulerId);
 	}
 	
 	/**
-	 * @return 获得cron4j的Scheduler对象
+	 * 移除Task
+	 * 
+	 * @param id Task的ID
+	 * @param pattern {@link CronPattern}
+	 * @since 4.0.10
 	 */
-	public Scheduler getScheduler(){
+	public static void updatePattern(String id, CronPattern pattern) {
+		scheduler.updatePattern(id, pattern);
+	}
+
+	/**
+	 * @return 获得Scheduler对象
+	 */
+	public static Scheduler getScheduler() {
 		return scheduler;
 	}
 	

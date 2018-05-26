@@ -22,5 +22,13 @@ package cn.ucaner.alpaca.framework.utils.tools.db.dialect;
 * @version    V1.0
  */
 public enum DialectName {
-	ANSI, MYSQL, ORACLE, POSTGREESQL, SQLITE3
+	
+	ANSI,
+	MYSQL, 
+	ORACLE, 
+	POSTGREESQL,
+	SQLITE3, 
+	H2,
+	SQLSERVER, 
+	SQLSERVER2012
 }

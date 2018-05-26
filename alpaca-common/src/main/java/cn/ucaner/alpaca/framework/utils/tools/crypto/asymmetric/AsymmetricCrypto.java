@@ -11,27 +11,23 @@
 package cn.ucaner.alpaca.framework.utils.tools.crypto.asymmetric;
 
 import java.io.InputStream;
-import java.security.Key;
-import java.security.KeyPair;
+import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.crypto.Cipher;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.codec.Base64;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.lang.Base64;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.HexUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.crypto.CryptoException;
-import cn.ucaner.alpaca.framework.utils.tools.crypto.SecureUtil;
 import cn.ucaner.alpaca.framework.utils.tools.crypto.symmetric.SymmetricAlgorithm;
 
 /**
-* @Package：cn.ucaner.alpaca.framework.utils.tools.crypto.asymmetric   
+* @Package：cn.ucaner.alpaca.framework. utils.tools.crypto.asymmetric   
 * @ClassName：AsymmetricCrypto   
 * @Description：   <p> 非对称加密算法 </p>
 * 1、签名：使用私钥加密，公钥解密。用于让所有公钥所有者验证私钥所有者的身份并且用来防止私钥所有者发布的内容被篡改，但是不用来保证内容不被他人获得。<br>
@@ -43,42 +39,34 @@ import cn.ucaner.alpaca.framework.utils.tools.crypto.symmetric.SymmetricAlgorith
 * @Modify marker：   
 * @version    V1.0
  */
-public class AsymmetricCrypto {
+public class AsymmetricCrypto extends BaseAsymmetric<AsymmetricCrypto> {
 
-	/** 算法 */
-	protected String algorithm;
-	/** 公钥 */
-	protected PublicKey publicKey;
-	/** 私钥 */
-	protected PrivateKey privateKey;
 	/** Cipher负责完成加密或解密工作 */
 	protected Cipher clipher;
-	/** 签名，用于签名和验证 */
-	protected Signature signature;
-	
-	protected Lock lock = new ReentrantLock();
 
 	// ------------------------------------------------------------------ Constructor start
 	/**
 	 * 构造，创建新的私钥公钥对
+	 * 
 	 * @param algorithm {@link SymmetricAlgorithm}
 	 */
 	public AsymmetricCrypto(AsymmetricAlgorithm algorithm) {
-		this(algorithm, (byte[])null, (byte[])null);
+		this(algorithm, (byte[]) null, (byte[]) null);
 	}
-	
+
 	/**
 	 * 构造，创建新的私钥公钥对
+	 * 
 	 * @param algorithm 算法
 	 */
 	public AsymmetricCrypto(String algorithm) {
-		this(algorithm, (byte[])null, (byte[])null);
+		this(algorithm, (byte[]) null, (byte[]) null);
 	}
-	
+
 	/**
-	 * 构造
-	 * 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
+	 * 构造 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
 	 * 私钥和公钥可以单独传入一个，如此则只能使用此钥匙来做加密或者解密
+	 * 
 	 * @param algorithm {@link SymmetricAlgorithm}
 	 * @param privateKeyBase64 私钥Base64
 	 * @param publicKeyBase64 公钥Base64
@@ -86,11 +74,11 @@ public class AsymmetricCrypto {
 	public AsymmetricCrypto(AsymmetricAlgorithm algorithm, String privateKeyBase64, String publicKeyBase64) {
 		this(algorithm.getValue(), Base64.decode(privateKeyBase64), Base64.decode(publicKeyBase64));
 	}
-	
+
 	/**
-	 * 构造
-	 * 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
+	 * 构造 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
 	 * 私钥和公钥可以单独传入一个，如此则只能使用此钥匙来做加密或者解密
+	 * 
 	 * @param algorithm {@link SymmetricAlgorithm}
 	 * @param privateKey 私钥
 	 * @param publicKey 公钥
@@ -98,11 +86,11 @@ public class AsymmetricCrypto {
 	public AsymmetricCrypto(AsymmetricAlgorithm algorithm, byte[] privateKey, byte[] publicKey) {
 		this(algorithm.getValue(), privateKey, publicKey);
 	}
-	
+
 	/**
-	 * 构造
-	 * 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
+	 * 构造 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
 	 * 私钥和公钥可以单独传入一个，如此则只能使用此钥匙来做加密或者解密
+	 * 
 	 * @param algorithm {@link SymmetricAlgorithm}
 	 * @param privateKey 私钥
 	 * @param publicKey 公钥
@@ -111,17 +99,17 @@ public class AsymmetricCrypto {
 	public AsymmetricCrypto(AsymmetricAlgorithm algorithm, PrivateKey privateKey, PublicKey publicKey) {
 		this(algorithm.getValue(), privateKey, publicKey);
 	}
-	
+
 	/**
-	 * 构造
-	 * 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
+	 * 构造 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
 	 * 私钥和公钥可以单独传入一个，如此则只能使用此钥匙来做加密或者解密
+	 * 
 	 * @param algorithm 非对称加密算法
 	 * @param privateKeyBase64 私钥Base64
 	 * @param publicKeyBase64 公钥Base64
 	 */
 	public AsymmetricCrypto(String algorithm, String privateKeyBase64, String publicKeyBase64) {
-		this(algorithm, Base64.decode(privateKeyBase64), Base64.decode(publicKeyBase64));
+		super(algorithm, privateKeyBase64, publicKeyBase64);
 	}
 
 	/**
@@ -135,9 +123,9 @@ public class AsymmetricCrypto {
 	 * @param publicKey 公钥
 	 */
 	public AsymmetricCrypto(String algorithm, byte[] privateKey, byte[] publicKey) {
-		init(algorithm, privateKey, publicKey);
+		super(algorithm, privateKey, publicKey);
 	}
-	
+
 	/**
 	 * 构造
 	 * 
@@ -150,104 +138,30 @@ public class AsymmetricCrypto {
 	 * @since 3.1.1
 	 */
 	public AsymmetricCrypto(String algorithm, PrivateKey privateKey, PublicKey publicKey) {
-		init(algorithm, privateKey, publicKey);
+		super(algorithm, privateKey, publicKey);
 	}
 	// ------------------------------------------------------------------ Constructor end
 
 	/**
 	 * 初始化<br>
 	 * 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
-	 * 私钥和公钥可以单独传入一个，如此则只能使用此钥匙来做加密或者解密<br>
-	 * 签名默认使用MD5摘要算法，如果需要自定义签名算法，调用 {@link AsymmetricCrypto#setSignature(Signature)}设置签名对象
+	 * 私钥和公钥可以单独传入一个，如此则只能使用此钥匙来做加密或者解密
 	 * 
 	 * @param algorithm 算法
 	 * @param privateKey 私钥
 	 * @param publicKey 公钥
 	 * @return {@link AsymmetricCrypto}
 	 */
-	public AsymmetricCrypto init(String algorithm, byte[] privateKey, byte[] publicKey) {
-		final PrivateKey privateKeyObj = (null == privateKey) ? null : SecureUtil.generatePrivateKey(algorithm, privateKey);
-		final PublicKey publicKeyObj = (null == publicKey) ? null : SecureUtil.generatePublicKey(algorithm, publicKey);
-		
-		return init(algorithm, privateKeyObj, publicKeyObj);
-	}
-	
-	/**
-	 * 初始化<br>
-	 * 私钥和公钥同时为空时生成一对新的私钥和公钥<br>
-	 * 私钥和公钥可以单独传入一个，如此则只能使用此钥匙来做加密或者解密<br>
-	 * 签名默认使用MD5摘要算法，如果需要自定义签名算法，调用 {@link AsymmetricCrypto#setSignature(Signature)}设置签名对象
-	 * 
-	 * @param algorithm 算法
-	 * @param privateKey 私钥
-	 * @param publicKey 公钥
-	 * @return {@link AsymmetricCrypto}
-	 */
+	@Override
 	public AsymmetricCrypto init(String algorithm, PrivateKey privateKey, PublicKey publicKey) {
-		this.algorithm = algorithm;
 		try {
 			this.clipher = Cipher.getInstance(algorithm);
-			this.signature = Signature.getInstance("MD5with" + algorithm);//默认签名算法
 		} catch (Exception e) {
 			throw new CryptoException(e);
 		}
-		
-		if(null ==privateKey && null == publicKey){
-			initKeys();
-		}else{
-			if(null != privateKey){
-				this.privateKey = privateKey;
-			}
-			if(null != publicKey){
-				this.publicKey = publicKey;
-			}
-		}
-		return this;
-	}
-	
-	/**
-	 * 生成公钥和私钥
-	 * @return {@link AsymmetricCrypto}
-	 */
-	public AsymmetricCrypto initKeys() {
-		KeyPair keyPair = SecureUtil.generateKeyPair(this.algorithm);
-		this.publicKey = keyPair.getPublic();
-		this.privateKey = keyPair.getPrivate();
-		return this;
-	}
 
-	// --------------------------------------------------------------------------------- Sign and Verify
-	/**
-	 * 用私钥对信息生成数字签名
-	 * 
-	 * @param data 加密数据
-	 * @return 签名
-	 */
-	public byte[] sign(byte[] data) {
-		try {
-			signature.initSign(this.privateKey);
-			signature.update(data);
-			return signature.sign();
-		} catch (Exception e) {
-			throw new CryptoException(e);
-		}
-	}
-	
-	/**
-	 * 用公钥检验数字签名的合法性
-	 * 
-	 * @param data 数据
-	 * @param sign 签名
-	 * @return 是否验证通过
-	 */
-	public boolean verify(byte[] data, byte[] sign) {
-		try {
-			signature.initVerify(this.publicKey);
-			signature.update(data);
-			return signature.verify(sign);
-		} catch (Exception e) {
-			throw new CryptoException(e);
-		}
+		super.init(algorithm, privateKey, publicKey);
+		return this;
 	}
 
 	// --------------------------------------------------------------------------------- Encrypt
@@ -272,6 +186,29 @@ public class AsymmetricCrypto {
 	}
 
 	/**
+	 * 编码为Hex字符串
+	 * 
+	 * @param data 被加密的bytes
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return Hex字符串
+	 */
+	public String encryptHex(byte[] data, KeyType keyType) {
+		return HexUtil.encodeHexStr(encrypt(data, keyType));
+	}
+
+	/**
+	 * 编码为Base64字符串
+	 * 
+	 * @param data 被加密的bytes
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return Base64字符串
+	 * @since 4.0.1
+	 */
+	public String encryptBase64(byte[] data, KeyType keyType) {
+		return Base64.encode(encrypt(data, keyType));
+	}
+
+	/**
 	 * 加密
 	 * 
 	 * @param data 被加密的字符串
@@ -280,6 +217,18 @@ public class AsymmetricCrypto {
 	 * @return 加密后的bytes
 	 */
 	public byte[] encrypt(String data, String charset, KeyType keyType) {
+		return encrypt(StrUtil.bytes(data, charset), keyType);
+	}
+
+	/**
+	 * 加密
+	 * 
+	 * @param data 被加密的字符串
+	 * @param charset 编码
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return 加密后的bytes
+	 */
+	public byte[] encrypt(String data, Charset charset, KeyType keyType) {
 		return encrypt(StrUtil.bytes(data, charset), keyType);
 	}
 
@@ -295,15 +244,88 @@ public class AsymmetricCrypto {
 	}
 
 	/**
-	 * 加密
+	 * 编码为Hex字符串
 	 * 
 	 * @param data 被加密的字符串
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return Hex字符串
+	 * @since 4.0.1
+	 */
+	public String encryptHex(String data, KeyType keyType) {
+		return HexUtil.encodeHexStr(encrypt(data, keyType));
+	}
+
+	/**
+	 * 编码为Hex字符串
+	 * 
+	 * @param data 被加密的bytes
+	 * @param charset 编码
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return Hex字符串
+	 * @since 4.0.1
+	 */
+	public String encryptHex(String data, Charset charset, KeyType keyType) {
+		return HexUtil.encodeHexStr(encrypt(data, charset, keyType));
+	}
+
+	/**
+	 * 编码为Base64字符串
+	 * 
+	 * @param data 被加密的字符串
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return Base64字符串
+	 * @since 4.0.1
+	 */
+	public String encryptBase64(String data, KeyType keyType) {
+		return Base64.encode(encrypt(data, keyType));
+	}
+
+	/**
+	 * 编码为Base64字符串
+	 * 
+	 * @param data 被加密的字符串
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return Base64字符串
+	 * @since 4.0.1
+	 */
+	public String encryptBase64(String data, Charset charset, KeyType keyType) {
+		return Base64.encode(encrypt(data, charset, keyType));
+	}
+
+	/**
+	 * 加密
+	 * 
+	 * @param data 被加密的数据流
 	 * @param keyType 私钥或公钥 {@link KeyType}
 	 * @return 加密后的bytes
 	 * @throws IORuntimeException IO异常
 	 */
-	public byte[] encrypt(InputStream data, KeyType keyType) throws IORuntimeException{
+	public byte[] encrypt(InputStream data, KeyType keyType) throws IORuntimeException {
 		return encrypt(IoUtil.readBytes(data), keyType);
+	}
+
+	/**
+	 * 编码为Hex字符串
+	 * 
+	 * @param data 被加密的数据流
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return Hex字符串
+	 * @since 4.0.1
+	 */
+	public String encryptHex(InputStream data, KeyType keyType) {
+		return HexUtil.encodeHexStr(encrypt(data, keyType));
+	}
+
+	/**
+	 * 编码为Base64字符串
+	 * 
+	 * @param data 被加密的数据流
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return Base64字符串
+	 * @since 4.0.1
+	 */
+	public String encryptBase64(InputStream data, KeyType keyType) {
+		return Base64.encode(encrypt(data, keyType));
 	}
 
 	// --------------------------------------------------------------------------------- Decrypt
@@ -334,82 +356,35 @@ public class AsymmetricCrypto {
 	 * @return 解密后的bytes
 	 * @throws IORuntimeException IO异常
 	 */
-	public byte[] decrypt(InputStream data, KeyType keyType) throws IORuntimeException{
+	public byte[] decrypt(InputStream data, KeyType keyType) throws IORuntimeException {
 		return decrypt(IoUtil.readBytes(data), keyType);
 	}
 
+	/**
+	 * 从Hex字符串解密
+	 * 
+	 * @param hexStr Hex字符串
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return 解密后的bytes
+	 * @since 4.0.1
+	 */
+	public byte[] decryptFromHex(String hexStr, KeyType keyType) {
+		return decrypt(HexUtil.decodeHex(hexStr), keyType);
+	}
+
+	/**
+	 * 从Base64字符串解密
+	 * 
+	 * @param base64Str Base64字符串
+	 * @param keyType 私钥或公钥 {@link KeyType}
+	 * @return 解密后的bytes
+	 * @since 4.0.1
+	 */
+	public byte[] decryptFromBase64(String base64Str, KeyType keyType) {
+		return decrypt(Base64.decode(base64Str, CharsetUtil.CHARSET_UTF_8), keyType);
+	}
+
 	// --------------------------------------------------------------------------------- Getters and Setters
-	/**
-	 * 获得公钥
-	 * 
-	 * @return 获得公钥
-	 */
-	public PublicKey getPublicKey() {
-		return this.publicKey;
-	}
-	/**
-	 * 获得公钥
-	 * 
-	 * @return 获得公钥
-	 */
-	public String getPublicKeyBase64() {
-		return Base64.encode(getPublicKey().getEncoded());
-	}
-	/**
-	 * 设置公钥
-	 * 
-	 * @param publicKey 公钥
-	 * @return 自身 {@link AsymmetricCrypto}
-	 */
-	public AsymmetricCrypto setPublicKey(PublicKey publicKey) {
-		this.publicKey = publicKey;
-		return this;
-	}
-
-	/**
-	 * 获得私钥
-	 * 
-	 * @return 获得私钥
-	 */
-	public PrivateKey getPrivateKey() {
-		return this.privateKey;
-	}
-	/**
-	 * 获得私钥
-	 * 
-	 * @return 获得私钥
-	 */
-	public String getPrivateKeyBase64() {
-		return Base64.encode(getPrivateKey().getEncoded());
-	}
-	/**
-	 * 设置私钥
-	 * 
-	 * @param privateKey 私钥
-	 * @return 自身 {@link AsymmetricCrypto}
-	 */
-	public AsymmetricCrypto setPrivateKey(PrivateKey privateKey) {
-		this.privateKey = privateKey;
-		return this;
-	}
-	
-	/**
-	 * 获得签名对象
-	 * @return {@link Signature}
-	 */
-	public Signature getSignature() {
-		return signature;
-	}
-
-	/**
-	 * 设置签名
-	 * @param signature 签名对象 {@link Signature}
-	 * @return 自身 {@link AsymmetricCrypto}
-	 */
-	public AsymmetricCrypto setSignature(Signature signature) {
-		this.signature = signature;
-		return this;
-	}
 
 	/**
 	 * 获得加密或解密器
@@ -418,26 +393,5 @@ public class AsymmetricCrypto {
 	 */
 	public Cipher getClipher() {
 		return clipher;
-	}
-	
-	/**
-	 * 根据密钥类型获得相应密钥
-	 * @param type 类型 {@link KeyType}
-	 * @return {@link Key}
-	 */
-	protected Key getKeyByType(KeyType type){
-		switch (type) {
-			case PrivateKey:
-				if(null == this.privateKey){
-					throw new NullPointerException("Private key must not null when use it !");
-				}
-				return this.privateKey;
-			case PublicKey:
-				if(null == this.publicKey){
-					throw new NullPointerException("Public key must not null when use it !");
-				}
-				return this.publicKey;
-		}
-		throw new CryptoException("Uknown key type: " + type);
 	}
 }

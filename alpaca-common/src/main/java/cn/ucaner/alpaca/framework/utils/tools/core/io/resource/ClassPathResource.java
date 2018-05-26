@@ -13,10 +13,10 @@ package cn.ucaner.alpaca.framework.utils.tools.core.io.resource;
 import java.net.URL;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.URLUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.io.resource   
@@ -68,14 +68,14 @@ public class ClassPathResource extends UrlResource {
 	/**
 	 * 构造
 	 * 
-	 * @param path 相对路劲
+	 * @param pathBaseClassLoader 相对路径
 	 * @param classLoader {@link ClassLoader}
 	 * @param clazz {@link Class} 用于定位路径
 	 */
-	public ClassPathResource(String path, ClassLoader classLoader, Class<?> clazz) {
+	public ClassPathResource(String pathBaseClassLoader, ClassLoader classLoader, Class<?> clazz) {
 		super((URL) null);
-		Assert.notNull(path, "Path must not be null");
-		this.path = normalizePath(path);
+		Assert.notNull(pathBaseClassLoader, "Path must not be null");
+		this.path = normalizePath(pathBaseClassLoader);
 		this.classLoader = (classLoader != null) ? classLoader : ClassUtil.getClassLoader();
 		this.clazz = clazz;
 		initUrl();
@@ -98,13 +98,11 @@ public class ClassPathResource extends UrlResource {
 	 * @return 绝对路径path
 	 */
 	public final String getAbsolutePath() {
-		if(FileUtil.isAbsolutePath(this.path)){
+		if (FileUtil.isAbsolutePath(this.path)) {
 			return this.path;
 		}
-		
-		String reultPath = (url != null) ? url.getPath() : ClassUtil.getClassPath() + this.path;
-		// return StrUtil.removePrefix(reultPath, PATH_FILE_PRE);
-		return reultPath;
+		// url在初始化的时候已经断言，此处始终不为null
+		return FileUtil.normalize(URLUtil.getDecodedPath(this.url));
 	}
 
 	/**
@@ -128,7 +126,7 @@ public class ClassPathResource extends UrlResource {
 			super.url = ClassLoader.getSystemResource(this.path);
 		}
 		if (null == super.url) {
-			throw new IORuntimeException("Resource of path [{}] not exist!", this.path);
+			throw new NoResourceException("Resource of path [{}] not exist!", this.path);
 		}
 	}
 
@@ -143,11 +141,11 @@ public class ClassPathResource extends UrlResource {
 	 * @return 标准化后的path
 	 */
 	private String normalizePath(String path) {
-		//标准化路径
+		// 标准化路径
 		path = FileUtil.normalize(path);
-		// 兼容Spring风格的ClassPath路径，去除前缀，不区分大小写
-		path = StrUtil.removePrefixIgnoreCase(path, "classpath:");
 		path = StrUtil.removePrefix(path, StrUtil.SLASH);
+
+		Assert.isFalse(FileUtil.isAbsolutePath(path), "Path [{}] must be a relative path !", path);
 		return path;
 	}
 }

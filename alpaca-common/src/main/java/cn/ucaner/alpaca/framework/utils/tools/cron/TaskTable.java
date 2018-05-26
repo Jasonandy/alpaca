@@ -33,17 +33,17 @@ import cn.ucaner.alpaca.framework.utils.tools.cron.task.Task;
 * @version    V1.0
  */
 public class TaskTable {
-	
+
 	private ReadWriteLock lock = new ReentrantReadWriteLock();
-	
+
 	private Scheduler scheduler;
 	private TimeZone timezone;
-	
+
 	private ArrayList<String> ids = new ArrayList<>();
 	private ArrayList<CronPattern> patterns = new ArrayList<>();
 	private ArrayList<Task> tasks = new ArrayList<>();
 	private int size;
-	
+
 	/**
 	 * 构造
 	 * 
@@ -62,7 +62,7 @@ public class TaskTable {
 	 * @param task {@link Task}
 	 * @return this
 	 */
-	public TaskTable add(String id, CronPattern pattern, Task task){
+	public TaskTable add(String id, CronPattern pattern, Task task) {
 		final Lock writeLock = lock.writeLock();
 		try {
 			writeLock.lock();
@@ -99,6 +99,29 @@ public class TaskTable {
 		}
 	}
 	
+	/**
+	 * 更新某个Task的定时规则
+	 * 
+	 * @param id Task的ID
+	 * @param pattern 新的表达式
+	 * @return 是否更新成功，如果id对应的规则不存在则不更新
+	 * @since 4.0.10
+	 */
+	public boolean updatePattern(String id, CronPattern pattern) {
+		final Lock writeLock = lock.writeLock();
+		try {
+			writeLock.lock();
+			final int index = ids.indexOf(id);
+			if (index > -1) {
+				patterns.set(index, pattern);
+				return true;
+			}
+		} finally {
+			writeLock.unlock();
+		}
+		return false;
+	}
+
 	/**
 	 * 获得指定位置的{@link Task}
 	 * @param index 位置
@@ -144,7 +167,27 @@ public class TaskTable {
 			readLock.unlock();
 		}
 	}
-	
+
+	/**
+	 * 任务表大小，加入的任务数
+	 * 
+	 * @return 任务表大小，加入的任务数
+	 * @since 4.0.2
+	 */
+	public int size() {
+		return this.size;
+	}
+
+	/**
+	 * 任务表是否为空
+	 * 
+	 * @return true为空
+	 * @since 4.0.2
+	 */
+	public boolean isEmpty() {
+		return this.size < 1;
+	}
+
 	/**
 	 * 获得指定id的{@link CronPattern}
 	 * @param id ID
@@ -161,50 +204,30 @@ public class TaskTable {
 	
 	/**
 	 * 如果时间匹配则执行相应的Task，带读锁
+	 * 
 	 * @param millis 时间毫秒
-	 * @param isMatchSecond 是否匹配秒
-	 * @param isMatchYear 是否匹配年
 	 */
-	public void executeTaskIfMatch(long millis, boolean isMatchSecond, boolean isMatchYear){
+	public void executeTaskIfMatch(long millis) {
 		final Lock readLock = lock.readLock();
 		try {
 			readLock.lock();
-			executeTaskIfMatchInternal(millis, isMatchSecond, isMatchYear);
+			executeTaskIfMatchInternal(millis);
 		} finally {
 			readLock.unlock();
 		}
 	}
-	
+
 	/**
-	 * 如果时间匹配则执行相应的Task，带读锁
+	 * 如果时间匹配则执行相应的Task，无锁
+	 * 
 	 * @param millis 时间毫秒
 	 * @since 3.1.1
 	 */
-	public void executeTaskIfMatch(long millis){
-		executeTaskIfMatch(millis, scheduler.matchSecond, scheduler.matchYear);
-	}
-	
-	/**
-	 * 如果时间匹配则执行相应的Task
-	 * @param millis 时间毫秒
-	 * @param isMatchSecond 是否匹配秒
-	 * @param isMatchYear 是否匹配年
-	 * @since 3.1.1
-	 */
-	protected void executeTaskIfMatchInternal(long millis, boolean isMatchSecond, boolean isMatchYear){
-		for(int i = 0; i < size; i++){
-			if(patterns.get(i).match(timezone, millis, isMatchSecond, isMatchYear)){
+	protected void executeTaskIfMatchInternal(long millis) {
+		for (int i = 0; i < size; i++) {
+			if (patterns.get(i).match(timezone, millis, this.scheduler.matchSecond)) {
 				this.scheduler.taskExecutorManager.spawnExecutor(tasks.get(i));
 			}
 		}
-	}
-	
-	
-	/**
-	 * 如果时间匹配则执行相应的Task
-	 * @param millis 时间毫秒
-	 */
-	protected void executeTaskIfMatchInternal(long millis){
-		executeTaskIfMatchInternal(millis, scheduler.matchSecond, scheduler.matchYear);
 	}
 }

@@ -16,8 +16,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 
 import cn.ucaner.alpaca.framework.utils.tools.db.DbUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.StatementUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.handler.RsHandler;
 
 /**
@@ -33,6 +35,24 @@ import cn.ucaner.alpaca.framework.utils.tools.db.handler.RsHandler;
 * @version    V1.0
  */
 public class SqlExecutor {
+	
+	/**
+	 * 执行非查询语句<br>
+	 * 语句包括 插入、更新、删除<br>
+	 * 此方法不会关闭Connection
+	 * 
+	 * @param conn 数据库连接对象
+	 * @param sql SQL，使用name做为占位符，例如:name
+	 * @param paramMap 参数Map
+	 * @return 影响的行数
+	 * @throws SQLException SQL执行异常
+	 * @since 4.0.10
+	 */
+	public static int execute(Connection conn, String sql, Map<String, Object> paramMap) throws SQLException {
+		final NamedSql namedSql = new NamedSql(sql, paramMap);
+		return execute(conn, namedSql.getSql(), namedSql.getParams());
+	}
+	
 	/**
 	 * 执行非查询语句<br>
 	 * 语句包括 插入、更新、删除<br>
@@ -81,6 +101,23 @@ public class SqlExecutor {
 	 * 
 	 * @param conn 数据库连接对象
 	 * @param sql SQL
+	 * @param paramMap 参数Map
+	 * @return 主键
+	 * @throws SQLException SQL执行异常
+	 * @since 4.0.10
+	 */
+	public static Long executeForGeneratedKey(Connection conn, String sql, Map<String, Object> paramMap) throws SQLException {
+		final NamedSql namedSql = new NamedSql(sql, paramMap);
+		return executeForGeneratedKey(conn, namedSql.getSql(), namedSql.getParams());
+	}
+	
+	/**
+	 * 执行非查询语句，返回主键<br>
+	 * 发查询语句包括 插入、更新、删除<br>
+	 * 此方法不会关闭Connection
+	 * 
+	 * @param conn 数据库连接对象
+	 * @param sql SQL
 	 * @param params 参数
 	 * @return 主键
 	 * @throws SQLException SQL执行异常
@@ -120,13 +157,31 @@ public class SqlExecutor {
 		try {
 			ps = conn.prepareStatement(sql);
 			for (Object[] params : paramsBatch) {
-				DbUtil.fillParams(ps, params);
+				StatementUtil.fillParams(ps, params);
 				ps.addBatch();
 			}
 			return ps.executeBatch();
 		} finally {
 			DbUtil.close(ps);
 		}
+	}
+	
+	/**
+	 * 执行查询语句<br>
+	 * 此方法不会关闭Connection
+	 * 
+	 * @param <T> 处理结果类型
+	 * @param conn 数据库连接对象
+	 * @param sql 查询语句，使用参数名占位符，例如:name
+	 * @param rsh 结果集处理对象
+	 * @param paramMap 参数对
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 * @since 4.0.10
+	 */
+	public static <T> T query(Connection conn, String sql, RsHandler<T> rsh, Map<String, Object> paramMap) throws SQLException {
+		final NamedSql namedSql = new NamedSql(sql, paramMap);
+		return query(conn, namedSql.getSql(), rsh, namedSql.getParams());
 	}
 	
 	/**
@@ -163,7 +218,7 @@ public class SqlExecutor {
 	 * @throws SQLException SQL执行异常
 	 */
 	public static int executeUpdate(PreparedStatement ps, Object... params) throws SQLException {
-		DbUtil.fillParams(ps, params);
+		StatementUtil.fillParams(ps, params);
 		return ps.executeUpdate();
 	}
 	
@@ -178,7 +233,7 @@ public class SqlExecutor {
 	 * @throws SQLException SQL执行异常
 	 */
 	public static boolean execute(PreparedStatement ps, Object... params) throws SQLException {
-		DbUtil.fillParams(ps, params);
+		StatementUtil.fillParams(ps, params);
 		return ps.execute();
 	}
 	
@@ -196,7 +251,7 @@ public class SqlExecutor {
 	public static <T> T query(PreparedStatement ps, RsHandler<T> rsh, Object... params) throws SQLException {
 		ResultSet rs = null;
 		try {
-			DbUtil.fillParams(ps, params);
+			StatementUtil.fillParams(ps, params);
 			rs = ps.executeQuery();
 			return rsh.handle(rs);
 		} finally {

@@ -16,12 +16,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ObjectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
-import cn.ucaner.alpaca.framework.utils.tools.db.DbUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.Entity;
 import cn.ucaner.alpaca.framework.utils.tools.db.dialect.DialectName;
 import cn.ucaner.alpaca.framework.utils.tools.log.Log;
@@ -41,12 +42,17 @@ import cn.ucaner.alpaca.framework.utils.tools.log.StaticLog;
 * @version    V1.0
  */
 public class SqlBuilder {
+	
 	private final static Log log = StaticLog.get();
-	
+
+	/** 是否debugSQL */
 	private static boolean showSql;
+	/** 是否格式化SQL */
 	private static boolean formatSql;
-	
-	//--------------------------------------------------------------- Static methods start
+	/** 是否显示参数 */
+	private static boolean showParams;
+
+	// --------------------------------------------------------------- Static methods start
 	/**
 	 * 创建SQL构建器
 	 * @return SQL构建器
@@ -69,9 +75,21 @@ public class SqlBuilder {
 	 * @param isShowSql 是否显示SQL
 	 * @param isFormatSql 是否格式化显示的SQL
 	 */
-	public static void setShowSql(boolean isShowSql, boolean isFormatSql){
+	public static void setShowSql(boolean isShowSql, boolean isFormatSql) {
+		setShowSql(isShowSql, isFormatSql, false);
+	}
+
+	/**
+	 * 设置全局配置：是否通过debug日志显示SQL
+	 * 
+	 * @param isShowSql 是否显示SQL
+	 * @param isFormatSql 是否格式化显示的SQL
+	 * @param isShowParams 是否打印参数
+	 */
+	public static void setShowSql(boolean isShowSql, boolean isFormatSql, boolean isShowParams) {
 		showSql = isShowSql;
 		formatSql = isFormatSql;
+		showParams = isShowParams;
 	}
 	//--------------------------------------------------------------- Static methods end
 	
@@ -129,13 +147,13 @@ public class SqlBuilder {
 	 * @param dialectName 方言名
 	 * @return 自己
 	 */
-	public SqlBuilder insert(Entity entity, DialectName dialectName){
-		//验证
-		DbUtil.validateEntity(entity);
-		
-		if(null != wrapper) {
-			//包装表名
-//			entity = wrapper.wrap(entity);
+	public SqlBuilder insert(Entity entity, DialectName dialectName) {
+		// 验证
+		validateEntity(entity);
+
+		if (null != wrapper) {
+			// 包装表名
+			// entity = wrapper.wrap(entity);
 			entity.setTableName(wrapper.wrap(entity.getTableName()));
 		}
 		
@@ -201,13 +219,13 @@ public class SqlBuilder {
 	 * @param entity 要更新的实体
 	 * @return 自己
 	 */
-	public SqlBuilder update(Entity entity){
-		//验证
-		DbUtil.validateEntity(entity);
-		
-		if(null != wrapper) {
-			//包装表名
-//			entity = wrapper.wrap(entity);
+	public SqlBuilder update(Entity entity) {
+		// 验证
+		validateEntity(entity);
+
+		if (null != wrapper) {
+			// 包装表名
+			// entity = wrapper.wrap(entity);
 			entity.setTableName(wrapper.wrap(entity.getTableName()));
 		}
 		
@@ -505,11 +523,8 @@ public class SqlBuilder {
 	 * @param query {@link Query}
 	 * @return this
 	 */
-	public SqlBuilder query(Query query){
-		return this
-				.select(query.getFields())
-				.from(query.getTableNames())
-				.where(LogicalOperator.AND, query.getWhere());
+	public SqlBuilder query(Query query) {
+		return this.select(query.getFields()).from(query.getTableNames()).where(LogicalOperator.AND, query.getWhere());
 	}
 	//--------------------------------------------------------------- Builder end
 	
@@ -560,10 +575,14 @@ public class SqlBuilder {
 	 * @param isShowDebugSql 显示SQL的debug日志
 	 * @return 构建好的SQL语句
 	 */
-	public String build(boolean isShowDebugSql){
+	public String build(boolean isShowDebugSql) {
 		final String sqlStr = this.sql.toString().trim();
-		if(isShowDebugSql){
-			log.debug("\n{}", formatSql ? SqlFormatter.format(sqlStr) : sqlStr);
+		if (isShowDebugSql) {
+			if (showParams) {
+				log.debug("\nSQL -> {}\nParams -> {}", formatSql ? SqlFormatter.format(sqlStr) : sqlStr, this.paramValues);
+			} else {
+				log.debug("\nSQL -> {}", formatSql ? SqlFormatter.format(sqlStr) : sqlStr);
+			}
 		}
 		return sqlStr;
 	}
@@ -587,31 +606,131 @@ public class SqlBuilder {
 		if(null == logicalOperator) {
 			logicalOperator = LogicalOperator.AND;
 		}
-		
-		final StringBuilder conditionStr = new StringBuilder();
+
+		final StringBuilder conditionStrBuilder = new StringBuilder();
 		boolean isFirst = true;
 		for (Condition condition : conditions) {
-			//添加逻辑运算符
-			if(isFirst){
+			// 添加逻辑运算符
+			if (isFirst) {
 				isFirst = false;
-			}else {
-				conditionStr.append(StrUtil.SPACE).append(logicalOperator).append(StrUtil.SPACE);
+			} else {
+				// " AND " 或者 " OR "
+				conditionStrBuilder.append(StrUtil.SPACE).append(logicalOperator).append(StrUtil.SPACE);
 			}
-			
-			//添加条件表达式
-			conditionStr.append(condition.getField()).append(StrUtil.SPACE).append(condition.getOperator());
-			
-			if(condition.isPlaceHolder()) {
-				//使用条件表达式占位符
-				conditionStr.append(" ?");
+
+			//构建条件部分："name = ?"、"name IN (?,?,?)"、"name BETWEEN ？AND ？"、"name LIKE ?"
+			buildConditionPart(conditionStrBuilder, condition);
+		}
+
+		return conditionStrBuilder.toString();
+	}
+
+	/**
+	 * 构建条件部分："name = ?"、"name IN (?,?,?)"、"name BETWEEN ？AND ？"、"name LIKE ?"
+	 * 
+	 * @param conditionStrBuilder 条件语句构建器
+	 * @param condition 条件
+	 */
+	private void buildConditionPart(StringBuilder conditionStrBuilder, Condition condition) {
+		//判空值
+		condition.checkValueNull();
+		
+		// 固定前置，例如："name ="、"name IN"、"name BETWEEN"、"name LIKE"
+		conditionStrBuilder.append(condition.getField()).append(StrUtil.SPACE).append(condition.getOperator());
+
+		if (condition.isOperatorBetween()) {
+			// 类似：" ? AND ?" 或者 " 1 AND 2"
+			buildValuePartForBETWEEN(conditionStrBuilder, condition);
+		} else if (condition.isOperatorIn()) {
+			// 类似：" (?,?,?)" 或者 " (1,2,3,4)"
+			buildValuePartForIN(conditionStrBuilder, condition);
+		} else {
+			if (condition.isPlaceHolder() && false == condition.isOperatorIs()) {
+				// 使用条件表达式占位符，条件表达式并不适用于 IS NULL
+				conditionStrBuilder.append(" ?");
 				paramValues.add(condition.getValue());
-			}else {
-				//直接使用条件值
-				conditionStr.append(condition.getValue());
+			} else {
+				// 直接使用条件值
+				conditionStrBuilder.append(" ").append(condition.getValue());
 			}
 		}
-		
-		return conditionStr.toString();
 	}
-	//--------------------------------------------------------------- private method end
+
+	/**
+	 * 构建BETWEEN语句中的值部分<br>
+	 * 开头必须加空格，类似：" ? AND ?" 或者 " 1 AND 2"
+	 * 
+	 * @param conditionStrBuilder 条件语句构建器
+	 * @param condition 条件
+	 */
+	private void buildValuePartForBETWEEN(StringBuilder conditionStrBuilder, Condition condition) {
+		// BETWEEN x AND y 的情况，两个参数
+		if (condition.isPlaceHolder()) {
+			// 使用条件表达式占位符
+			conditionStrBuilder.append(" ?");
+			paramValues.add(condition.getValue());
+		} else {
+			// 直接使用条件值
+			conditionStrBuilder.append(condition.getValue());
+		}
+
+		// 处理 AND y
+		conditionStrBuilder.append(StrUtil.SPACE).append(LogicalOperator.AND.toString());
+		if (condition.isPlaceHolder()) {
+			// 使用条件表达式占位符
+			conditionStrBuilder.append(" ?");
+			paramValues.add(condition.getSecondValue());
+		} else {
+			// 直接使用条件值
+			conditionStrBuilder.append(condition.getSecondValue());
+		}
+	}
+
+	/**
+	 * 构建IN语句中的值部分<br>
+	 * 开头必须加空格，类似：" (?,?,?)" 或者 " (1,2,3,4)"
+	 * 
+	 * @param conditionStrBuilder 条件语句构建器
+	 * @param condition 条件
+	 */
+	private void buildValuePartForIN(StringBuilder conditionStrBuilder, Condition condition) {
+		conditionStrBuilder.append(" (");
+		final Object value = condition.getValue();
+		if (condition.isPlaceHolder()) {
+			List<?> valuesForIn;
+			// 占位符对应值列表
+			if (value instanceof CharSequence) {
+				valuesForIn = StrUtil.split((CharSequence) value, ',');
+			} else {
+				valuesForIn = Arrays.asList(Convert.convert(String[].class, value));
+				if (null == valuesForIn) {
+					valuesForIn = CollUtil.newArrayList(Convert.toStr(value));
+				}
+			}
+			conditionStrBuilder.append(StrUtil.repeatAndJoin("?", valuesForIn.size(), ","));
+			paramValues.addAll(valuesForIn);
+		} else {
+			conditionStrBuilder.append(StrUtil.join(",", value));
+		}
+		conditionStrBuilder.append(')');
+	}
+	
+	/**
+	 * 验证实体类对象的有效性
+	 * 
+	 * @param entity 实体类对象
+	 * @throws DbRuntimeException SQL异常包装，获取元数据信息失败
+	 */
+	private static void validateEntity(Entity entity) throws DbRuntimeException {
+		if (null == entity) {
+			throw new DbRuntimeException("Entity is null !");
+		}
+		if (StrUtil.isBlank(entity.getTableName())) {
+			throw new DbRuntimeException("Entity`s table name is null !");
+		}
+		if (entity.isEmpty()) {
+			throw new DbRuntimeException("No filed and value in this entity !");
+		}
+	}
+	// --------------------------------------------------------------- private method end
 }

@@ -12,7 +12,7 @@ package cn.ucaner.alpaca.framework.utils.tools.db.ds;
 
 import javax.sql.DataSource;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.NoResourceException;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.c3p0.C3p0DSFactory;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.dbcp.DbcpDSFactory;
@@ -37,10 +37,11 @@ import cn.ucaner.alpaca.framework.utils.tools.setting.Setting;
 * @version    V1.0
  */
 public abstract class DSFactory {
-	
 	private static final Log log = LogFactory.get();
 
+	/** 数据库配置文件可选路径1 */
 	protected static final String DEFAULT_DB_SETTING_PATH = "config/db.setting";
+	/** 数据库配置文件可选路径2 */
 	protected static final String DEFAULT_DB_SETTING_PATH2 = "db.setting";
 	
 	/** 别名字段名：URL */
@@ -53,7 +54,7 @@ public abstract class DSFactory {
 	public static final String[] KEY_ALIAS_DRIVER = {"driver", "driverClassName"};
 
 	/** 数据源名 */
-	private String dataSourceName;
+	protected String dataSourceName;
 	/** 数据库连接配置文件 */
 	protected Setting setting;
 
@@ -70,12 +71,25 @@ public abstract class DSFactory {
 		if (null == setting) {
 			try {
 				setting = new Setting(DEFAULT_DB_SETTING_PATH, true);
-			} catch (IORuntimeException e) {
-				//尝试ClassPath下直接读取配置问津
-				setting = new Setting(DEFAULT_DB_SETTING_PATH2, true);
+			} catch (NoResourceException e) {
+				//尝试ClassPath下直接读取配置文件
+				try {
+					setting = new Setting(DEFAULT_DB_SETTING_PATH2, true);
+				} catch (NoResourceException e2) {
+					throw new NoResourceException("Default db setting [{}] or [{}] in classpath not found !", DEFAULT_DB_SETTING_PATH, DEFAULT_DB_SETTING_PATH2);
+				}
 			}
 		}
 		this.setting = setting;
+	}
+	
+	/**
+	 * 获取配置，用于自定义添加配置项
+	 * @return Setting
+	 * @since 4.0.3
+	 */
+	public Setting getSetting() {
+		return this.setting;
 	}
 
 	/**
@@ -153,22 +167,6 @@ public abstract class DSFactory {
 	}
 
 	// ------------------------------------------------------------------------- Static start
-	// JVM关闭是关闭所有连接池
-	static {
-		Runtime.getRuntime().addShutdownHook(new Thread(){
-			@Override
-			public void run() {
-				if (null != currentDSFactory) {
-					currentDSFactory.destroy();
-					log.debug("DataSource: [{}] destroyed.", currentDSFactory.dataSourceName);
-				}
-			}
-		});
-	}
-
-	private static DSFactory currentDSFactory;
-	private static final Object lock = new Object();
-
 	/**
 	 * 获得数据源<br>
 	 * 使用默认配置文件的无分组配置
@@ -186,60 +184,45 @@ public abstract class DSFactory {
 	 * @return 数据源
 	 */
 	public static DataSource get(String group) {
-		return get(null, group);
+		return GlobalDSFactory.get().getDataSource(group);
 	}
 
 	/**
-	 * 获得数据源
+	 * 根据Setting获取当前数据源工厂对象
 	 * 
-	 * @param dbSetting 数据库配置文件，如果为<code>null</code>，查找默认的配置文件
-	 * @param group 配置文件中对应的分组
-	 * @return 数据源
-	 */
-	public static DataSource get(Setting dbSetting, String group) {
-		return getCurrentDSFactory(dbSetting).getDataSource(group);
-	}
-
-	/**
 	 * @param setting 数据源配置文件
 	 * @return 当前使用的数据源工厂
+	 * @deprecated 此方法容易引起歧义，应使用{@link #create(Setting)} 方法代替之
 	 */
+	@Deprecated
 	public static DSFactory getCurrentDSFactory(Setting setting) {
-		if (null == currentDSFactory) {
-			synchronized (lock) {
-				if (null == currentDSFactory) {
-					currentDSFactory = detectDSFactory(setting);
-				}
-			}
-		}
-		return currentDSFactory;
+		return create(setting);
 	}
 
 	/**
+	 * 设置全局的数据源工厂<br>
+	 * 在项目中存在多个连接池库的情况下，我们希望使用低优先级的库时使用此方法自定义之<br>
+	 * 重新定义全局的数据源工厂此方法可在以下两种情况下调用：
+	 * <pre>
+	 * 1. 在get方法调用前调用此方法来自定义全局的数据源工厂
+	 * 2. 替换已存在的全局数据源工厂，当已存在时会自动关闭
+	 * </pre>
+	 * 
 	 * @param dsFactory 数据源工厂
 	 * @return 自定义的数据源工厂
 	 */
-	synchronized public static DSFactory setCurrentDSFactory(DSFactory dsFactory) {
-		if (null != currentDSFactory) {
-			if (currentDSFactory.equals(dsFactory)) {
-				return currentDSFactory;// 数据源不变时返回原数据源
-			}
-			// 自定义数据源工厂前关闭之前的数据源
-			currentDSFactory.destroy();
-		}
-
-		log.debug("Custom use [{}] datasource.", dsFactory.dataSourceName);
-		currentDSFactory = dsFactory;
-		return currentDSFactory;
+	public static DSFactory setCurrentDSFactory(DSFactory dsFactory) {
+		return GlobalDSFactory.set(dsFactory);
 	}
 
 	/**
-	 * 决定数据源实现工厂<br>
+	 * 创建数据源实现工厂<br>
+	 * 此方法通过“试错”方式查找引入项目的连接池库，按照优先级寻找，一旦寻找到则创建对应的数据源工厂<br>
 	 * 连接池优先级：Hikari > Druid > Tomcat > Dbcp > C3p0 > Hutool Pooled
 	 * 
 	 * @return 日志实现类
 	 */
-	private static DSFactory detectDSFactory(Setting setting) {
+	public static DSFactory create(Setting setting) {
 		DSFactory dsFactory;
 		try {
 			dsFactory = new HikariDSFactory(setting);

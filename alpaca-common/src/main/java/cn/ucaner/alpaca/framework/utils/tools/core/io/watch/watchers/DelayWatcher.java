@@ -19,8 +19,7 @@ import java.util.Set;
 import cn.ucaner.alpaca.framework.utils.tools.core.collection.ConcurrentHashSet;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.watch.Watcher;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ThreadUtil;
-
+import cn.ucaner.alpaca.framework.utils.tools.core.thread.ThreadUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.io.watch.watchers   

@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 import cn.ucaner.alpaca.framework.utils.tools.db.dialect.Dialect;
 import cn.ucaner.alpaca.framework.utils.tools.db.dialect.DialectFactory;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.DSFactory;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.Wrapper;
 
 
 /**
@@ -44,6 +45,18 @@ public class SqlRunner extends AbstractSqlRunner{
 	 */
 	public static SqlRunner create() {
 		return create(DSFactory.get());
+	}
+	
+	/**
+	 * 创建SqlRunner<br>
+	 * 使用默认数据源，自动探测数据库连接池
+	 * 
+	 * @param group 数据源分组
+	 * @return SqlRunner
+	 * @since 4.0.11
+	 */
+	public static SqlRunner create(String group) {
+		return create(DSFactory.get(group));
 	}
 	
 	/**
@@ -107,11 +120,14 @@ public class SqlRunner extends AbstractSqlRunner{
 	//------------------------------------------------------- Constructor end
 
 	//---------------------------------------------------------------------------- Getters and Setters start
-	public SqlConnRunner getRunner() {
-		return this.runner;
+	@Override
+	public SqlRunner setWrapper(Character wrapperChar) {
+		return (SqlRunner) super.setWrapper(wrapperChar);
 	}
-	public void setRunner(SqlConnRunner runner) {
-		this.runner = runner;
+	
+	@Override
+	public SqlRunner setWrapper(Wrapper wrapper) {
+		return (SqlRunner) super.setWrapper(wrapper);
 	}
 	//---------------------------------------------------------------------------- Getters and Setters end
 	

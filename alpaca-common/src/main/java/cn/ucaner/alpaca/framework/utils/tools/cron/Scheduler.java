@@ -10,19 +10,22 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.cron;
 
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ThreadUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.thread.ThreadUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.CharUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.cron.listener.TaskListener;
 import cn.ucaner.alpaca.framework.utils.tools.cron.listener.TaskListenerManager;
 import cn.ucaner.alpaca.framework.utils.tools.cron.pattern.CronPattern;
 import cn.ucaner.alpaca.framework.utils.tools.cron.task.InvokeTask;
 import cn.ucaner.alpaca.framework.utils.tools.cron.task.RunnableTask;
 import cn.ucaner.alpaca.framework.utils.tools.cron.task.Task;
+import cn.ucaner.alpaca.framework.utils.tools.log.StaticLog;
 import cn.ucaner.alpaca.framework.utils.tools.setting.Setting;
 
 
@@ -62,8 +65,6 @@ public class Scheduler {
 	private boolean started = false;
 	/** 是否支持秒匹配 */
 	protected boolean matchSecond = false;
-	/** 是否支持年匹配 */
-	protected boolean matchYear = false;
 	/** 是否为守护线程 */
 	protected boolean daemon;
 
@@ -147,26 +148,6 @@ public class Scheduler {
 	}
 
 	/**
-	 * 是否支持年匹配
-	 * 
-	 * @return <code>true</code>使用，<code>false</code>不使用
-	 */
-	public boolean isMatchYear() {
-		return this.matchYear;
-	}
-
-	/**
-	 * 设置是否支持年匹配，默认不使用
-	 * 
-	 * @param isMatchYear <code>true</code>支持，<code>false</code>不支持
-	 * @return this
-	 */
-	public Scheduler setMatchYear(boolean isMatchYear) {
-		this.matchYear = isMatchYear;
-		return this;
-	}
-
-	/**
 	 * 增加监听器
 	 * 
 	 * @param listener {@link TaskListener}
@@ -199,13 +180,21 @@ public class Scheduler {
 	 */
 	public Scheduler schedule(Setting cronSetting) {
 		if (CollectionUtil.isNotEmpty(cronSetting)) {
-			for (Entry<Object, Object> entry : cronSetting.entrySet()) {
-				final String jobClass = Convert.toStr(entry.getKey());
-				final String pattern = Convert.toStr(entry.getValue());
-				try {
-					schedule(pattern, new InvokeTask(jobClass));
-				} catch (Exception e) {
-					throw new CronException(e, "Schedule [{}] [{}] error!", pattern, jobClass);
+			String group;
+			for (Entry<String, LinkedHashMap<String, String>> groupedEntry : cronSetting.getGroupedMap().entrySet()) {
+				group = groupedEntry.getKey();
+				for (Entry<String, String> entry : groupedEntry.getValue().entrySet()) {
+					String jobClass = entry.getKey();
+					if(StrUtil.isNotBlank(group)) {
+						jobClass = group + CharUtil.DOT + jobClass;
+					}
+					final String pattern = entry.getValue();
+					StaticLog.debug("Load job: {} {}", pattern, jobClass);
+					try {
+						schedule(pattern, new InvokeTask(jobClass));
+					} catch (Exception e) {
+						throw new CronException(e, "Schedule [{}] [{}] error!", pattern, jobClass);
+					}
 				}
 			}
 		}
@@ -283,6 +272,19 @@ public class Scheduler {
 		this.taskTable.remove(id);
 		return this;
 	}
+	
+	/**
+	 * 更新Task执行的时间规则
+	 * 
+	 * @param id Task的ID
+	 * @param pattern {@link CronPattern}
+	 * @return this
+	 * @since 4.0.10
+	 */
+	public Scheduler updatePattern(String id, CronPattern pattern) {
+		this.taskTable.updatePattern(id, pattern);
+		return this;
+	}
 
 	/**
 	 * 获得指定id的{@link CronPattern}
@@ -304,6 +306,26 @@ public class Scheduler {
 	 */
 	public Task getTask(String id) {
 		return this.taskTable.getTask(id);
+	}
+
+	/**
+	 * 是否无任务
+	 * 
+	 * @return true表示无任务
+	 * @since 4.0.2
+	 */
+	public boolean isEmpty() {
+		return this.taskTable.isEmpty();
+	}
+
+	/**
+	 * 当前任务数
+	 * 
+	 * @return 当前任务数
+	 * @since 4.0.2
+	 */
+	public int size() {
+		return this.taskTable.size();
 	}
 	// -------------------------------------------------------------------- shcedule end
 

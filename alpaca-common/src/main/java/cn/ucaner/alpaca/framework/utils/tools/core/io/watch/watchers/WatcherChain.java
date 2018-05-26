@@ -15,9 +15,9 @@ import java.nio.file.WatchEvent;
 import java.util.Iterator;
 import java.util.List;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.watch.Watcher;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Chain;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.io.watch.watchers   

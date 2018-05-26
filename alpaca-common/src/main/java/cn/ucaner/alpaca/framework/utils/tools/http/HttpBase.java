@@ -18,8 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.map.CaseInsensitiveMap;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
@@ -49,11 +50,13 @@ public abstract class HttpBase<T> {
 	/**http版本*/
 	protected String httpVersion = HTTP_1_1;
 	/**存储主体*/
-	protected String body;
+	protected byte[] bodyBytes;
 	
 	// ---------------------------------------------------------------- Headers start
 	/**
-	 * 根据name获取头信息
+	 * 根据name获取头信息<br>
+	 * 根据RFC2616规范，header的name不区分大小写
+	 * 
 	 * @param name Header名
 	 * @return Header值
 	 */
@@ -76,7 +79,8 @@ public abstract class HttpBase<T> {
 			return null;
 		}
 		
-		return headers.get(name.trim());
+		final CaseInsensitiveMap<String,List<String>> headersIgnoreCase = new CaseInsensitiveMap<>(this.headers);
+		return headersIgnoreCase.get(name.trim());
 	}
 	
 	/**
@@ -155,6 +159,19 @@ public abstract class HttpBase<T> {
 	 * @return this
 	 */
 	public T header(Map<String, List<String>> headers) {
+		return header(headers, false);
+	}
+	
+	/**
+	 * 设置请求头<br>
+	 * 不覆盖原有请求头
+	 * 
+	 * @param headers 请求头
+	 * @param isOverride 是否覆盖已有头信息
+	 * @return this
+	 * @since 4.0.8
+	 */
+	public T header(Map<String, List<String>> headers, boolean isOverride) {
 		if(CollectionUtil.isEmpty(headers)) {
 			return (T)this;
 		}
@@ -163,8 +180,27 @@ public abstract class HttpBase<T> {
 		for (Entry<String, List<String>> entry : headers.entrySet()) {
 			name = entry.getKey();
 			for (String value : entry.getValue()) {
-				this.header(name, StrUtil.nullToEmpty(value), false);
+				this.header(name, StrUtil.nullToEmpty(value), isOverride);
 			}
+		}
+		return (T)this;
+	}
+	
+	/**
+	 * 新增请求头<br>
+	 * 不覆盖原有请求头
+	 * 
+	 * @param headers 请求头
+	 * @return this
+	 * @since 4.0.3
+	 */
+	public T addHeaders(Map<String, String> headers) {
+		if(CollectionUtil.isEmpty(headers)) {
+			return (T)this;
+		}
+		
+		for (Entry<String,String> entry : headers.entrySet()) {
+			this.header(entry.getKey(), StrUtil.nullToEmpty(entry.getValue()), false);
 		}
 		return (T)this;
 	}
@@ -260,7 +296,7 @@ public abstract class HttpBase<T> {
 		}
 		
 		sb.append("Request Body: ").append(StrUtil.CRLF);
-		sb.append("    ").append(this.body).append(StrUtil.CRLF);
+		sb.append("    ").append(StrUtil.str(this.bodyBytes, this.charset)).append(StrUtil.CRLF);
 		
 		return sb.toString();
 	}

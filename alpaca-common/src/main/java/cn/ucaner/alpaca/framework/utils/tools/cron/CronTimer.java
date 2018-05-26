@@ -11,7 +11,7 @@
 package cn.ucaner.alpaca.framework.utils.tools.cron;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.date.DateUnit;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ThreadUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.thread.ThreadUtil;
 import cn.ucaner.alpaca.framework.utils.tools.log.Log;
 import cn.ucaner.alpaca.framework.utils.tools.log.LogFactory;
 

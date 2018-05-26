@@ -27,7 +27,7 @@ import cn.ucaner.alpaca.framework.utils.tools.log.LogFactory;
 public class ConsoleLogFactory extends LogFactory {
 	
 	public ConsoleLogFactory() {
-		super("Hutool Console Logging");
+		super("Alpaca-Common-Log Console Logging");
 	}
 
 	@Override

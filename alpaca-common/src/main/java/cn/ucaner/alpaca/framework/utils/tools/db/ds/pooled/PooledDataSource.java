@@ -16,10 +16,10 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.thread.ThreadUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ThreadUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.simple.AbstractDataSource;
 

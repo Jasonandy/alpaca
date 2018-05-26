@@ -13,8 +13,8 @@ package cn.ucaner.alpaca.framework.utils.tools.core.lang;
 import java.util.Collection;
 import java.util.Map;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
@@ -29,10 +29,7 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 * @Modify marker：   
 * @version    V1.0
  */
-public final class Assert {
-
-	private Assert() {
-	}
+public class Assert {
 
 	/**
 	 * 断言是否为真，如果为 {@code false} 抛出 {@code IllegalArgumentException} 异常<br>
@@ -64,6 +61,38 @@ public final class Assert {
 	 */
 	public static void isTrue(boolean expression) throws IllegalArgumentException {
 		isTrue(expression, "[Assertion failed] - this expression must be true");
+	}
+	
+	/**
+	 * 断言是否为假，如果为 {@code true} 抛出 {@code IllegalArgumentException} 异常<br>
+	 * 
+	 * <pre class="code">
+	 * Assert.isFalse(i &lt; 0, "The value must be greater than zero");
+	 * </pre>
+	 * 
+	 * @param expression 波尔值
+	 * @param errorMsgTemplate 错误抛出异常附带的消息模板，变量用{}代替
+	 * @param params 参数列表
+	 * @throws IllegalArgumentException if expression is {@code false}
+	 */
+	public static void isFalse(boolean expression, String errorMsgTemplate, Object... params) throws IllegalArgumentException {
+		if (expression) {
+			throw new IllegalArgumentException(StrUtil.format(errorMsgTemplate, params));
+		}
+	}
+	
+	/**
+	 * 断言是否为假，如果为 {@code true} 抛出 {@code IllegalArgumentException} 异常<br>
+	 * 
+	 * <pre class="code">
+	 * Assert.isFalse(i &lt; 0);
+	 * </pre>
+	 * 
+	 * @param expression 波尔值
+	 * @throws IllegalArgumentException if expression is {@code false}
+	 */
+	public static void isFalse(boolean expression) throws IllegalArgumentException {
+		isFalse(expression, "[Assertion failed] - this expression must be false");
 	}
 
 	/**

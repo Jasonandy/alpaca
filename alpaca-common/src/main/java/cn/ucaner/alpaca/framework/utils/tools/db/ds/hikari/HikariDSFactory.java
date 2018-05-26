@@ -20,10 +20,12 @@ import javax.sql.DataSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
+import cn.ucaner.alpaca.framework.utils.tools.db.DbUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.DSFactory;
 import cn.ucaner.alpaca.framework.utils.tools.setting.Setting;
 
@@ -111,8 +113,14 @@ public class HikariDSFactory extends DSFactory {
 			throw new DbRuntimeException("No HikariCP config for group: [{}]", group);
 		}
 		
-		//规范化属性名
-		if(false == config.containsKey("jdbcUrl") && config.containsKey("url")){
+		// 初始化SQL显示
+		final boolean isShowSql = Convert.toBool(config.remove("showSql"), false);
+		final boolean isFormatSql = Convert.toBool(config.remove("formatSql"), false);
+		final boolean isShowParams = Convert.toBool(config.remove("showParams"), false);
+		DbUtil.setShowSqlGlobal(isShowSql, isFormatSql, isShowParams);
+
+		// 规范化属性名
+		if (false == config.containsKey("jdbcUrl") && config.containsKey("url")) {
 			config.put("jdbcUrl", config.remove("url"));
 		}
 		if(false == config.containsKey("username") && config.containsKey("user")){

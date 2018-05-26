@@ -18,11 +18,13 @@ import cn.ucaner.alpaca.framework.utils.tools.db.sql.Order;
 * @version    V1.0
  */
 public class Page {
+	
+	public static final int DEFAULT_PAGE_SIZE = 20;
 
 	/** 页码 */
 	private int pageNumber;
 	/** 每页结果数 */
-	private int numPerPage;
+	private int pageSize;
 	/** 排序 */
 	private Order[] orders;
 
@@ -31,11 +33,11 @@ public class Page {
 	 * 构造
 	 * 
 	 * @param pageNumber 页码
-	 * @param numPerPage 每页结果数
+	 * @param pageSize 每页结果数
 	 */
-	public Page(int pageNumber, int numPerPage) {
+	public Page(int pageNumber, int pageSize) {
 		this.pageNumber = pageNumber < 0 ? 0 : pageNumber;
-		this.numPerPage = numPerPage <= 0 ? PageResult.DEFAULT_NUMBER_PER_PAGE : numPerPage;
+		this.pageSize = pageSize <= 0 ? DEFAULT_PAGE_SIZE : pageSize;
 	}
 	
 	/**
@@ -69,18 +71,38 @@ public class Page {
 
 	/**
 	 * @return 每页结果数
+	 * @deprecated 使用 {@link #getPageSize()} 代替
 	 */
+	@Deprecated
 	public int getNumPerPage() {
-		return numPerPage;
+		return getPageSize();
 	}
 
 	/**
 	 * 设置每页结果数
 	 * 
-	 * @param numPerPage 每页结果数
+	 * @param pageSize 每页结果数
+	 * @deprecated 使用 {@link #setPageSize(int)} 代替
 	 */
-	public void setNumPerPage(int numPerPage) {
-		this.numPerPage = numPerPage <= 0 ? PageResult.DEFAULT_NUMBER_PER_PAGE : numPerPage;
+	@Deprecated
+	public void setNumPerPage(int pageSize) {
+		setPageSize(pageSize);
+	}
+	
+	/**
+	 * @return 每页结果数
+	 */
+	public int getPageSize() {
+		return pageSize;
+	}
+	
+	/**
+	 * 设置每页结果数
+	 * 
+	 * @param pageSize 每页结果数
+	 */
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize <= 0 ? DEFAULT_PAGE_SIZE : pageSize;
 	}
 
 	/**
@@ -136,11 +158,11 @@ public class Page {
 	 * @return 第一个数为开始位置，第二个数为结束位置
 	 */
 	public int[] getStartEnd() {
-		return PageUtil.transToStartEnd(pageNumber, numPerPage);
+		return PageUtil.transToStartEnd(pageNumber, pageSize);
 	}
 
 	@Override
 	public String toString() {
-		return "Page [page=" + pageNumber + ", numPerPage=" + numPerPage + ", order=" + Arrays.toString(orders) + "]";
+		return "Page [page=" + pageNumber + ", pageSize=" + pageSize + ", order=" + Arrays.toString(orders) + "]";
 	}
 }

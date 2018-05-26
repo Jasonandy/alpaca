@@ -1,10 +1,11 @@
 package cn.ucaner.alpaca.framework.utils.tools.core.convert.impl;
 
+import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicReference;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.AbstractConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.ConverterRegistry;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.convert.impl   
@@ -25,7 +26,7 @@ public class AtomicReferenceConverter extends AbstractConverter<AtomicReference>
 		
 		//尝试将值转换为Reference泛型的类型
 		Object targetValue = null;
-		final Class<?> paramType = ClassUtil.getTypeArgument(AtomicReference.class);
+		final Type paramType = TypeUtil.getTypeArgument(AtomicReference.class);
 		if(null != paramType){
 			targetValue = ConverterRegistry.getInstance().convert(paramType, value);
 		}

@@ -10,21 +10,25 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.json;
 
+import java.io.Serializable;
+
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.json   
 * @ClassName：JSONNull   
 * @Description：   <p>  用于定义<code>null</code>，与Javascript中null相对应<br> 
 * Java中的<code>null</code>值在js中表示为undefined。
 * </p>
-* @Author： - wubin   
+* @Author： -    
 * @CreatTime：2018年5月25日 上午10:58:42   
 * @Modify By：   
 * @ModifyTime：  2018年5月25日
 * @Modify marker：   
 * @version    V1.0
  */
-public class JSONNull {
-	
+public class JSONNull implements Serializable{
+
+	private static final long serialVersionUID = 2633815155870764938L;
+
 	/**
 	 * <code>NULL</code> 对象用于减少歧义来表示Java 中的<code>null</code> <br>
 	 * <code>NULL.equals(null)</code> 返回 <code>true</code>. <br>

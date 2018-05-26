@@ -17,21 +17,22 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.collection.CaseInsensitiveMap;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
+import cn.ucaner.alpaca.framework.utils.tools.core.map.CaseInsensitiveMap;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.ModifierUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 
-/*    
-* @Package：cn.ucaner.tools.core.bean   
+/**
+* @Package：cn.ucaner.alpaca.framework.utils.tools.core.bean   
 * @ClassName：BeanDesc   
-* @Description：   <p> Bean信息描述做为BeanInfo替代方案，此对象持有JavaBean中的setters和getters等相关信息描述</p>
-* @Author： -  
-* @CreatTime：2017-11-3 上午11:02:10   
+* @Description：   <p> Bean信息描述做为BeanInfo替代方案，此对象持有JavaBean中的setters和getters等相关信息描述 </p>
+* @Author： -    
+* @CreatTime：2018年5月26日 上午10:08:41   
 * @Modify By：   
-* @ModifyTime：  
+* @ModifyTime：  2018年5月26日
 * @Modify marker：   
 * @version    V1.0
  */
@@ -124,24 +125,166 @@ public class BeanDesc {
 		return null == desc ? null : desc.getSetter();
 	}
 	
+	// ------------------------------------------------------------------------------------------------------ Private method start
 	/**
-	 * 初始化
+	 * 初始化<br>
+	 * 只有与属性关联的相关Getter和Setter方法才会被读取，无关的getXXX和setXXX都被忽略
+	 * 
 	 * @return this
 	 */
 	private BeanDesc init() {
-		final Field[] fields = ReflectUtil.getFields(this.beanClass);
-		
-		String fieldName;
-		Method getter;
-		Method setter;
-		for (Field field : fields) {
-			fieldName = field.getName();
-			getter = ReflectUtil.getMethod(this.beanClass, StrUtil.genGetter(fieldName));
-			setter = ReflectUtil.getMethod(this.beanClass, StrUtil.genSetter(fieldName), field.getType());
-			this.propMap.put(fieldName, new PropDesc(field, getter, setter));
+		for (Field field : ReflectUtil.getFields(this.beanClass)) {
+			if(false == ModifierUtil.isStatic(field)) {
+				//只针对非static属性
+				this.propMap.put(field.getName(), createProp(field));
+			}
 		}
 		return this;
 	}
+
+	/**
+	 * 根据字段创建属性描述<br>
+	 * 查找Getter和Setter方法时会：
+	 * 
+	 * <pre>
+	 * 1. 忽略字段和方法名的大小写
+	 * 2. Getter查找getXXX、isXXX、getIsXXX
+	 * 3. Setter查找setXXX、setIsXXX
+	 * 4. Setter忽略参数值与字段值不匹配的情况，因此有多个参数类型的重载时，会调用首次匹配的
+	 * </pre>
+	 * 
+	 * @param field 字段
+	 * @return {@link PropDesc}
+	 * @since 4.0.2
+	 */
+	private PropDesc createProp(Field field) {
+		final String fieldName = field.getName();
+		final Class<?> fieldType = field.getType();
+		final boolean isBooeanField = (fieldType == Boolean.class || fieldType == boolean.class);
+
+		Method getter = null;
+		Method setter = null;
+
+		String methodName;
+		Class<?>[] parameterTypes;
+		for (Method method : ReflectUtil.getMethods(this.beanClass)) {
+			parameterTypes = method.getParameterTypes();
+			if (parameterTypes.length > 1) {
+				// 多于1个参数说明非Getter或Setter
+				continue;
+			}
+
+			methodName = method.getName();
+			if (parameterTypes.length == 0) {
+				// 无参数，可能为Getter方法
+				if (isMatchGetter(methodName, fieldName, isBooeanField)) {
+					// 方法名与字段名匹配，则为Getter方法
+					getter = method;
+				}
+			} else if (isMatchSetter(methodName, fieldName, isBooeanField)) {
+				// 只有一个参数的情况下方法名与字段名对应匹配，则为Setter方法
+				setter = method;
+			}
+			if (null != getter && null != setter) {
+				// 如果Getter和Setter方法都找到了，不再继续寻找
+				break;
+			}
+		}
+		return new PropDesc(field, getter, setter);
+	}
+
+	/**
+	 * 方法是否为Getter方法<br>
+	 * 匹配规则如下（忽略大小写）：
+	 * 
+	 * <pre>
+	 * 字段名    -》 方法名
+	 * isName  -》 isName
+	 * isName  -》 isIsName
+	 * isName  -》 getIsName
+	 * name     -》 isName
+	 * name     -》 getName
+	 * </pre>
+	 * 
+	 * @param methodName 方法名
+	 * @param fieldName 字段名
+	 * @param isBooeanField 是否为Boolean类型字段
+	 * @return 是否匹配
+	 */
+	private boolean isMatchGetter(String methodName, String fieldName, boolean isBooeanField) {
+		// 全部转为小写，忽略大小写比较
+		methodName = methodName.toLowerCase();
+		fieldName = fieldName.toLowerCase();
+
+		if (false == methodName.startsWith("get") && false == methodName.startsWith("is")) {
+			// 非标准Getter方法
+			return false;
+		}
+		if("getclass".equals(methodName)) {
+			//跳过getClass方法
+			return false;
+		}
+
+		// 针对Boolean类型特殊检查
+		if (isBooeanField) {
+			if (fieldName.startsWith("is")) {
+				// 字段已经是is开头
+				if (methodName.equals(fieldName) // isName -》 isName
+						|| methodName.equals("get" + fieldName)// isName -》 getIsName
+						|| methodName.equals("is" + fieldName)// isName -》 isIsName
+				) {
+					return true;
+				}
+			} else if (methodName.equals("is" + fieldName)) {
+				// 字段非is开头， name -》 isName
+				return true;
+			}
+		}
+
+		// 包括boolean的任何类型只有一种匹配情况：name -》 getName
+		return methodName.equals("get" + fieldName);
+	}
+
+	/**
+	 * 方法是否为Setter方法<br>
+	 * 匹配规则如下（忽略大小写）：
+	 * 
+	 * <pre>
+	 * 字段名    -》 方法名
+	 * isName  -》 setName
+	 * isName  -》 setIsName
+	 * name     -》 setName
+	 * </pre>
+	 * 
+	 * @param methodName 方法名
+	 * @param fieldName 字段名
+	 * @param isBooeanField 是否为Boolean类型字段
+	 * @return 是否匹配
+	 */
+	private boolean isMatchSetter(String methodName, String fieldName, boolean isBooeanField) {
+		// 全部转为小写，忽略大小写比较
+		methodName = methodName.toLowerCase();
+		fieldName = fieldName.toLowerCase();
+
+		// 非标准Setter方法跳过
+		if (false == methodName.startsWith("set")) {
+			return false;
+		}
+
+		// 针对Boolean类型特殊检查
+		if (isBooeanField && fieldName.startsWith("is")) {
+			// 字段是is开头
+			if (methodName.equals("set" + StrUtil.removePrefix(fieldName, "is"))// isName -》 setName
+					|| methodName.equals("set" + fieldName)// isName -》 setIsName
+			) {
+				return true;
+			}
+		}
+
+		// 包括boolean的任何类型只有一种匹配情况：name -》 setName
+		return methodName.equals("set" + fieldName);
+	}
+	// ------------------------------------------------------------------------------------------------------ Private method end
 
 	/**
 	 * 属性描述
@@ -223,11 +366,49 @@ public class BeanDesc {
 
 		/**
 		 * 获取Setter方法
+		 * 
+		 * @return {@link Method}Setter 方法对象
 		 */
 		public Method getSetter() {
 			return this.setter;
 		}
 		
+		/**
+		 * 获取字段值<br>
+		 * 首先调用字段对应的Getter方法获取值，如果Getter方法不存在，则判断字段如果为public，则直接获取字段值
+		 * 
+		 * @param bean Bean对象
+		 * @return 字段值
+		 * @since 4.0.5
+		 */
+		public Object getValue(Object bean) {
+			if(null != this.getter) {
+				return ReflectUtil.invoke(bean, this.getter);
+			} else if(ModifierUtil.isPublic(this.field)) {
+				return ReflectUtil.getFieldValue(bean, this.field);
+			}
+			return null;
+		}
+		
+		/**
+		 * 设置Bean的字段值<br>
+		 * 首先调用字段对应的Setter方法，如果Setter方法不存在，则判断字段如果为public，则直接赋值字段值
+		 * 
+		 * @param bean Bean对象
+		 * @param value 值
+		 * @return this
+		 * @since 4.0.5
+		 */
+		public PropDesc setValue(Object bean, Object value) {
+			if(null != this.setter) {
+				ReflectUtil.invoke(bean, this.setter, value);
+			} else if(ModifierUtil.isPublic(this.field)) {
+				ReflectUtil.setFieldValue(bean, this.field, value);
+			}
+			return this;
+		}
+		
+		//------------------------------------------------------------------------------------ Private method start
 		/**
 		 * 通过Getter和Setter方法中找到属性类型
 		 * @param getter Getter方法

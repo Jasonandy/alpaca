@@ -16,17 +16,18 @@ import java.sql.Clob;
 import java.sql.RowId;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Dict;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.SqlUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.db   
@@ -72,15 +73,40 @@ public class Entity extends Dict{
 	public static <T> Entity parse(T bean) {
 		return create(null).parseBean(bean);
 	}
-	//--------------------------------------------------------------- Static method end
-	
-	/*表名*/
+
+	/**
+	 * 将PO对象转为Entity
+	 * 
+	 * @param <T> Bean对象类型
+	 * @param bean Bean对象
+	 * @param isToUnderlineCase 是否转换为下划线模式
+	 * @param ignoreNullValue 是否忽略值为空的字段
+	 * @return Entity
+	 */
+	public static <T> Entity parse(T bean, boolean isToUnderlineCase, boolean ignoreNullValue) {
+		return create(null).parseBean(bean, isToUnderlineCase, ignoreNullValue);
+	}
+
+	/**
+	 * 将PO对象转为Entity,并采用下划线法转换字段
+	 * 
+	 * @param <T> Bean对象类型
+	 * @param bean Bean对象
+	 * @return Entity
+	 */
+	public static <T> Entity parseWithUnderlineCase(T bean) {
+		return create(null).parseBean(bean, true, true);
+	}
+	// --------------------------------------------------------------- Static method end
+
+	/* 表名 */
 	private String tableName;
 	/*字段名列表，用于限制加入的字段的值*/
 	private Set<String> fieldNames;
 	
 	//--------------------------------------------------------------- Constructor start
 	public Entity() {
+		super();
 	}
 	
 	/**
@@ -89,6 +115,7 @@ public class Entity extends Dict{
 	 */
 	
 	public Entity(String tableName) {
+		super();
 		this.tableName = tableName;
 	}
 	//--------------------------------------------------------------- Constructor end
@@ -118,19 +145,21 @@ public class Entity extends Dict{
 		return this.fieldNames;
 	}
 	/**
-	 * 设置字段列表
+	 * 设置字段列表，用于限制加入的字段的值
+	 * 
 	 * @param fieldNames 字段列表
 	 * @return 自身
 	 */
-	public Entity setFieldNames(List<String> fieldNames) {
-		if(CollectionUtil.isNotEmpty(fieldNames)){
+	public Entity setFieldNames(Collection<String> fieldNames) {
+		if (CollectionUtil.isNotEmpty(fieldNames)) {
 			this.fieldNames = new HashSet<String>(fieldNames);
 		}
 		return this;
 	}
 	
 	/**
-	 * 设置字段列表
+	 * 设置字段列表，用于限制加入的字段的值
+	 * 
 	 * @param fieldNames 字段列表
 	 * @return 自身
 	 */
@@ -178,18 +207,44 @@ public class Entity extends Dict{
 	
 	//-------------------------------------------------------------------- Put and Set start
 	/**
-	 * PUT方法做了过滤限制，如果此实体限制了属性名，则忽略限制名列表外的字段名
-	 * @param key 名
-	 * @param value 值
+	 * 将值对象转换为Entity<br>
+	 * 类名会被当作表名，小写第一个字母
+	 *
+	 * @param <T> Bean对象类型
+	 * @param bean Bean对象
+	 * @param isToUnderlineCase 是否转换为下划线模式
+	 * @param ignoreNullValue 是否忽略值为空的字段
+	 * @return 自己
 	 */
 	@Override
-	public Object put(String key, Object value) {
-		if(CollectionUtil.isEmpty(fieldNames) || fieldNames.contains(key)){
-			super.put(key, value);
+	public <T> Entity parseBean(T bean, boolean isToUnderlineCase, boolean ignoreNullValue) {
+		if (StrUtil.isBlank(this.tableName)) {
+			String simpleName = bean.getClass().getSimpleName();
+			this.setTableName(isToUnderlineCase ? StrUtil.toUnderlineCase(simpleName) : StrUtil.lowerFirst(simpleName));
 		}
-		return null;
+		return (Entity) super.parseBean(bean, isToUnderlineCase, ignoreNullValue);
 	}
 	
+	/**
+	 * 过滤Map保留指定键值对，如果键不存在跳过
+	 * 
+	 * @param keys 键列表
+	 * @return Dict 结果
+	 * @since 4.0.10
+	 */
+	public Entity filter(String... keys) {
+		final Entity result = new Entity(this.tableName);
+		result.setFieldNames(this.fieldNames);
+
+		for (String key : keys) {
+			if(this.containsKey(key)) {
+				result.put(key, this.get(key));
+			}
+		}
+		return result;
+	}
+
+	// -------------------------------------------------------------------- Put and Set start
 	@Override
 	public Entity set(String field, Object value) {
 		return (Entity) super.set(field, value);
@@ -199,10 +254,10 @@ public class Entity extends Dict{
 	public Entity setIgnoreNull(String field, Object value) {
 		return (Entity) super.setIgnoreNull(field, value);
 	}
-	//-------------------------------------------------------------------- Put and Set end
-	
-	//-------------------------------------------------------------------- Get start
-	
+	// -------------------------------------------------------------------- Put and Set end
+
+	// -------------------------------------------------------------------- Get start
+
 	/**
 	 * 获得Clob类型结果
 	 * @param field 参数
@@ -283,12 +338,12 @@ public class Entity extends Dict{
 	 */
 	public String getStr(String field, Charset charset) {
 		final Object obj = get(field);
-		if(obj instanceof Clob){
-			return DbUtil.clobToStr((Clob)obj);
-		}else if(obj instanceof Blob){
-			return DbUtil.blobToStr((Blob)obj, charset);
-		}else if(obj instanceof RowId){
-			final RowId rowId = (RowId)obj;
+		if (obj instanceof Clob) {
+			return SqlUtil.clobToStr((Clob) obj);
+		} else if (obj instanceof Blob) {
+			return SqlUtil.blobToStr((Blob) obj, charset);
+		} else if (obj instanceof RowId) {
+			final RowId rowId = (RowId) obj;
 			return StrUtil.str(rowId.getBytes(), charset);
 		}
 		return super.getStr(field);

@@ -15,14 +15,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-/**
- * 简单缓存，无超时实现，使用{@link WeakHashMap}实现缓存自动清理
- * @author Looly
- *
- * @param <K> 键类型
- * @param <V> 值类型
- */
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.lang   
 * @ClassName：SimpleCache   

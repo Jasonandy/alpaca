@@ -10,8 +10,8 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.core.collection;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class CopiedIterator<E> implements Iterator<E> {
 
-	private List<E> eleList = new ArrayList<>();
+	private List<E> eleList = new LinkedList<>();
 	private Iterator<E> listIterator;
 	
 	public static <V> CopiedIterator<V> copyOf(Iterator<V> iterator){

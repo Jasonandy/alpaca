@@ -37,6 +37,9 @@ public class JavaScriptEngine extends FullSupportScriptEngine{
 	
 	ScriptEngine engine;
 	
+	/**
+	* JavaScriptEngine.
+	 */
 	public JavaScriptEngine() {
 		super(new ScriptEngineManager().getEngineByName("javascript"));
 	}

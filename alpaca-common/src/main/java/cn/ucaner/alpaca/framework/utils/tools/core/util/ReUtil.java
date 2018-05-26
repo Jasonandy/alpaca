@@ -12,12 +12,15 @@ package cn.ucaner.alpaca.framework.utils.tools.core.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Holder;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.PatternPool;
@@ -68,7 +71,7 @@ public class ReUtil {
 	public static String getGroup1(String regex, String content) {
 		return get(regex, content, 1);
 	}
-	
+
 	/**
 	 * 获得匹配的字符串
 	 * 
@@ -78,15 +81,15 @@ public class ReUtil {
 	 * @return 匹配后得到的字符串，未匹配返回null
 	 */
 	public static String get(String regex, String content, int groupIndex) {
-		if(null == content || null == regex){
+		if (null == content || null == regex) {
 			return null;
 		}
-		
-//		Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+
+		// Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
 		final Pattern pattern = PatternPool.get(regex, Pattern.DOTALL);
 		return get(pattern, content, groupIndex);
 	}
-	
+
 	/**
 	 * 获得匹配的字符串，，获得正则中分组0的内容
 	 * 
@@ -98,7 +101,7 @@ public class ReUtil {
 	public static String getGroup0(Pattern pattern, String content) {
 		return get(pattern, content, 0);
 	}
-	
+
 	/**
 	 * 获得匹配的字符串，，获得正则中分组1的内容
 	 * 
@@ -172,14 +175,23 @@ public class ReUtil {
 		if(null == content || null == pattern || null == template){
 			return null;
 		}
-		
-		HashSet<String> varNums = findAll(PatternPool.GROUP_VAR, template, 1, new HashSet<String>());
-		
-		Matcher matcher = pattern.matcher(content);
+
+		//提取模板中的编号
+		final TreeSet<Integer> varNums = new TreeSet<>(new Comparator<Integer>() {
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return ObjectUtil.compare(o2, o1);
+			}
+		});
+		final Matcher matcherForTemplate = PatternPool.GROUP_VAR.matcher(template);
+		while (matcherForTemplate.find()) {
+			varNums.add(Integer.parseInt(matcherForTemplate.group(1)));
+		}
+
+		final Matcher matcher = pattern.matcher(content);
 		if (matcher.find()) {
-			for (String var : varNums) {
-				int group = Integer.parseInt(var);
-				template = template.replace("$" + var, matcher.group(group));
+			for (Integer group : varNums) {
+				template = template.replace("$" + group, matcher.group(group));
 			}
 			return template;
 		}
@@ -477,8 +489,8 @@ public class ReUtil {
 	 * @param content 被查找的内容
 	 * @return 匹配个数
 	 */
-	public static int count(String regex, String content){
-		if(null == regex){
+	public static int count(String regex, String content) {
+		if (null == regex || null == content) {
 			return 0;
 		}
 		
@@ -505,6 +517,38 @@ public class ReUtil {
 		}
 		
 		return count;
+	}
+
+	/**
+	 * 指定内容中是否有表达式匹配的内容
+	 * 
+	 * @param regex 正则表达式
+	 * @param content 被查找的内容
+	 * @return 指定内容中是否有表达式匹配的内容
+	 * @since 3.3.1
+	 */
+	public static boolean contains(String regex, String content) {
+		if (null == regex || null == content) {
+			return false;
+		}
+
+		final Pattern pattern = PatternPool.get(regex, Pattern.DOTALL);
+		return contains(pattern, content);
+	}
+
+	/**
+	 * 指定内容中是否有表达式匹配的内容
+	 * 
+	 * @param pattern 编译后的正则模式
+	 * @param content 被查找的内容
+	 * @return 指定内容中是否有表达式匹配的内容
+	 * @since 3.3.1
+	 */
+	public static boolean contains(Pattern pattern, String content) {
+		if (null == pattern || null == content) {
+			return false;
+		}
+		return pattern.matcher(content).find();
 	}
 
 	/**

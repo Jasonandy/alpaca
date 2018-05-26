@@ -14,10 +14,10 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil.CopyOptions;
-import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil.ValueProvider;
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.copier.CopyOptions;
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.copier.ValueProvider;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
-import cn.ucaner.alpaca.framework.utils.tools.core.getter.OptNullBasicTypeFromObjectGetter;
+import cn.ucaner.alpaca.framework.utils.tools.core.getter.OptNullBasicTypeFromStringGetter;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.log.Log;
 import cn.ucaner.alpaca.framework.utils.tools.log.StaticLog;
@@ -33,15 +33,19 @@ import cn.ucaner.alpaca.framework.utils.tools.log.StaticLog;
 * @Modify marker：   
 * @version    V1.0
  */
-public abstract class AbsSetting extends OptNullBasicTypeFromObjectGetter<String> implements Serializable{
+public abstract class AbsSetting extends OptNullBasicTypeFromStringGetter<String> implements Serializable{
 	private static final long serialVersionUID = 6200156302595905863L;
 	private final static Log log = StaticLog.get();
 
 	/** 数组类型值默认分隔符 */
 	public final static String DEFAULT_DELIMITER = ",";
-
+	/** 默认分组 */
+	public final static String DEFAULT_GROUP = StrUtil.EMPTY;
+	
 	@Override
-	public abstract Object getObj(String key, Object defaultValue);
+	public String getStr(String key, String defaultValue) {
+		return getByGroup(key, DEFAULT_GROUP);
+	}
 
 	/**
 	 * 获得字符串类型值
@@ -66,9 +70,7 @@ public abstract class AbsSetting extends OptNullBasicTypeFromObjectGetter<String
 	 * @param group 分组
 	 * @return 值
 	 */
-	public String getByGroup(String key, String group) {
-		return getStr(keyWithGroup(key, group));
-	}
+	public abstract String getByGroup(String key, String group);
 
 	// --------------------------------------------------------------- Get
 	/**
@@ -303,22 +305,4 @@ public abstract class AbsSetting extends OptNullBasicTypeFromObjectGetter<String
 	public Object toBean(Object bean) {
 		return toBean(null, bean);
 	}
-
-	/*--------------------------Private Method start-------------------------------*/
-	/**
-	 * 组合Key和Group，组合后为group.key
-	 * 
-	 * @param key
-	 * @param group
-	 * @return 组合后的KEY
-	 */
-	private static String keyWithGroup(String key, String group) {
-		String keyWithGroup = key;
-		if (!StrUtil.isBlank(group)) {
-			keyWithGroup = group.concat(StrUtil.DOT).concat(key);
-		}
-		return keyWithGroup;
-	}
-
-	/*--------------------------Private Method end-------------------------------*/
 }

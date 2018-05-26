@@ -25,11 +25,6 @@ import javax.script.ScriptException;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
- * 
- * @author Looly
- *
- */
-/**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.script   
 * @ClassName：FullSupportScriptEngine   
 * @Description：   <p> 全功能引擎类，支持Compilable和Invocable </p>
@@ -42,8 +37,15 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
  */
 public class FullSupportScriptEngine implements ScriptEngine, Compilable, Invocable{
 	
+	/**
+	 * 脚本引擎
+	 */
 	ScriptEngine engine;
 	
+	/**
+	* FullSupportScriptEngine.  全功能引擎类
+	* @param engine
+	 */
 	public FullSupportScriptEngine(ScriptEngine engine) {
 		this.engine = engine;
 	}

@@ -11,8 +11,10 @@
 package cn.ucaner.alpaca.framework.utils.tools.core.util;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
@@ -53,10 +55,43 @@ public class NumberUtil {
 	 * @param v2 加数
 	 * @return 和
 	 */
+	public static double add(float v1, float v2) {
+		return add(Float.toString(v1), Float.toString(v2)).doubleValue();
+	}
+
+	/**
+	 * 提供精确的加法运算
+	 * 
+	 * @param v1 被加数
+	 * @param v2 加数
+	 * @return 和
+	 */
+	public static double add(float v1, double v2) {
+		return add(Float.toString(v1), Double.toString(v2)).doubleValue();
+	}
+
+	/**
+	 * 提供精确的加法运算
+	 * 
+	 * @param v1 被加数
+	 * @param v2 加数
+	 * @return 和
+	 */
+	public static double add(double v1, float v2) {
+		return add(Double.toString(v1), Float.toString(v2)).doubleValue();
+	}
+
+	/**
+	 * 提供精确的加法运算
+	 * 
+	 * @param v1 被加数
+	 * @param v2 加数
+	 * @return 和
+	 */
 	public static double add(double v1, double v2) {
 		return add(Double.toString(v1), Double.toString(v2)).doubleValue();
 	}
-	
+
 	/**
 	 * 提供精确的加法运算
 	 * 
@@ -66,11 +101,12 @@ public class NumberUtil {
 	 * @since 3.1.1
 	 */
 	public static double add(Double v1, Double v2) {
-		return add((Number)v1, (Number)v2).doubleValue();
+		return add((Number) v1, (Number) v2).doubleValue();
 	}
-	
+
 	/**
-	 * 提供精确的加法运算
+	 * 提供精确的加法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
 	 * @param v1 被加数
 	 * @param v2 加数
@@ -78,33 +114,112 @@ public class NumberUtil {
 	 * @since 3.1.0
 	 */
 	public static BigDecimal add(Number v1, Number v2) {
-		return add(v1.toString(), v2.toString());
+		return add(new Number[] { v1, v2 });
 	}
 
 	/**
-	 * 提供精确的加法运算
+	 * 提供精确的加法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
-	 * @param v1 被加数
-	 * @param v2 加数
+	 * @param values 多个被加值
 	 * @return 和
-	 * @since 3.0.8
+	 * @since 4.0.0
 	 */
-	public static BigDecimal add(String v1, String v2) {
-		return add(new BigDecimal(v1), new BigDecimal(v2));
+	public static BigDecimal add(Number... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		Number value = values[0];
+		BigDecimal result = new BigDecimal(null == value ? "0" : value.toString());
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.add(new BigDecimal(value.toString()));
+			}
+		}
+		return result;
 	}
 
 	/**
-	 * 提供精确的加法运算
+	 * 提供精确的加法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
-	 * @param v1 被加数
-	 * @param v2 加数
+	 * @param values 多个被加值
 	 * @return 和
-	 * @since 3.0.9
+	 * @since 4.0.0
 	 */
-	public static BigDecimal add(BigDecimal v1, BigDecimal v2) {
-		Assert.notNull(v1);
-		Assert.notNull(v2);
-		return v1.add(v2);
+	public static BigDecimal add(String... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		String value = values[0];
+		BigDecimal result = new BigDecimal(null == value ? "0" : value);
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.add(new BigDecimal(value));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 提供精确的加法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
+	 * 
+	 * @param values 多个被加值
+	 * @return 和
+	 * @since 4.0.0
+	 */
+	public static BigDecimal add(BigDecimal... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		BigDecimal value = values[0];
+		BigDecimal result = null == value ? new BigDecimal("0") : value;
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.add(value);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 提供精确的减法运算
+	 * 
+	 * @param v1 被减数
+	 * @param v2 减数
+	 * @return 差
+	 */
+	public static double sub(float v1, float v2) {
+		return sub(Float.toString(v1), Float.toString(v2)).doubleValue();
+	}
+
+	/**
+	 * 提供精确的减法运算
+	 * 
+	 * @param v1 被减数
+	 * @param v2 减数
+	 * @return 差
+	 */
+	public static double sub(float v1, double v2) {
+		return sub(Float.toString(v1), Double.toString(v2)).doubleValue();
+	}
+
+	/**
+	 * 提供精确的减法运算
+	 * 
+	 * @param v1 被减数
+	 * @param v2 减数
+	 * @return 差
+	 */
+	public static double sub(double v1, float v2) {
+		return sub(Double.toString(v1), Float.toString(v2)).doubleValue();
 	}
 
 	/**
@@ -126,45 +241,124 @@ public class NumberUtil {
 	 * @return 差
 	 */
 	public static double sub(Double v1, Double v2) {
-		return sub((Number)v1, (Number)v2).doubleValue();
+		return sub((Number) v1, (Number) v2).doubleValue();
 	}
-	
+
 	/**
-	 * 提供精确的减法运算
+	 * 提供精确的减法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
 	 * @param v1 被减数
 	 * @param v2 减数
 	 * @return 差
-	 * @since 3.1.0
 	 */
 	public static BigDecimal sub(Number v1, Number v2) {
-		return sub(v1.toString(), v2.toString());
+		return sub(new Number[] { v1, v2 });
 	}
 
 	/**
-	 * 提供精确的减法运算
+	 * 提供精确的减法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
-	 * @param v1 被减数
-	 * @param v2 减数
+	 * @param values 多个被减值
 	 * @return 差
-	 * @since 3.0.8
+	 * @since 4.0.0
 	 */
-	public static BigDecimal sub(String v1, String v2) {
-		return sub(new BigDecimal(v1), new BigDecimal(v2));
+	public static BigDecimal sub(Number... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		Number value = values[0];
+		BigDecimal result = new BigDecimal(null == value ? "0" : value.toString());
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.subtract(new BigDecimal(value.toString()));
+			}
+		}
+		return result;
 	}
 
 	/**
-	 * 提供精确的减法运算
+	 * 提供精确的减法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
-	 * @param v1 被减数
-	 * @param v2 减数
+	 * @param values 多个被减值
 	 * @return 差
-	 * @since 3.0.9
+	 * @since 4.0.0
 	 */
-	public static BigDecimal sub(BigDecimal v1, BigDecimal v2) {
-		Assert.notNull(v1);
-		Assert.notNull(v2);
-		return v1.subtract(v2);
+	public static BigDecimal sub(String... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		String value = values[0];
+		BigDecimal result = new BigDecimal(null == value ? "0" : value);
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.subtract(new BigDecimal(value));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 提供精确的减法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
+	 * 
+	 * @param values 多个被减值
+	 * @return 差
+	 * @since 4.0.0
+	 */
+	public static BigDecimal sub(BigDecimal... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		BigDecimal value = values[0];
+		BigDecimal result = null == value ? new BigDecimal("0") : value;
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.subtract(value);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 提供精确的乘法运算
+	 * 
+	 * @param v1 被乘数
+	 * @param v2 乘数
+	 * @return 积
+	 */
+	public static double mul(float v1, float v2) {
+		return mul(Float.toString(v1), Float.toString(v2)).doubleValue();
+	}
+
+	/**
+	 * 提供精确的乘法运算
+	 * 
+	 * @param v1 被乘数
+	 * @param v2 乘数
+	 * @return 积
+	 */
+	public static double mul(float v1, double v2) {
+		return mul(Float.toString(v1), Double.toString(v2)).doubleValue();
+	}
+
+	/**
+	 * 提供精确的乘法运算
+	 * 
+	 * @param v1 被乘数
+	 * @param v2 乘数
+	 * @return 积
+	 */
+	public static double mul(double v1, float v2) {
+		return mul(Double.toString(v1), Float.toString(v2)).doubleValue();
 	}
 
 	/**
@@ -177,27 +371,53 @@ public class NumberUtil {
 	public static double mul(double v1, double v2) {
 		return mul(Double.toString(v1), Double.toString(v2)).doubleValue();
 	}
-	
+
 	/**
-	 * 提供精确的乘法运算
+	 * 提供精确的乘法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
 	 * @param v1 被乘数
 	 * @param v2 乘数
 	 * @return 积
 	 */
 	public static double mul(Double v1, Double v2) {
-		return mul((Number)v1, (Number)v2).doubleValue();
+		return mul((Number) v1, (Number) v2).doubleValue();
 	}
-	
+
 	/**
-	 * 提供精确的乘法运算
+	 * 提供精确的乘法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
 	 * @param v1 被乘数
 	 * @param v2 乘数
 	 * @return 积
 	 */
 	public static BigDecimal mul(Number v1, Number v2) {
-		return mul(v1.toString(), v2.toString());
+		return mul(new Number[] { v1, v2 });
+	}
+
+	/**
+	 * 提供精确的乘法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
+	 * 
+	 * @param values 多个被乘值
+	 * @return 积
+	 * @since 4.0.0
+	 */
+	public static BigDecimal mul(Number... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		Number value = values[0];
+		BigDecimal result = new BigDecimal(null == value ? "0" : value.toString());
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.multiply(new BigDecimal(value.toString()));
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -213,17 +433,84 @@ public class NumberUtil {
 	}
 
 	/**
-	 * 提供精确的乘法运算
+	 * 提供精确的乘法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
 	 * 
-	 * @param v1 被乘数
-	 * @param v2 乘数
+	 * @param values 多个被乘值
 	 * @return 积
-	 * @since 3.0.9
+	 * @since 4.0.0
 	 */
-	public static BigDecimal mul(BigDecimal v1, BigDecimal v2) {
-		Assert.notNull(v1);
-		Assert.notNull(v2);
-		return v1.multiply(v2);
+	public static BigDecimal mul(String... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		String value = values[0];
+		BigDecimal result = new BigDecimal(null == value ? "0" : value);
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.multiply(new BigDecimal(value));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 提供精确的乘法运算<br>
+	 * 如果传入多个值为null或者空，则返回0
+	 * 
+	 * @param values 多个被乘值
+	 * @return 积
+	 * @since 4.0.0
+	 */
+	public static BigDecimal mul(BigDecimal... values) {
+		if (ArrayUtil.isEmpty(values)) {
+			return new BigDecimal("0");
+		}
+
+		BigDecimal value = values[0];
+		BigDecimal result = null == value ? new BigDecimal("0") : value;
+		for (int i = 1; i < values.length; i++) {
+			value = values[i];
+			if (null != value) {
+				result = result.multiply(value);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况的时候,精确到小数点后10位,后面的四舍五入
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @return 两个参数的商
+	 */
+	public static double div(float v1, float v2) {
+		return div(v1, v2, DEFAUT_DIV_SCALE);
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况的时候,精确到小数点后10位,后面的四舍五入
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @return 两个参数的商
+	 */
+	public static double div(float v1, double v2) {
+		return div(v1, v2, DEFAUT_DIV_SCALE);
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况的时候,精确到小数点后10位,后面的四舍五入
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @return 两个参数的商
+	 */
+	public static double div(double v1, float v2) {
+		return div(v1, v2, DEFAUT_DIV_SCALE);
 	}
 
 	/**
@@ -279,6 +566,42 @@ public class NumberUtil {
 	 * @param scale 精确度，如果为负值，取绝对值
 	 * @return 两个参数的商
 	 */
+	public static double div(float v1, float v2, int scale) {
+		return div(v1, v2, scale, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况时,由scale指定精确度,后面的四舍五入
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @param scale 精确度，如果为负值，取绝对值
+	 * @return 两个参数的商
+	 */
+	public static double div(float v1, double v2, int scale) {
+		return div(v1, v2, scale, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况时,由scale指定精确度,后面的四舍五入
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @param scale 精确度，如果为负值，取绝对值
+	 * @return 两个参数的商
+	 */
+	public static double div(double v1, float v2, int scale) {
+		return div(v1, v2, scale, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况时,由scale指定精确度,后面的四舍五入
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @param scale 精确度，如果为负值，取绝对值
+	 * @return 两个参数的商
+	 */
 	public static double div(double v1, double v2, int scale) {
 		return div(v1, v2, scale, RoundingMode.HALF_UP);
 	}
@@ -318,6 +641,45 @@ public class NumberUtil {
 	 */
 	public static BigDecimal div(String v1, String v2, int scale) {
 		return div(v1, v2, scale, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况时,由scale指定精确度
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @param scale 精确度，如果为负值，取绝对值
+	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
+	 * @return 两个参数的商
+	 */
+	public static double div(float v1, float v2, int scale, RoundingMode roundingMode) {
+		return div(Float.toString(v1), Float.toString(v2), scale, roundingMode).doubleValue();
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况时,由scale指定精确度
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @param scale 精确度，如果为负值，取绝对值
+	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
+	 * @return 两个参数的商
+	 */
+	public static double div(float v1, double v2, int scale, RoundingMode roundingMode) {
+		return div(Float.toString(v1), Double.toString(v2), scale, roundingMode).doubleValue();
+	}
+
+	/**
+	 * 提供(相对)精确的除法运算,当发生除不尽的情况时,由scale指定精确度
+	 * 
+	 * @param v1 被除数
+	 * @param v2 除数
+	 * @param scale 精确度，如果为负值，取绝对值
+	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
+	 * @return 两个参数的商
+	 */
+	public static double div(double v1, float v2, int scale, RoundingMode roundingMode) {
+		return div(Double.toString(v1), Float.toString(v2), scale, roundingMode).doubleValue();
 	}
 
 	/**
@@ -384,8 +746,10 @@ public class NumberUtil {
 	 * @since 3.0.9
 	 */
 	public static BigDecimal div(BigDecimal v1, BigDecimal v2, int scale, RoundingMode roundingMode) {
-		Assert.notNull(v1);
-		Assert.notNull(v2);
+		Assert.notNull(v2, "Divisor must be not null !");
+		if (null == v1) {
+			return new BigDecimal("0");
+		}
 		if (scale < 0) {
 			scale = -scale;
 		}
@@ -402,8 +766,21 @@ public class NumberUtil {
 	 * @param scale 保留小数位数
 	 * @return 新值
 	 */
-	public static double round(double v, int scale) {
+	public static BigDecimal round(double v, int scale) {
 		return round(v, scale, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * 保留固定位数小数<br>
+	 * 采用四舍五入策略 {@link RoundingMode#HALF_UP}<br>
+	 * 例如保留2位小数：123.456789 =》 123.46
+	 * 
+	 * @param v 值
+	 * @param scale 保留小数位数
+	 * @return 新值
+	 */
+	public static String roundStr(double v, int scale) {
+		return round(v, scale).toString();
 	}
 
 	/**
@@ -415,8 +792,22 @@ public class NumberUtil {
 	 * @param scale 保留小数位数
 	 * @return 新值
 	 */
-	public static double round(String numberStr, int scale) {
+	public static BigDecimal round(String numberStr, int scale) {
 		return round(numberStr, scale, RoundingMode.HALF_UP);
+	}
+
+	/**
+	 * 保留固定位数小数<br>
+	 * 采用四舍五入策略 {@link RoundingMode#HALF_UP}<br>
+	 * 例如保留2位小数：123.456789 =》 123.46
+	 * 
+	 * @param numberStr 数字值的字符串表现形式
+	 * @param scale 保留小数位数
+	 * @return 新值
+	 * @since 3.2.2
+	 */
+	public static String roundStr(String numberStr, int scale) {
+		return round(numberStr, scale).toString();
 	}
 
 	/**
@@ -428,8 +819,43 @@ public class NumberUtil {
 	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
 	 * @return 新值
 	 */
-	public static double round(double v, int scale, RoundingMode roundingMode) {
+	public static BigDecimal round(double v, int scale, RoundingMode roundingMode) {
 		return round(Double.toString(v), scale, roundingMode);
+	}
+
+	/**
+	 * 保留固定位数小数<br>
+	 * 例如保留四位小数：123.456789 =》 123.4567
+	 * 
+	 * @param v 值
+	 * @param scale 保留小数位数
+	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
+	 * @return 新值
+	 */
+	public static String roundStr(double v, int scale, RoundingMode roundingMode) {
+		return round(v, scale, roundingMode).toString();
+	}
+
+	/**
+	 * 保留固定位数小数<br>
+	 * 例如保留四位小数：123.456789 =》 123.4567
+	 * 
+	 * @param numberStr 数字值的字符串表现形式
+	 * @param scale 保留小数位数，如果传入小于0，则默认0
+	 * @param roundingMode 保留小数的模式 {@link RoundingMode}，如果传入null则默认四舍五入
+	 * @return 新值
+	 */
+	public static BigDecimal round(String numberStr, int scale, RoundingMode roundingMode) {
+		Assert.notBlank(numberStr);
+		if (scale < 0) {
+			scale = 0;
+		}
+		if (null == roundingMode) {
+			roundingMode = RoundingMode.HALF_UP;
+		}
+
+		final BigDecimal b = new BigDecimal(numberStr);
+		return b.setScale(scale, roundingMode);
 	}
 
 	/**
@@ -440,21 +866,10 @@ public class NumberUtil {
 	 * @param scale 保留小数位数
 	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
 	 * @return 新值
+	 * @since 3.2.2
 	 */
-	public static double round(String numberStr, int scale, RoundingMode roundingMode) {
-		final BigDecimal b = new BigDecimal(numberStr);
-		return b.setScale(scale, roundingMode).doubleValue();
-	}
-
-	/**
-	 * 保留小数位，采用四舍五入
-	 * 
-	 * @param number 被保留小数的数字
-	 * @param digit 保留的小数位数
-	 * @return 保留小数后的字符串
-	 */
-	public static String roundStr(double number, int digit) {
-		return String.format("%." + digit + 'f', number);
+	public static String roundStr(String numberStr, int scale, RoundingMode roundingMode) {
+		return round(numberStr, scale, roundingMode).toString();
 	}
 
 	// ------------------------------------------------------------------------------------------- decimalFormat
@@ -510,8 +925,22 @@ public class NumberUtil {
 	 * @return 格式化后的值
 	 * @since 3.0.9
 	 */
-	public static String decimalFormatMoney(Double value) {
+	public static String decimalFormatMoney(double value) {
 		return decimalFormat(",###", value);
+	}
+
+	/**
+	 * 格式化百分比，小数采用四舍五入方式
+	 * 
+	 * @param number 值
+	 * @param scale 保留小数位数
+	 * @return 百分比
+	 * @since 3.2.3
+	 */
+	public static String formatPercent(double number, int scale) {
+		final NumberFormat format = NumberFormat.getPercentInstance();
+		format.setMaximumFractionDigits(scale);
+		return format.format(number);
 	}
 
 	// ------------------------------------------------------------------------------------------- isXXX
@@ -626,8 +1055,24 @@ public class NumberUtil {
 	 */
 	public static boolean isInteger(String s) {
 		if (StrUtil.isNotBlank(s)) {
-			return s.matches("^\\d+$");
+			return s.matches("^-?\\d+$");
 		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * 判断字符串是否是Long类型
+	 * 
+	 * @param s String
+	 * @return 是否为{@link Long}类型
+	 * @since 4.0.0
+	 */
+	public static boolean isLong(String s) {
+		try {
+			Long.parseLong(s);
+			return true;
+		} catch (NumberFormatException e) {
 			return false;
 		}
 	}
@@ -737,6 +1182,17 @@ public class NumberUtil {
 
 	// ------------------------------------------------------------------------------------------- range
 	/**
+	 * 从0开始给定范围内的整数列表，步进为1
+	 * 
+	 * @param stop 结束（包含）
+	 * @return 整数列表
+	 * @since 3.3.1
+	 */
+	public static int[] range(int stop) {
+		return range(0, stop);
+	}
+
+	/**
 	 * 给定范围内的整数列表，步进为1
 	 * 
 	 * @param start 开始（包含）
@@ -818,7 +1274,10 @@ public class NumberUtil {
 	 * @param n 值
 	 * @return 阶乘
 	 */
-	public static int factorial(int n) {
+	public static long factorial(long n) {
+		if (n < 1) {
+			return 0;
+		}
 		if (n == 1) {
 			return 1;
 		}
@@ -1104,6 +1563,168 @@ public class NumberUtil {
 	}
 
 	/**
+	 * 比较两个字符是否相同
+	 * 
+	 * @param c1 字符1
+	 * @param c2 字符2
+	 * @param ignoreCase 是否忽略大小写
+	 * @return 是否相同
+	 * @since 3.2.1
+	 * @see CharUtil#equals(char, char, boolean)
+	 */
+	public static boolean equals(char c1, char c2, boolean ignoreCase) {
+		return CharUtil.equals(c1, c2, ignoreCase);
+	}
+
+	/**
+	 * 取最小值
+	 * 
+	 * @param <T> 元素类型
+	 * @param numberArray 数字数组
+	 * @return 最小值
+	 * @since 4.0.7
+	 * @see ArrayUtil#min(Comparable[])
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends Comparable<? super T>> T min(T... numberArray) {
+		return ArrayUtil.min(numberArray);
+	}
+
+	/**
+	 * 取最小值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最小值
+	 * @since 4.0.7
+	 * @see ArrayUtil#min(long...)
+	 */
+	public static long min(long... numberArray) {
+		return ArrayUtil.min(numberArray);
+	}
+
+	/**
+	 * 取最小值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最小值
+	 * @since 4.0.7
+	 * @see ArrayUtil#min(int...)
+	 */
+	public static int min(int... numberArray) {
+		return ArrayUtil.min(numberArray);
+	}
+
+	/**
+	 * 取最小值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最小值
+	 * @since 4.0.7
+	 * @see ArrayUtil#min(short...)
+	 */
+	public static short min(short... numberArray) {
+		return ArrayUtil.min(numberArray);
+	}
+
+	/**
+	 * 取最小值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最小值
+	 * @since 4.0.7
+	 * @see ArrayUtil#min(double...)
+	 */
+	public static double min(double... numberArray) {
+		return ArrayUtil.min(numberArray);
+	}
+
+	/**
+	 * 取最小值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最小值
+	 * @since 4.0.7
+	 * @see ArrayUtil#min(float...)
+	 */
+	public static float min(float... numberArray) {
+		return ArrayUtil.min(numberArray);
+	}
+
+	/**
+	 * 取最大值
+	 * 
+	 * @param <T> 元素类型
+	 * @param numberArray 数字数组
+	 * @return 最大值
+	 * @since 4.0.7
+	 * @see ArrayUtil#max(Comparable[])
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends Comparable<? super T>> T max(T... numberArray) {
+		return ArrayUtil.max(numberArray);
+	}
+
+	/**
+	 * 取最大值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最大值
+	 * @since 4.0.7
+	 * @see ArrayUtil#max(long...)
+	 */
+	public static long max(long... numberArray) {
+		return ArrayUtil.max(numberArray);
+	}
+
+	/**
+	 * 取最大值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最大值
+	 * @since 4.0.7
+	 * @see ArrayUtil#max(int...)
+	 */
+	public static int max(int... numberArray) {
+		return ArrayUtil.max(numberArray);
+	}
+
+	/**
+	 * 取最大值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最大值
+	 * @since 4.0.7
+	 * @see ArrayUtil#max(short...)
+	 */
+	public static short max(short... numberArray) {
+		return ArrayUtil.max(numberArray);
+	}
+
+	/**
+	 * 取最大值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最大值
+	 * @since 4.0.7
+	 * @see ArrayUtil#max(double...)
+	 */
+	public static double max(double... numberArray) {
+		return ArrayUtil.max(numberArray);
+	}
+
+	/**
+	 * 取最大值
+	 * 
+	 * @param numberArray 数字数组
+	 * @return 最大值
+	 * @since 4.0.7
+	 * @see ArrayUtil#max(float...)
+	 */
+	public static float max(float... numberArray) {
+		return ArrayUtil.max(numberArray);
+	}
+
+	/**
 	 * 数字转字符串<br>
 	 * 调用{@link Number#toString()}，并去除尾小数点儿后多余的0
 	 *
@@ -1146,6 +1767,17 @@ public class NumberUtil {
 	}
 
 	/**
+	 * 数字转{@link BigDecimal}
+	 * 
+	 * @param number 数字
+	 * @return {@link BigDecimal}
+	 * @since 4.0.9
+	 */
+	public static BigDecimal toBigDecimal(Number number) {
+		return new BigDecimal(number.toString());
+	}
+
+	/**
 	 * 是否空白符<br>
 	 * 空白符包括空格、制表符、全角空格和不间断空格<br>
 	 * 
@@ -1153,8 +1785,12 @@ public class NumberUtil {
 	 * @see Character#isSpaceChar(int)
 	 * @param c 字符
 	 * @return 是否空白符
+	 * @see Character#isWhitespace(int)
+	 * @see Character#isSpaceChar(int)
 	 * @since 3.0.6
+	 * @deprecated 请使用{@link CharUtil#isBlankChar(char)}
 	 */
+	@Deprecated
 	public static boolean isBlankChar(char c) {
 		return isBlankChar((int) c);
 	}
@@ -1168,9 +1804,11 @@ public class NumberUtil {
 	 * @param c 字符
 	 * @return 是否空白符
 	 * @since 3.0.6
+	 * @deprecated 请使用{@link CharUtil#isBlankChar(int)}
 	 */
+	@Deprecated
 	public static boolean isBlankChar(int c) {
-		return Character.isWhitespace(c) || Character.isSpaceChar(c);
+		return Character.isWhitespace(c) || Character.isSpaceChar(c) || c == '\ufeff' || c == '\u202a';
 	}
 
 	/**
@@ -1206,7 +1844,111 @@ public class NumberUtil {
 	public static int zero2One(int value) {
 		return 0 == value ? 1 : value;
 	}
-	
+
+	/**
+	 * 创建{@link BigInteger}，支持16进制、10进制和8进制，如果传入空白串返回null<br>
+	 * from Apache Common Lang
+	 * 
+	 * @param str 数字字符串
+	 * @return {@link BigInteger}
+	 * @since 3.2.1
+	 */
+	public static BigInteger newBigInteger(String str) {
+		str = StrUtil.trimToNull(str);
+		if (null == str) {
+			return null;
+		}
+
+		int pos = 0; // 数字字符串位置
+		int radix = 10;
+		boolean negate = false; // 负数与否
+		if (str.startsWith("-")) {
+			negate = true;
+			pos = 1;
+		}
+		if (str.startsWith("0x", pos) || str.startsWith("0X", pos)) {
+			// hex
+			radix = 16;
+			pos += 2;
+		} else if (str.startsWith("#", pos)) {
+			// alternative hex (allowed by Long/Integer)
+			radix = 16;
+			pos++;
+		} else if (str.startsWith("0", pos) && str.length() > pos + 1) {
+			// octal; so long as there are additional digits
+			radix = 8;
+			pos++;
+		} // default is to treat as decimal
+
+		if (pos > 0) {
+			str = str.substring(pos);
+		}
+		final BigInteger value = new BigInteger(str, radix);
+		return negate ? value.negate() : value;
+	}
+
+	/**
+	 * 判断两个数字是否相邻，例如1和2相邻，1和3不相邻<br>
+	 * 判断方法为做差取绝对值判断是否为1
+	 * 
+	 * @param number1 数字1
+	 * @param number2 数字2
+	 * @return 是否相邻
+	 * @since 4.0.7
+	 */
+	public static boolean isBeside(long number1, long number2) {
+		return Math.abs(number1 - number2) == 1;
+	}
+
+	/**
+	 * 判断两个数字是否相邻，例如1和2相邻，1和3不相邻<br>
+	 * 判断方法为做差取绝对值判断是否为1
+	 * 
+	 * @param number1 数字1
+	 * @param number2 数字2
+	 * @return 是否相邻
+	 * @since 4.0.7
+	 */
+	public static boolean isBeside(int number1, int number2) {
+		return Math.abs(number1 - number2) == 1;
+	}
+
+	/**
+	 * 把给定的总是平均分成N份，返回每份的个数<br>
+	 * 当除以分数有余数时每份+1
+	 * 
+	 * @param total 总数
+	 * @param partCount 份数
+	 * @return 每份的个数
+	 * @since 4.0.7
+	 */
+	public static int partValue(int total, int partCount) {
+		return partValue(total, partCount, true);
+	}
+
+	/**
+	 * 把给定的总是平均分成N份，返回每份的个数<br>
+	 * 如果isPlusOneWhenHasRem为true，则当除以分数有余数时每份+1，否则丢弃余数部分
+	 * 
+	 * @param total 总数
+	 * @param partCount 份数
+	 * @param isPlusOneWhenHasRem 在有余数时是否每份+1
+	 * @return 每份的个数
+	 * @since 4.0.7
+	 */
+	public static int partValue(int total, int partCount, boolean isPlusOneWhenHasRem) {
+		int partValue = 0;
+		if (total % partCount == 0) {
+			total = total / partCount;
+		} else {
+			partValue = (int) Math.floor(total / partCount);
+			if (isPlusOneWhenHasRem) {
+				partValue += 1;
+			}
+		}
+		return partValue;
+	}
+
 	// ------------------------------------------------------------------------------------------- Private method start
 	private static int mathSubnode(int selectNum, int minNum) {
 		if (selectNum == minNum) {

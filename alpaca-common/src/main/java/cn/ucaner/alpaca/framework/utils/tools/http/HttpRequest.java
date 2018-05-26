@@ -20,22 +20,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.codec.Base64;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
-import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.lang.Base64;
+import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
+import cn.ucaner.alpaca.framework.utils.tools.core.map.MapUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ObjectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.RandomUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ThreadUtil;
 import cn.ucaner.alpaca.framework.utils.tools.http.ssl.SSLSocketFactoryBuilder;
 import cn.ucaner.alpaca.framework.utils.tools.json.JSON;
 import cn.ucaner.alpaca.framework.utils.tools.log.StaticLog;
@@ -54,23 +54,27 @@ import cn.ucaner.alpaca.framework.utils.tools.log.StaticLog;
 * @version    V1.0
  */
 public class HttpRequest extends HttpBase<HttpRequest> {
-	private static final String BOUNDARY = "--------------------Alpaca-common" + RandomUtil.randomString(16);
+
+	/** 默认超时时长，-1表示 */
+	public static final int TIMEOUT_DEFAULT = -1;
+
+	private static final String BOUNDARY = "--------------------Hutool_" + RandomUtil.randomString(16);
 	private static final byte[] BOUNDARY_END = StrUtil.format("--{}--\r\n", BOUNDARY).getBytes();
 	private static final String CONTENT_DISPOSITION_TEMPLATE = "Content-Disposition: form-data; name=\"{}\"\r\n\r\n";
 	private static final String CONTENT_DISPOSITION_FILE_TEMPLATE = "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"\r\n";
-	
+
 	private static final String CONTENT_TYPE_X_WWW_FORM_URLENCODED_PREFIX = "application/x-www-form-urlencoded;charset=";
 	private static final String CONTENT_TYPE_MULTIPART_PREFIX = "multipart/form-data; boundary=";
 	private static final String CONTENT_TYPE_FILE_TEMPLATE = "Content-Type: {}\r\n\r\n";
 
-	private String url = "";
+	private String url;
 	private Method method = Method.GET;
 	/** 默认超时 */
-	private int timeout = -1;
+	private int timeout = TIMEOUT_DEFAULT;
 	/** 存储表单数据 */
 	private Map<String, Object> form;
 	/** 文件表单对象，用于文件上传 */
-	private Map<String, File> fileForm;
+	private Map<String, DataSource> fileForm;
 	/** 文件表单对象，用于文件上传 */
 	private String cookie;
 
@@ -78,13 +82,15 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	private HttpConnection httpConnection;
 	/** 是否禁用缓存 */
 	private boolean isDisableCache;
-	/** 是否允许重定向 */
-	private Boolean isFollowRedirects;
-	/** 重定向次数 */
+	/** 是否对url进行编码 */
+	private boolean isEncodeUrl;
+	/** 重定向次数计数器，内部使用 */
 	private int redirectCount;
+	/** 最大重定向次数 */
+	private int maxRedirectCount;
 	/** 代理 */
 	private Proxy proxy;
-	
+
 	/** HostnameVerifier，用于HTTPS安全连接 */
 	private HostnameVerifier hostnameVerifier;
 	/** SSLSocketFactory，用于HTTPS安全连接 */
@@ -96,7 +102,10 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @param url URL
 	 */
 	public HttpRequest(String url) {
+		Assert.notBlank(url, "Param [url] can not be blank !");
 		this.url = url;
+		// 给定一个默认头信息
+		this.header(GlobalHeaders.INSTANCE.headers);
 	}
 
 	// ---------------------------------------------------------------- Http Method start
@@ -160,7 +169,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	public static HttpRequest put(String url) {
 		return new HttpRequest(url).method(Method.PUT);
 	}
-	
+
 	/**
 	 * PATCH请求
 	 * 
@@ -227,7 +236,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 
 		return !connection.equalsIgnoreCase("close");
 	}
-	
+
 	/**
 	 * 获取内容长度
 	 * 
@@ -247,7 +256,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		header(Header.CONTENT_LENGTH, String.valueOf(value));
 		return this;
 	}
-	
+
 	/**
 	 * 设置Cookie<br>
 	 * 自定义Cookie后会覆盖Hutool的默认Cookie行为
@@ -256,13 +265,13 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @return this
 	 * @since 3.1.1
 	 */
-	public HttpRequest cookie(HttpCookie... cookies){
-		if(ArrayUtil.isEmpty(cookies)) {
+	public HttpRequest cookie(HttpCookie... cookies) {
+		if (ArrayUtil.isEmpty(cookies)) {
 			return disableCookie();
 		}
 		return cookie(ArrayUtil.join(cookies, ";"));
 	}
-	
+
 	/**
 	 * 设置Cookie<br>
 	 * 自定义Cookie后会覆盖Hutool的默认Cookie行为
@@ -271,11 +280,11 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @return this
 	 * @since 3.0.7
 	 */
-	public HttpRequest cookie(String cookie){
+	public HttpRequest cookie(String cookie) {
 		this.cookie = cookie;
 		return this;
 	}
-	
+
 	/**
 	 * 禁用默认Cookie行为，此方法调用后会将Cookie置为空。<br>
 	 * 如果想重新启用Cookie，请调用：{@link #cookie(String)}方法自定义Cookie。<br>
@@ -284,16 +293,17 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @return this
 	 * @since 3.0.7
 	 */
-	public HttpRequest disableCookie(){
+	public HttpRequest disableCookie() {
 		return cookie(StrUtil.EMPTY);
 	}
-	
+
 	/**
 	 * 打开默认的Cookie行为（自动回填服务器传回的Cookie）
+	 * 
 	 * @return this
 	 */
-	public HttpRequest enableDefaultCookie(){
-		return cookie((String)null);
+	public HttpRequest enableDefaultCookie() {
+		return cookie((String) null);
 	}
 	// ---------------------------------------------------------------- Http Request Header end
 
@@ -306,15 +316,19 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @return this
 	 */
 	public HttpRequest form(String name, Object value) {
-		if(StrUtil.isBlank(name) || ObjectUtil.isNull(value)){
-			return this;	//忽略非法的form表单项内容;
+		if (StrUtil.isBlank(name) || ObjectUtil.isNull(value)) {
+			return this; // 忽略非法的form表单项内容;
 		}
-		
+
 		// 停用body
-		this.body = null;
+		this.bodyBytes = null;
 
 		if (value instanceof File) {
+			//文件上传
 			return this.form(name, (File) value);
+		} else if (value instanceof DataSource) {
+			//自定义流上传
+			return this.form(name, (DataSource) value);
 		} else if (this.form == null) {
 			form = new HashMap<String, Object>();
 		}
@@ -362,8 +376,10 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * 
 	 */
 	public HttpRequest form(Map<String, Object> formMap) {
-		for (Map.Entry<String, Object> entry : formMap.entrySet()) {
-			form(entry.getKey(), entry.getValue());
+		if (MapUtil.isNotEmpty(formMap)) {
+			for (Map.Entry<String, Object> entry : formMap.entrySet()) {
+				form(entry.getKey(), entry.getValue());
+			}
 		}
 		return this;
 	}
@@ -373,23 +389,37 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * 一旦有文件加入，表单变为multipart/form-data
 	 * 
 	 * @param name 名
-	 * @param file 文件
+	 * @param file 需要上传的文件
 	 * @return this
 	 */
 	public HttpRequest form(String name, File file) {
-		if (null == file) {
-			return this;
+		if (null != file) {
+			form(name, new FileDataSource(file));
 		}
+		return this;
+	}
 
-		if (false == isKeepAlive()) {
-			keepAlive(true);
-		}
+	/**
+	 * 文件表单项<br>
+	 * 一旦有文件加入，表单变为multipart/form-data
+	 * 
+	 * @param name 名
+	 * @param dataSource 数据源，文件可以使用{@link FileDataSource}包装使用
+	 * @return this
+	 * @since 4.0.9
+	 */
+	public HttpRequest form(String name, DataSource dataSource) {
+		if (null != dataSource) {
+			if (false == isKeepAlive()) {
+				keepAlive(true);
+			}
 
-		if (this.fileForm == null) {
-			fileForm = new HashMap<String, File>();
+			if (null == this.fileForm) {
+				fileForm = new HashMap<String, DataSource>();
+			}
+			// 文件对象
+			this.fileForm.put(name, dataSource);
 		}
-		// 文件对象
-		this.fileForm.put(name, file);
 		return this;
 	}
 
@@ -399,7 +429,17 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @return 表单Map
 	 */
 	public Map<String, Object> form() {
-		return form;
+		return this.form;
+	}
+
+	/**
+	 * 获取文件表单数据
+	 * 
+	 * @return 文件表单Map
+	 * @since 3.3.0
+	 */
+	public Map<String, DataSource> fileForm() {
+		return this.fileForm;
 	}
 	// ---------------------------------------------------------------- Form end
 
@@ -411,42 +451,56 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @return this
 	 */
 	public HttpRequest body(String body) {
-		this.body = body;
-		this.form = null; // 当使用body时，废弃form的使用
-		contentLength(body.length());
-		return this;
+		return this.body(body, null);
 	}
-	
+
 	/**
-	 * 设置内容主体
+	 * 设置内容主体<br>
+	 * 请求体body参数支持两种类型：
+	 * 
+	 * <pre>
+	 * 1. 标准参数，例如 a=1&amp;b=2 这种格式
+	 * 2. Rest模式，此时body需要传入一个JSON或者XML字符串，Hutool会自动绑定其对应的Content-Type
+	 * </pre>
 	 * 
 	 * @param body 请求体
 	 * @param contentType 请求体类型
 	 * @return this
 	 */
 	public HttpRequest body(String body, String contentType) {
-		this.body(body);
-		this.contentType(contentType);
+		body(StrUtil.bytes(body, this.charset));
+		this.form = null; // 当使用body时，停止form的使用
+		contentLength((null != body ? body.length() : 0));
+
+		if (null != contentType) {
+			// Content-Type自定义设置
+			this.contentType(contentType);
+		} else {
+			// 在用户未自定义的情况下自动根据内容判断
+			contentType = HttpUtil.getContentTypeByRequestBody(body);
+			if (null != contentType && ContentType.isFormUrlEncoed(this.header(Header.CONTENT_TYPE))) {
+				this.contentType(contentType);
+			}
+		}
 		return this;
 	}
-	
+
 	/**
 	 * 设置JSON内容主体<br>
-	 * 设置默认的Content-Type为 application/json
-	 * 需在此方法调用前使用charset方法设置编码，否则使用默认编码UTF-8
+	 * 设置默认的Content-Type为 application/json 需在此方法调用前使用charset方法设置编码，否则使用默认编码UTF-8
 	 * 
 	 * @param json JSON请求体
 	 * @return this
 	 */
 	public HttpRequest body(JSON json) {
 		this.body(json.toString());
-		
+
 		String contentTypeJson = "application/json";
-		if(null != this.charset){
+		if (null != this.charset) {
 			contentTypeJson = StrUtil.format("{};charset={}", contentTypeJson, this.charset.name());
 		}
 		this.contentType(contentTypeJson);
-		
+
 		return this;
 	}
 
@@ -458,12 +512,13 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @return this
 	 */
 	public HttpRequest body(byte[] bodyBytes) {
-		return body(StrUtil.str(bodyBytes, this.charset));
+		this.bodyBytes = bodyBytes;
+		return this;
 	}
 	// ---------------------------------------------------------------- Body end
 
 	/**
-	 * 设置超时
+	 * 设置超时，单位：毫秒
 	 * 
 	 * @param milliseconds 超时毫秒数
 	 * @return this
@@ -472,7 +527,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		this.timeout = milliseconds;
 		return this;
 	}
-	
+
 	/**
 	 * 禁用缓存
 	 * 
@@ -482,17 +537,47 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		this.isDisableCache = true;
 		return this;
 	}
-	
+
 	/**
-	 * 设置是否打开重定向
+	 * 是否对URL中的参数进行编码
+	 * 
+	 * @param isEncodeUrl 是否对URL中的参数进行编码
+	 * @return this
+	 * @since 4.0.1
+	 */
+	public HttpRequest setEncodeUrl(boolean isEncodeUrl) {
+		this.isEncodeUrl = isEncodeUrl;
+		return this;
+	}
+
+	/**
+	 * 设置是否打开重定向，如果打开默认重定向次数为2<br>
+	 * 此方法效果与{@link #setMaxRedirectCount(int)} 一致
+	 * 
 	 * @param isFollowRedirects 是否打开重定向
 	 * @return this
 	 */
 	public HttpRequest setFollowRedirects(Boolean isFollowRedirects) {
-		this.isFollowRedirects = isFollowRedirects;
+		return setMaxRedirectCount(2);
+	}
+
+	/**
+	 * 设置最大重定向次数<br>
+	 * 如果次数小于1则表示不重定向，大于等于1表示打开重定向
+	 * 
+	 * @param maxRedirectCount 最大重定向次数
+	 * @return this
+	 * @since 3.3.0
+	 */
+	public HttpRequest setMaxRedirectCount(int maxRedirectCount) {
+		if (maxRedirectCount > 0) {
+			this.maxRedirectCount = maxRedirectCount;
+		} else {
+			this.maxRedirectCount = 0;
+		}
 		return this;
 	}
-	
+
 	/**
 	 * 设置域名验证器<br>
 	 * 只针对HTTPS请求，如果不设置，不做验证，所有域名被信任
@@ -505,9 +590,10 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		this.hostnameVerifier = hostnameVerifier;
 		return this;
 	}
-	
+
 	/**
 	 * 设置代理
+	 * 
 	 * @param proxy 代理 {@link Proxy}
 	 * @return this
 	 */
@@ -515,7 +601,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		this.proxy = proxy;
 		return this;
 	}
-	
+
 	/**
 	 * 设置SSLSocketFactory<br>
 	 * 只针对HTTPS请求，如果不设置，使用默认的SSLSocketFactory<br>
@@ -524,19 +610,20 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @param ssf SSLScketFactory
 	 * @return this
 	 */
-	public HttpRequest setSSLSocketFactory(SSLSocketFactory ssf){
+	public HttpRequest setSSLSocketFactory(SSLSocketFactory ssf) {
 		this.ssf = ssf;
 		return this;
 	}
-	
+
 	/**
 	 * 设置HTTPS安全连接协议，只针对HTTPS请求<br>
+	 * 
 	 * @see SSLSocketFactoryBuilder
 	 * @param protocol 协议
 	 * @return this
 	 */
-	public HttpRequest setSSLProtocol(String protocol){
-		if(null == this.ssf){
+	public HttpRequest setSSLProtocol(String protocol) {
+		if (null == this.ssf) {
 			try {
 				this.ssf = SSLSocketFactoryBuilder.create().setProtocol(protocol).build();
 			} catch (Exception e) {
@@ -545,7 +632,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		}
 		return this;
 	}
-	
+
 	/**
 	 * 执行Reuqest请求
 	 * 
@@ -554,12 +641,14 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	public HttpResponse execute() {
 		return this.execute(false);
 	}
-	
+
 	/**
-	 * 异步请求
+	 * 异步请求<br>
+	 * 异步请求后获取的{@link HttpResponse} 为异步模式，此时此对象持有Http链接（http链接并不会关闭），直调用获取内容方法为止
+	 * 
 	 * @return 异步对象，使用get方法获取HttpResponse对象
 	 */
-	public HttpResponse executeAsync(){
+	public HttpResponse executeAsync() {
 		return this.execute(true);
 	}
 
@@ -570,37 +659,22 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @return this
 	 */
 	public HttpResponse execute(boolean isAsync) {
-		//初始化URL
+		// 初始化URL
 		urlWithParamIfGet();
 		// 初始化 connection
 		initConnecton();
 
 		// 发送请求
 		send();
-		
-		//手动实现重定向
+
+		// 手动实现重定向
 		HttpResponse httpResponse = sendRedirectIfPosible();
 
 		// 获取响应
-		if(null == httpResponse){
+		if (null == httpResponse) {
 			httpResponse = new HttpResponse(this.httpConnection, this.charset, isAsync, isIgnoreResponseBody());
 		}
 		return httpResponse;
-	}
-	
-	/**
-	 * 异步请求
-	 * @return 异步对象，使用get方法获取HttpResponse对象
-	 * @deprecated 请使用{@link #executeAsync()}
-	 */
-	@Deprecated
-	public Future<HttpResponse> asyncExecute(){
-		return ThreadUtil.execAsync(new Callable<HttpResponse>(){
-			@Override
-			public HttpResponse call() throws Exception {
-				return execute();
-			}
-		});
 	}
 
 	/**
@@ -618,67 +692,69 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 
 		return this;
 	}
-	
+
 	// ---------------------------------------------------------------- Private method start
 	/**
 	 * 初始化网络连接
 	 */
-	private void initConnecton(){
+	private void initConnecton() {
 		// 初始化 connection
-		this.httpConnection = HttpConnection
-				.create(this.url, this.method, this.hostnameVerifier, this.ssf, this.timeout, this.proxy)
-				.header(this.headers, true); // 覆盖默认Header
-		
-		//自定义Cookie
-		if(null != this.cookie){
+		this.httpConnection = HttpConnection.create(this.url, this.method, this.hostnameVerifier, this.ssf, this.timeout, this.proxy).header(this.headers, true); // 覆盖默认Header
+
+		// 自定义Cookie
+		if (null != this.cookie) {
 			this.httpConnection.setCookie(this.cookie);
 		}
-		
-		//是否禁用缓存
-		if(this.isDisableCache){
+
+		// 是否禁用缓存
+		if (this.isDisableCache) {
 			this.httpConnection.disableCache();
 		}
-		
-		if(null != isFollowRedirects){
-			//如果自定义了转发，则设置，否则使用默认
-			this.httpConnection.setInstanceFollowRedirects(isFollowRedirects);
-		}
+
+		// 定义转发
+		this.httpConnection.setInstanceFollowRedirects(maxRedirectCount > 0 ? true : false);
 	}
-	
+
 	/**
 	 * 对于GET请求将参数加到URL中
 	 */
-	private void urlWithParamIfGet(){
+	private void urlWithParamIfGet() {
 		if (Method.GET.equals(method)) {
 			// 优先使用body形式的参数，不存在使用form
-			if (StrUtil.isNotBlank(this.body)) {
-				this.url = HttpUtil.urlWithForm(this.url, this.body);
+			if (ArrayUtil.isNotEmpty(this.bodyBytes)) {
+				this.url = HttpUtil.urlWithForm(this.url, StrUtil.str(this.bodyBytes, this.charset), this.charset, this.isEncodeUrl);
 			} else {
-				this.url = HttpUtil.urlWithForm(this.url, this.form);
+				this.url = HttpUtil.urlWithForm(this.url, this.form, this.charset, this.isEncodeUrl);
 			}
 		}
 	}
-	
+
 	/**
 	 * 调用转发，如果需要转发返回转发结果，否则返回<code>null</code>
+	 * 
 	 * @return {@link HttpResponse}，无转发返回 <code>null</code>
 	 */
-	private HttpResponse sendRedirectIfPosible(){
-		//手动实现重定向
-		if(this.httpConnection.getHttpURLConnection().getInstanceFollowRedirects()){
+	private HttpResponse sendRedirectIfPosible() {
+		if (this.maxRedirectCount < 1) {
+			// 不重定向
+			return null;
+		}
+
+		// 手动实现重定向
+		if (this.httpConnection.getHttpURLConnection().getInstanceFollowRedirects()) {
 			int responseCode;
 			try {
 				responseCode = httpConnection.responseCode();
 			} catch (IOException e) {
 				throw new HttpException(e);
 			}
-			if(responseCode != HttpURLConnection.HTTP_OK){
-				if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER){
+			if (responseCode != HttpURLConnection.HTTP_OK) {
+				if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
 					this.url = httpConnection.header(Header.LOCATION);
-					if(redirectCount < 2){
+					if (redirectCount < this.maxRedirectCount) {
 						redirectCount++;
 						return execute();
-					}else{
+					} else {
 						StaticLog.warn("URL [{}] redirect count more than two !", this.url);
 					}
 				}
@@ -686,7 +762,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 发送数据流
 	 * 
@@ -696,36 +772,36 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		try {
 			if (Method.POST.equals(method) || Method.PUT.equals(method)) {
 				if (CollectionUtil.isEmpty(fileForm)) {
-					sendFormUrlEncoded();//普通表单
+					sendFormUrlEncoded();// 普通表单
 				} else {
-					sendMltipart();	//文件上传表单
+					sendMltipart(); // 文件上传表单
 				}
-			}else{
+			} else {
 				this.httpConnection.connect();
 			}
 		} catch (IOException e) {
 			throw new HttpException(e.getMessage(), e);
 		}
 	}
-	
+
 	/**
 	 * 发送普通表单
+	 * 
 	 * @throws IOException
 	 */
-	private void sendFormUrlEncoded() throws IOException{
-		if(StrUtil.isBlank(this.header(Header.CONTENT_TYPE))){
-			//如果未自定义Content-Type，使用默认的application/x-www-form-urlencoded
+	private void sendFormUrlEncoded() throws IOException {
+		if (StrUtil.isBlank(this.header(Header.CONTENT_TYPE))) {
+			// 如果未自定义Content-Type，使用默认的application/x-www-form-urlencoded
 			this.httpConnection.header(Header.CONTENT_TYPE, CONTENT_TYPE_X_WWW_FORM_URLENCODED_PREFIX + this.charset, true);
 		}
-		
+
 		// Write的时候会优先使用body中的内容，write时自动关闭OutputStream
-		String content;
-		if (StrUtil.isNotBlank(this.body)) {
-			content = this.body;
+		if (ArrayUtil.isNotEmpty(this.bodyBytes)) {
+			IoUtil.write(this.httpConnection.getOutputStream(), true, this.bodyBytes);
 		} else {
-			content = HttpUtil.toParams(this.form, this.charset);
+			final String content = HttpUtil.toParams(this.form, this.charset);
+			IoUtil.write(this.httpConnection.getOutputStream(), this.charset, true, content);
 		}
-		IoUtil.write(this.httpConnection.getOutputStream(), this.charset, true, content);
 	}
 
 	/**
@@ -734,8 +810,8 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @throws IOException
 	 */
 	private void sendMltipart() throws IOException {
-		setMultipart();//设置表单类型为Multipart
-		
+		setMultipart();// 设置表单类型为Multipart
+
 		final OutputStream out = this.httpConnection.getOutputStream();
 		try {
 			writeFileForm(out);
@@ -743,7 +819,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 			formEnd(out);
 		} catch (IOException e) {
 			throw e;
-		}finally{
+		} finally {
 			IoUtil.close(out);
 		}
 	}
@@ -751,6 +827,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	// 普通字符串数据
 	/**
 	 * 发送普通表单内容
+	 * 
 	 * @param out 输出流
 	 * @throws IOException
 	 */
@@ -768,18 +845,19 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 
 	/**
 	 * 发送文件对象表单
+	 * 
 	 * @param out 输出流
 	 * @throws IOException
 	 */
 	private void writeFileForm(OutputStream out) throws IOException {
-		File file;
-		for (Entry<String, File> entry : this.fileForm.entrySet()) {
-			file = entry.getValue();
+		DataSource dataSource;
+		for (Entry<String, DataSource> entry : this.fileForm.entrySet()) {
+			dataSource = entry.getValue();
 			StringBuilder builder = StrUtil.builder().append("--").append(BOUNDARY).append(StrUtil.CRLF);
-			builder.append(StrUtil.format(CONTENT_DISPOSITION_FILE_TEMPLATE, entry.getKey(), file.getName()));
-			builder.append(StrUtil.format(CONTENT_TYPE_FILE_TEMPLATE, HttpUtil.getMimeType(file.getName())));
+			builder.append(StrUtil.format(CONTENT_DISPOSITION_FILE_TEMPLATE, entry.getKey(), dataSource.getName()));
+			builder.append(StrUtil.format(CONTENT_TYPE_FILE_TEMPLATE, HttpUtil.getMimeType(dataSource.getName())));
 			IoUtil.write(out, this.charset, false, builder);
-			FileUtil.writeToStream(file, out);
+			IoUtil.copy(dataSource.getInputStream(), out);
 			IoUtil.write(out, this.charset, false, StrUtil.CRLF);
 		}
 	}
@@ -787,6 +865,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	// 添加结尾数据
 	/**
 	 * 上传表单结束
+	 * 
 	 * @param out 输出流
 	 * @throws IOException
 	 */
@@ -794,15 +873,16 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 		out.write(BOUNDARY_END);
 		out.flush();
 	}
-	
+
 	/**
 	 * 设置表单类型为Multipart（文件上传）
+	 * 
 	 * @return HttpConnection
 	 */
-	private void setMultipart(){
+	private void setMultipart() {
 		this.httpConnection.header(Header.CONTENT_TYPE, CONTENT_TYPE_MULTIPART_PREFIX + BOUNDARY, true);
 	}
-	
+
 	/**
 	 * 是否忽略读取响应body部分<br>
 	 * HEAD、CONNECT、OPTIONS、TRACE方法将不读取响应体
@@ -811,10 +891,7 @@ public class HttpRequest extends HttpBase<HttpRequest> {
 	 * @since 3.1.2
 	 */
 	private boolean isIgnoreResponseBody() {
-		if(Method.HEAD == this.method 
-				|| Method.CONNECT == this.method 
-				|| Method.OPTIONS == this.method
-				|| Method.TRACE == this.method) {
+		if (Method.HEAD == this.method || Method.CONNECT == this.method || Method.OPTIONS == this.method || Method.TRACE == this.method) {
 			return true;
 		}
 		return false;

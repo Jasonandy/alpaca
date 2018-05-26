@@ -12,12 +12,14 @@ package cn.ucaner.alpaca.framework.utils.tools.core.lang;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
@@ -50,7 +52,7 @@ public final class ClassScaner {
 	 * @return 类集合
 	 */
 	public static Set<Class<?>> scanPackageByAnnotation(String packageName, final Class<? extends Annotation> annotationClass) {
-		return scanPackage(packageName, new Filter<Class<?>>(){
+		return scanPackage(packageName, new Filter<Class<?>>() {
 			@Override
 			public boolean accept(Class<?> clazz) {
 				return clazz.isAnnotationPresent(annotationClass);
@@ -66,14 +68,14 @@ public final class ClassScaner {
 	 * @return 类集合
 	 */
 	public static Set<Class<?>> scanPackageBySuper(String packageName, final Class<?> superClass) {
-		return scanPackage(packageName, new Filter<Class<?>>(){
+		return scanPackage(packageName, new Filter<Class<?>>() {
 			@Override
 			public boolean accept(Class<?> clazz) {
 				return superClass.isAssignableFrom(clazz) && !superClass.equals(clazz);
 			}
 		});
 	}
-	
+
 	/**
 	 * 扫面该包路径下所有class文件
 	 * 
@@ -96,26 +98,22 @@ public final class ClassScaner {
 	/**
 	 * 扫面包路径下满足class过滤器条件的所有class文件，<br>
 	 * 如果包路径为 com.abs + A.class 但是输入 abs会产生classNotFoundException<br>
-	 * 因为className 应该为 com.abs.A 现在却成为abs.A,此工具类对该异常进行忽略处理,有可能是一个不完善的地方，以后需要进行修改<br>
+	 * 因为className 应该为 com.abs.A 现在却成为abs.A,此工具类对该异常进行忽略处理<br>
 	 * 
 	 * @param packageName 包路径 com | com. | com.abs | com.abs.
 	 * @param classFilter class过滤器，过滤掉不需要的class
 	 * @return 类集合
 	 */
-	public static Set<Class<?>> scanPackage(String packageName,  Filter<Class<?>> classFilter) {
+	public static Set<Class<?>> scanPackage(String packageName, Filter<Class<?>> classFilter) {
 		if (StrUtil.isBlank(packageName)) {
 			packageName = StrUtil.EMPTY;
 		}
-//		log.debug("Scan classes from package [{}]...", packageName);
+		// log.debug("Scan classes from package [{}]...", packageName);
 		packageName = getWellFormedPackageName(packageName);
 
 		final Set<Class<?>> classes = new HashSet<Class<?>>();
-		final Set<String> classPaths = ClassUtil.getClassPaths(packageName);
+		final Set<String> classPaths = ClassUtil.getClassPaths(packageName, true);
 		for (String classPath : classPaths) {
-			// bug修复，由于路径中空格和中文导致的Jar找不到
-			classPath = URLUtil.decode(classPath, CharsetUtil.systemCharsetName());
-
-//			log.debug("Scan classpath: [{}]", classPath);
 			// 填充 classes
 			fillClasses(classPath, packageName, classFilter, classes);
 		}
@@ -127,14 +125,14 @@ public final class ClassScaner {
 				// bug修复，由于路径中空格和中文导致的Jar找不到
 				classPath = URLUtil.decode(classPath, CharsetUtil.systemCharsetName());
 
-//				log.debug("Scan java classpath: [{}]", classPath);
+				// log.debug("Scan java classpath: [{}]", classPath);
 				// 填充 classes
 				fillClasses(classPath, new File(classPath), packageName, classFilter, classes);
 			}
 		}
 		return classes;
 	}
-	
+
 	// --------------------------------------------------------------------------------------------------- Private method start
 	/**
 	 * 改变 com -> com. 避免在比较的时候把比如 completeTestSuite.class类扫描进去，如果没有"."<br>
@@ -206,16 +204,16 @@ public final class ClassScaner {
 	 * 处理为class文件的情况,填充满足条件的class 到 classes
 	 * 
 	 * @param classPath 类文件所在目录，当包名为空时使用此参数，用于截掉类名前面的文件路径
-	 * @param file class文件
+	 * @param classFile class文件
 	 * @param packageName 包名
 	 * @param classFilter 类过滤器
 	 * @param classes 类集合
 	 */
-	private static void processClassFile(String classPath, File file, String packageName, Filter<Class<?>> classFilter, Set<Class<?>> classes) {
+	private static void processClassFile(String classPath, File classFile, String packageName, Filter<Class<?>> classFilter, Set<Class<?>> classes) {
 		if (false == classPath.endsWith(File.separator)) {
 			classPath += File.separator;
 		}
-		String path = file.getAbsolutePath();
+		String path = classFile.getAbsolutePath();
 		if (StrUtil.isEmpty(packageName)) {
 			path = StrUtil.removePrefix(path, classPath);
 		}
@@ -240,18 +238,56 @@ public final class ClassScaner {
 	 */
 	private static void processJarFile(File file, String packageName, Filter<Class<?>> classFilter, Set<Class<?>> classes) {
 		JarFile jarFile = null;
+		Enumeration<JarEntry> entries;
 		try {
 			jarFile = new JarFile(file);
-			for (JarEntry entry : Collections.list(jarFile.entries())) {
-				if (isClass(entry.getName())) {
-					final String className = entry.getName().replace(StrUtil.SLASH, StrUtil.DOT).replace(FileUtil.CLASS_EXT, StrUtil.EMPTY);
+			entries = jarFile.entries();
+			JarEntry entry;
+			String entryName;
+			while (entries.hasMoreElements()) {
+				entry = entries.nextElement();
+				entryName = entry.getName();
+				if (isClass(entryName)) {
+					final String className = StrUtil.removeSuffix(entryName.replace(StrUtil.SLASH, StrUtil.DOT), FileUtil.CLASS_EXT);
+					fillClass(className, packageName, classes, classFilter);
+				} else if(isJar(entryName)) {
+					processJarStream(jarFile.getInputStream(entry), packageName, classFilter, classes);
+				}
+			}
+		} catch (Exception ex) {
+			Console.error(ex, ex.getMessage());
+		} finally {
+			IoUtil.close(jarFile);
+		}
+	}
+	
+	/**
+	 * 处理为jar文件的情况，填充满足条件的class 到 classes
+	 * 
+	 * @param in jar文件流
+	 * @param packageName 包名
+	 * @param classFilter 类过滤器
+	 * @param classes 类集合
+	 * @since 4.0.12
+	 */
+	private static void processJarStream(InputStream in, String packageName, Filter<Class<?>> classFilter, Set<Class<?>> classes) {
+		JarInputStream jarIn = null;
+		try {
+			jarIn = (in instanceof JarInputStream) ? (JarInputStream)in : new JarInputStream(in);
+			JarEntry entry;
+			String entryName;
+			while (null != (entry = jarIn.getNextJarEntry())) {
+				entryName = entry.getName();
+				if (isClass(entryName)) {
+					final String className = StrUtil.removeSuffix(entryName.replace(StrUtil.SLASH, StrUtil.DOT), FileUtil.CLASS_EXT);
 					fillClass(className, packageName, classes, classFilter);
 				}
 			}
 		} catch (Exception ex) {
 			Console.error(ex, ex.getMessage());
-		}finally{
-			IoUtil.close(jarFile);
+		} finally {
+			IoUtil.close(jarIn);
+			IoUtil.close(in);
 		}
 	}
 
@@ -270,7 +306,7 @@ public final class ClassScaner {
 				if (classFilter == null || classFilter.accept(clazz)) {
 					classes.add(clazz);
 				}
-			} catch (Exception ex) {
+			} catch (Throwable ex) {
 				// Pass Load Error.
 			}
 		}
@@ -294,7 +330,7 @@ public final class ClassScaner {
 	private static boolean isClassFile(File file) {
 		return isClass(file.getName());
 	}
-	
+
 	/**
 	 * @param fileName 文件名
 	 * @return 是否为类文件
@@ -305,10 +341,19 @@ public final class ClassScaner {
 
 	/**
 	 * @param file 文件
-	 * @return是否为Jar文件
+	 * @return 是否为Jar文件
 	 */
 	private static boolean isJarFile(File file) {
-		return file.getName().endsWith(FileUtil.JAR_FILE_EXT);
+		return isJar(file.getName());
+	}
+
+	/**
+	 * @param fileName 文件名
+	 * @return 是否为Jar文件
+	 * @since 4.0.12
+	 */
+	private static boolean isJar(String fileName) {
+		return fileName.endsWith(FileUtil.JAR_FILE_EXT);
 	}
 	// --------------------------------------------------------------------------------------------------- Private method end
 }

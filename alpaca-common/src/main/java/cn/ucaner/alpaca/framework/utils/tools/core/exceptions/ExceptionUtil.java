@@ -6,8 +6,9 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.FastByteArrayOutputStream;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
@@ -23,6 +24,8 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
  */
 public final class ExceptionUtil {
 	
+	private static final String NULL = "null";
+	
 	private ExceptionUtil(){};
 
 	/**
@@ -32,7 +35,21 @@ public final class ExceptionUtil {
 	 * @return 完整消息
 	 */
 	public static String getMessage(Throwable e) {
+		if(null == e) {
+			return NULL;
+		}
 		return StrUtil.format("{}: {}", e.getClass().getSimpleName(), e.getMessage());
+	}
+	
+	
+	/**
+	 * 获得完整消息，包括异常名
+	 * 
+	 * @param e 异常
+	 * @return 完整消息
+	 */
+	public static String getSimpleMessage(Throwable e) {
+		return (null == e) ? NULL : e.getMessage();
 	}
 	
 	/**
@@ -46,6 +63,21 @@ public final class ExceptionUtil {
 		}else{
 			return new RuntimeException(throwable);
 		}
+	}
+	
+	/**
+	 * 包装一个异常
+	 * @param throwable 异常
+	 * @param wrapThrowable 包装后的异常类
+	 * @return 包装后的异常
+	 * @since 3.3.0
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends Throwable> T wrap(Throwable throwable, Class<T> wrapThrowable) {
+		if(wrapThrowable.isInstance(throwable)) {
+			return (T) throwable;
+		}
+		return ReflectUtil.newInstance(wrapThrowable, throwable);
 	}
 
 	/**

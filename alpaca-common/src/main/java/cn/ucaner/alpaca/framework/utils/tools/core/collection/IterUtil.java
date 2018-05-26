@@ -10,13 +10,17 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.core.collection;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.collection   
@@ -70,7 +74,7 @@ public class IterUtil {
 	public static boolean isNotEmpty(Iterator<?> Iterator) {
 		return null != Iterator && Iterator.hasNext();
 	}
-	
+
 	/**
 	 * 是否包含{@code null}元素
 	 * 
@@ -80,7 +84,7 @@ public class IterUtil {
 	public static boolean hasNull(Iterable<?> iter) {
 		return hasNull(null == iter ? null : iter.iterator());
 	}
-	
+
 	/**
 	 * 是否包含{@code null}元素
 	 * 
@@ -88,16 +92,49 @@ public class IterUtil {
 	 * @return 是否包含{@code null}元素
 	 */
 	public static boolean hasNull(Iterator<?> iter) {
-		if (isNotEmpty(iter)) {
-			while(iter.hasNext()) {
-				if(null == iter.next()) {
-					return true;
-				}
+		if (null == iter) {
+			return true;
+		}
+		while (iter.hasNext()) {
+			if (null == iter.next()) {
+				return true;
 			}
 		}
+
 		return false;
 	}
-	
+
+	/**
+	 * 是否全部元素为null
+	 * 
+	 * @param iter iter 被检查的{@link Iterable}对象，如果为{@code null} 返回true
+	 * @return 是否全部元素为null
+	 * @since 3.3.0
+	 */
+	public static boolean isAllNull(Iterable<?> iter) {
+		return isAllNull(null == iter ? null : iter.iterator());
+	}
+
+	/**
+	 * 是否全部元素为null
+	 * 
+	 * @param iter iter 被检查的{@link Iterator}对象，如果为{@code null} 返回true
+	 * @return 是否全部元素为null
+	 * @since 3.3.0
+	 */
+	public static boolean isAllNull(Iterator<?> iter) {
+		if (null == iter) {
+			return true;
+		}
+
+		while (iter.hasNext()) {
+			if (null != iter.next()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * 根据集合返回一个元素计数的 {@link Map}<br>
 	 * 所谓元素计数就是假如这个集合中某个元素出现了n次，那将这个元素做为key，n做为value<br>
@@ -143,7 +180,91 @@ public class IterUtil {
 		}
 		return countMap;
 	}
-	
+
+	/**
+	 * 字段值与列表值对应的Map，常用于元素对象中有唯一ID时需要按照这个ID查找对象的情况<br>
+	 * 例如：车牌号 =》车
+	 * 
+	 * @param <K> 字段名对应值得类型，不确定请使用Object
+	 * @param <V> 对象类型
+	 * @param iter 对象列表
+	 * @param fieldName 字段名（会通过反射获取其值）
+	 * @return 某个字段值与对象对应Map
+	 * @since 4.0.4
+	 */
+	public static <K, V> Map<K, V> fieldValueMap(Iterable<V> iter, String fieldName) {
+		return fieldValueMap(null == iter ? null : iter.iterator(), fieldName);
+	}
+
+	/**
+	 * 字段值与列表值对应的Map，常用于元素对象中有唯一ID时需要按照这个ID查找对象的情况<br>
+	 * 例如：车牌号 =》车
+	 * 
+	 * @param <K> 字段名对应值得类型，不确定请使用Object
+	 * @param <V> 对象类型
+	 * @param iter 对象列表
+	 * @param fieldName 字段名（会通过反射获取其值）
+	 * @return 某个字段值与对象对应Map
+	 * @since 4.0.4
+	 */
+	@SuppressWarnings("unchecked")
+	public static <K, V> Map<K, V> fieldValueMap(Iterator<V> iter, String fieldName) {
+		final Map<K, V> result = new HashMap<>();
+		if (null != iter) {
+			V value;
+			while (iter.hasNext()) {
+				value = iter.next();
+				result.put((K) ReflectUtil.getFieldValue(value, fieldName), value);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 两个字段值组成新的Map
+	 * 
+	 * @param <K> 字段名对应值得类型，不确定请使用Object
+	 * @param <V> 值类型，不确定使用Object
+	 * @param iter 对象列表
+	 * @param fieldNameForKey 做为键的字段名（会通过反射获取其值）
+	 * @param fieldNameForValue 做为值的字段名（会通过反射获取其值）
+	 * @return 某个字段值与对象对应Map
+	 * @since 4.0.10
+	 */
+	@SuppressWarnings("unchecked")
+	public static <K, V> Map<K, V> fieldValueAsMap(Iterator<?> iter, String fieldNameForKey, String fieldNameForValue) {
+		final Map<K, V> result = new HashMap<>();
+		if (null != iter) {
+			Object value;
+			while (iter.hasNext()) {
+				value = iter.next();
+				result.put((K) ReflectUtil.getFieldValue(value, fieldNameForKey), (V) ReflectUtil.getFieldValue(value, fieldNameForValue));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 获取指定Bean列表中某个字段，生成新的列表
+	 * 
+	 * @param <V> 对象类型
+	 * @param iter 对象列表
+	 * @param fieldName 字段名（会通过反射获取其值）
+	 * @return 某个字段值与对象对应Map
+	 * @since 4.0.10
+	 */
+	public static <V> List<Object> fieldValueList(Iterator<V> iter, String fieldName) {
+		final List<Object> result = new ArrayList<>();
+		if (null != iter) {
+			V value;
+			while (iter.hasNext()) {
+				value = iter.next();
+				result.add(ReflectUtil.getFieldValue(value, fieldName));
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * 以 conjunction 为分隔符将集合转换为字符串
 	 * 
@@ -158,7 +279,25 @@ public class IterUtil {
 		}
 		return join(iterable.iterator(), conjunction);
 	}
-
+	
+	/**
+	 * 以 conjunction 为分隔符将集合转换为字符串
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param iterable {@link Iterable}
+	 * @param conjunction 分隔符
+	 * @param prefix 每个元素添加的前缀，null表示不添加
+	 * @param suffix 每个元素添加的后缀，null表示不添加
+	 * @return 连接后的字符串
+	 * @since 4.0.10
+	 */
+	public static <T> String join(Iterable<T> iterable, CharSequence conjunction, String prefix, String suffix) {
+		if (null == iterable) {
+			return null;
+		}
+		return join(iterable.iterator(), conjunction, prefix, suffix);
+	}
+	
 	/**
 	 * 以 conjunction 为分隔符将集合转换为字符串<br>
 	 * 如果集合元素为数组、{@link Iterable}或{@link Iterator}，则递归组合其为字符串
@@ -169,6 +308,22 @@ public class IterUtil {
 	 * @return 连接后的字符串
 	 */
 	public static <T> String join(Iterator<T> iterator, CharSequence conjunction) {
+		return join(iterator, conjunction, null, null);
+	}
+
+	/**
+	 * 以 conjunction 为分隔符将集合转换为字符串<br>
+	 * 如果集合元素为数组、{@link Iterable}或{@link Iterator}，则递归组合其为字符串
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param iterator 集合
+	 * @param conjunction 分隔符
+	 * @param prefix 每个元素添加的前缀，null表示不添加
+	 * @param suffix 每个元素添加的后缀，null表示不添加
+	 * @return 连接后的字符串
+	 * @since 4.0.10
+	 */
+	public static <T> String join(Iterator<T> iterator, CharSequence conjunction, String prefix, String suffix) {
 		if (null == iterator) {
 			return null;
 		}
@@ -185,18 +340,18 @@ public class IterUtil {
 
 			item = iterator.next();
 			if (ArrayUtil.isArray(item)) {
-				sb.append(ArrayUtil.join(ArrayUtil.wrap(item), conjunction));
+				sb.append(ArrayUtil.join(ArrayUtil.wrap(item), conjunction, prefix, suffix));
 			} else if (item instanceof Iterable<?>) {
-				sb.append(join((Iterable<?>) item, conjunction));
+				sb.append(join((Iterable<?>) item, conjunction, prefix, suffix));
 			} else if (item instanceof Iterator<?>) {
-				sb.append(join((Iterator<?>) item, conjunction));
+				sb.append(join((Iterator<?>) item, conjunction, prefix, suffix));
 			} else {
-				sb.append(item);
+				sb.append(StrUtil.wrap(String.valueOf(item), prefix, suffix));
 			}
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * 将Entry集合转换为HashMap
 	 * 
@@ -243,16 +398,46 @@ public class IterUtil {
 	 * @return 标题内容Map
 	 * @since 3.1.0
 	 */
-	public static <K, V> Map<K, V> toMap(Iterator<K> keys, Iterator<V> values){
+	public static <K, V> Map<K, V> toMap(Iterator<K> keys, Iterator<V> values) {
 		final Map<K, V> resultMap = new HashMap<>();
-		if(isNotEmpty(keys)) {
-			while(keys.hasNext()) {
+		if (isNotEmpty(keys)) {
+			while (keys.hasNext()) {
 				resultMap.put(keys.next(), (null != values && values.hasNext()) ? values.next() : null);
 			}
 		}
 		return resultMap;
 	}
-	
+
+	/**
+	 * Iterator转List<br>
+	 * 不判断，直接生成新的List
+	 * 
+	 * @param <E> 元素类型
+	 * @param iter {@link Iterator}
+	 * @return List
+	 * @since 4.0.6
+	 */
+	public static <E> List<E> toList(Iterable<E> iter) {
+		return toList(iter.iterator());
+	}
+
+	/**
+	 * Iterator转List<br>
+	 * 不判断，直接生成新的List
+	 * 
+	 * @param <E> 元素类型
+	 * @param iter {@link Iterator}
+	 * @return List
+	 * @since 4.0.6
+	 */
+	public static <E> List<E> toList(Iterator<E> iter) {
+		final List<E> list = new ArrayList<>();
+		while (iter.hasNext()) {
+			list.add(iter.next());
+		}
+		return list;
+	}
+
 	/**
 	 * Enumeration转换为Iterator
 	 * <p>
@@ -311,7 +496,8 @@ public class IterUtil {
 	}
 
 	/**
-	 * 获得{@link Iterable}对象的元素类型（通过第一个非空元素判断）
+	 * 获得{@link Iterable}对象的元素类型（通过第一个非空元素判断）<br>
+	 * 注意，此方法至少会调用多次next方法
 	 * 
 	 * @param iterable {@link Iterable}
 	 * @return 元素类型，当列表为空或元素全部为null时，返回null
@@ -325,16 +511,18 @@ public class IterUtil {
 	}
 
 	/**
-	 * 获得{@link Iterator}对象的元素类型（通过第一个非空元素判断）
+	 * 获得{@link Iterator}对象的元素类型（通过第一个非空元素判断）<br>
+	 * 注意，此方法至少会调用多次next方法
 	 * 
 	 * @param iterator {@link Iterator}
 	 * @return 元素类型，当列表为空或元素全部为null时，返回null
 	 */
 	public static Class<?> getElementType(Iterator<?> iterator) {
-		if (null != iterator) {
+		final Iterator<?> iter2 = new CopiedIterator<>(iterator);
+		if (null != iter2) {
 			Object t;
-			while (iterator.hasNext()) {
-				t = iterator.next();
+			while (iter2.hasNext()) {
+				t = iter2.next();
 				if (null != t) {
 					return t.getClass();
 				}

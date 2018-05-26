@@ -3,11 +3,12 @@ package cn.ucaner.alpaca.framework.utils.tools.core.convert.impl;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Type;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.AbstractConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.ConverterRegistry;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.convert.impl   
@@ -39,7 +40,7 @@ public class ReferenceConverter extends AbstractConverter<Reference> {
 		
 		//尝试将值转换为Reference泛型的类型
 		Object targetValue = null;
-		final Class<?> paramType = ClassUtil.getTypeArgument(targetType);
+		final Type paramType = TypeUtil.getTypeArgument(targetType);
 		if(null != paramType){
 			targetValue = ConverterRegistry.getInstance().convert(paramType, value);
 		}

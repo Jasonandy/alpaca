@@ -20,9 +20,9 @@ import java.util.HashSet;
 import java.util.Map;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.getter.BasicTypeGetter;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.lang   
@@ -57,13 +57,45 @@ public class Dict extends HashMap<String, Object> implements BasicTypeGetter<Str
 	public static <T> Dict parse(T bean) {
 		return create().parseBean(bean);
 	}
-	//--------------------------------------------------------------- Static method end
-	
-	//--------------------------------------------------------------- Constructor start
+	// --------------------------------------------------------------- Static method end
+
+	// --------------------------------------------------------------- Constructor start
+	/**
+	 * 构造
+	 */
 	public Dict() {
+		super();
 	}
-	//--------------------------------------------------------------- Constructor end
-	
+
+	/**
+	 * 构造
+	 * 
+	 * @param initialCapacity 初始容量
+	 */
+	public Dict(int initialCapacity) {
+		super(initialCapacity);
+	}
+
+	/**
+	 * 构造
+	 * 
+	 * @param initialCapacity 初始容量
+	 * @param loadFactor 容量增长因子，0~1，即达到容量的百分之多少时扩容
+	 */
+	public Dict(int initialCapacity, float loadFactor) {
+		super(initialCapacity, loadFactor);
+	}
+
+	/**
+	 * 构造
+	 * 
+	 * @param m Map
+	 */
+	public Dict(Map<String, Object> m) {
+		super((null == m) ? new HashMap<String, Object>() : m);
+	}
+	// --------------------------------------------------------------- Constructor end
+
 	/**
 	 * 转换为Bean对象
 	 * @param <T> Bean类型
@@ -73,7 +105,20 @@ public class Dict extends HashMap<String, Object> implements BasicTypeGetter<Str
 	public <T> T toBean(T bean) {
 		return toBean(bean, false);
 	}
-	
+
+	/**
+	 * 转换为Bean对象
+	 * 
+	 * @param <T> Bean类型
+	 * @param bean Bean
+	 * @return Bean
+	 * @since 3.3.1
+	 */
+	public <T> T toBeanIgnoreCase(T bean) {
+		BeanUtil.fillBeanWithMapIgnoreCase(this, bean, false);
+		return bean;
+	}
+
 	/**
 	 * 转换为Bean对象
 	 * @param <T> Bean类型
@@ -82,10 +127,22 @@ public class Dict extends HashMap<String, Object> implements BasicTypeGetter<Str
 	 * @return Bean
 	 */
 	public <T> T toBean(T bean, boolean isToCamelCase) {
-		BeanUtil.fillBeanWithMap(this, bean, isToCamelCase);
+		BeanUtil.fillBeanWithMap(this, bean, isToCamelCase, false);
 		return bean;
 	}
-	
+
+	/**
+	 * 转换为Bean对象,并使用驼峰法模式转换
+	 * 
+	 * @param <T> Bean类型
+	 * @param bean Bean
+	 * @return Bean
+	 */
+	public <T> T toBeanWithCamelCase(T bean) {
+		BeanUtil.fillBeanWithMap(this, bean, true, false);
+		return bean;
+	}
+
 	/**
 	 * 填充Value Object对象
 	 * @param <T> Bean类型
@@ -114,14 +171,30 @@ public class Dict extends HashMap<String, Object> implements BasicTypeGetter<Str
 	 * @return 自己
 	 */
 	public <T> Dict parseBean(T bean) {
+		Assert.notNull(bean, "Bean class must be not null");
 		this.putAll(BeanUtil.beanToMap(bean));
 		return this;
 	}
-	
+
+	/**
+	 * 将值对象转换为Dict<br>
+	 * 类名会被当作表名，小写第一个字母
+	 * 
+	 * @param <T> Bean类型
+	 * @param bean 值对象
+	 * @param isToUnderlineCase 是否转换为下划线模式
+	 * @param ignoreNullValue 是否忽略值为空的字段
+	 * @return 自己
+	 */
+	public <T> Dict parseBean(T bean, boolean isToUnderlineCase, boolean ignoreNullValue) {
+		Assert.notNull(bean, "Bean class must be not null");
+		this.putAll(BeanUtil.beanToMap(bean, isToUnderlineCase, ignoreNullValue));
+		return this;
+	}
+
 	/**
 	 * 与给定实体对比并去除相同的部分<br>
-	 * 此方法用于在更新操作时避免所有字段被更新，跳过不需要更新的字段
-	 * version from 2.0.0
+	 * 此方法用于在更新操作时避免所有字段被更新，跳过不需要更新的字段 version from 2.0.0
 	 * 
 	 * @param <T> 字典对象类型
 	 * @param dict 字典对象
@@ -140,8 +213,26 @@ public class Dict extends HashMap<String, Object> implements BasicTypeGetter<Str
 			}
 		}
 	}
-	
-	//-------------------------------------------------------------------- Set start
+
+	/**
+	 * 过滤Map保留指定键值对，如果键不存在跳过
+	 * 
+	 * @param keys 键列表
+	 * @return Dict 结果
+	 * @since 4.0.10
+	 */
+	public Dict filter(String... keys) {
+		final Dict result = new Dict(keys.length, 1);
+
+		for (String key : keys) {
+			if (this.containsKey(key)) {
+				result.put(key, this.get(key));
+			}
+		}
+		return result;
+	}
+
+	// -------------------------------------------------------------------- Set start
 	/**
 	 * 设置列
 	 * @param attr 属性

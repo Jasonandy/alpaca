@@ -2,8 +2,8 @@ package cn.ucaner.alpaca.framework.utils.tools.db.sql;
 
 import java.util.Collection;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.db.Page;
 

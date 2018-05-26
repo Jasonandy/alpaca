@@ -3,9 +3,9 @@ package cn.ucaner.alpaca.framework.utils.tools.core.convert.impl;
 import java.lang.reflect.Type;
 import java.util.Collection;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Converter;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 
 /**
@@ -22,9 +22,9 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 public class CollectionConverter implements Converter<Collection<?>> {
 
 	/** 集合类型 */
-	private final Class<?> collectionType;
+	private final Type collectionType;
 	/** 集合元素类型 */
-	private final Class<?> elementType;
+	private final Type elementType;
 
 	/**
 	 * 构造，默认集合类型使用{@link Collection}
@@ -49,7 +49,7 @@ public class CollectionConverter implements Converter<Collection<?>> {
 	 * @param collectionType 集合类型
 	 */
 	public CollectionConverter(Class<?> collectionType) {
-		this(collectionType, ClassUtil.getTypeArgument(collectionType));
+		this(collectionType, TypeUtil.getTypeArgument(collectionType));
 	}
 
 	/**
@@ -59,16 +59,6 @@ public class CollectionConverter implements Converter<Collection<?>> {
 	 * @param elementType 集合元素类型
 	 */
 	public CollectionConverter(Type collectionType, Type elementType) {
-		this(TypeUtil.getClass(collectionType), TypeUtil.getClass(elementType));
-	}
-
-	/**
-	 * 构造
-	 * 
-	 * @param collectionType 集合类型
-	 * @param elementType 集合元素类型
-	 */
-	public CollectionConverter(Class<?> collectionType, Class<?> elementType) {
 		this.collectionType = collectionType;
 		this.elementType = elementType;
 	}
@@ -91,7 +81,7 @@ public class CollectionConverter implements Converter<Collection<?>> {
 	 * @return 转换后的集合对象
 	 */
 	protected Collection<?> convertInternal(Object value) {
-		final Collection<Object> collection = CollectionUtil.create(this.collectionType);
-		return CollectionUtil.addAll(collection, value, elementType);
+		final Collection<Object> collection = CollectionUtil.create(TypeUtil.getClass(collectionType));
+		return CollUtil.addAll(collection, value, elementType);
 	}
 }

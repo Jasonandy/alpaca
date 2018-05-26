@@ -10,9 +10,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Currency;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,13 +25,17 @@ import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.ArrayConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.AtomicBooleanConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.AtomicReferenceConverter;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.BeanConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.BooleanConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.CalendarConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.CharacterConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.CharsetConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.ClassConverter;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.CollectionConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.CurrencyConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.DateConverter;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.EnumConverter;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.MapConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.NumberConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.PathConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.PrimitiveConverter;
@@ -38,9 +44,11 @@ import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.StringConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.TimeZoneConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.URIConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.URLConverter;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.UUIDConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.DateTime;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.ObjectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.convert   
@@ -52,7 +60,7 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
 * <p>
 * 在此类中，存放着默认转换器和自定义转换器，默认转换器是tools中预定义的一些转换器，自定义转换器存放用户自定的转换器。
 * </p>
-* @Author： - 、   
+* @Author： - 
 * @CreatTime：2018年5月25日 下午1:23:54   
 * @Modify By：   
 * @ModifyTime：  2018年5月25日
@@ -177,43 +185,37 @@ public class ConverterRegistry {
 	 * @throws ConvertException 转换器不存在
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T convert(Class<T> type, Object value, T defaultValue, boolean isCustomFirst) throws ConvertException {
+	public <T> T convert(Type type, Object value, T defaultValue, boolean isCustomFirst) throws ConvertException {
 		if (null == type && null == defaultValue) {
 			throw new NullPointerException("[type] and [defaultValue] are both null, we can not know what type to convert !");
 		}
-		if (null == value) {
+		if (ObjectUtil.isNull(value)) {
 			return defaultValue;
 		}
 		if (null == type) {
-			type = (Class<T>) defaultValue.getClass();
+			type = defaultValue.getClass();
 		}
-		// 默认强转
-		if (type.isInstance(value)) {
-			return (T) value;
+		final Class<T> rowType = (Class<T>) TypeUtil.getClass(type);
+
+		// 特殊类型转换，包括Collection、Map、强转、Array等
+		final T result = convertSpecial(type, rowType, value, defaultValue);
+		if(null != result) {
+			return result;
 		}
 
-		// 数组强转
-		final Class<?> valueClass = value.getClass();
-		if (type.isArray() && valueClass.isArray()) {
-			try {
-				return (T) ArrayUtil.cast(type, value);
-			} catch (Exception e) {
-				// 强转失败进行下一步
-			}
-		}
-
+		// 标准转换器
 		final Converter<T> converter = getConverter(type, isCustomFirst);
 		if (null != converter) {
 			return converter.convert(value, defaultValue);
 		}
-		
-		//尝试转Bean
-		if(BeanUtil.isBean(type) && value instanceof Map){
-			return BeanUtil.mapToBean((Map<?, ?>)value, type, true);
+
+		// 尝试转Bean
+		if (BeanUtil.isBean(rowType)) {
+			return new BeanConverter<T>(rowType).convert(value, defaultValue);
 		}
-		
-		//无法转换
-		throw new ConvertException("No Converter for type [{}]", type.getName());
+
+		// 无法转换
+		throw new ConvertException("No Converter for type [{}]", rowType.getName());
 	}
 
 	/**
@@ -227,7 +229,7 @@ public class ConverterRegistry {
 	 * @return 转换后的值
 	 * @throws ConvertException 转换器不存在
 	 */
-	public <T> T convert(Class<T> type, Object value, T defaultValue) throws ConvertException {
+	public <T> T convert(Type type, Object value, T defaultValue) throws ConvertException {
 		return convert(type, value, defaultValue, true);
 	}
 
@@ -240,11 +242,69 @@ public class ConverterRegistry {
 	 * @return 转换后的值，默认为<code>null</code>
 	 * @throws ConvertException 转换器不存在
 	 */
-	public <T> T convert(Class<T> type, Object value) throws ConvertException {
+	public <T> T convert(Type type, Object value) throws ConvertException {
 		return convert(type, value, null);
 	}
 
 	// ----------------------------------------------------------- Private method start
+	/**
+	 * 特殊类型转换<br>
+	 * 包括：
+	 * <pre>
+	 * Collection
+	 * Map
+	 * 强转（无需转换）
+	 * 数组
+	 * </pre>
+	 * 
+	 * @param <T> 转换的目标类型（转换器转换到的类型）
+	 * @param type 类型
+	 * @param value 值
+	 * @param defaultValue 默认值
+	 * @return 转换后的值
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> T convertSpecial(Type type, Class<T> rowType, Object value, T defaultValue) {
+		if(null == rowType) {
+			return null;
+		}
+		
+		// 集合转换（不可以默认强转）
+		if (Collection.class.isAssignableFrom(rowType)) {
+			final CollectionConverter collectionConverter = new CollectionConverter(type);
+			return (T) collectionConverter.convert(value, (Collection<?>) defaultValue);
+		}
+
+		// Map类型（不可以默认强转）
+		if (Map.class.isAssignableFrom(rowType)) {
+			final MapConverter mapConverter = new MapConverter(type);
+			return (T) mapConverter.convert(value, (Map<?, ?>) defaultValue);
+		}
+
+		// 默认强转
+		if (rowType.isInstance(value)) {
+			return (T) value;
+		}
+
+		// 数组转换
+		if (rowType.isArray()) {
+			final ArrayConverter arrayConverter = new ArrayConverter(rowType);
+			try {
+				return (T) arrayConverter.convert(value, defaultValue);
+			} catch (Exception e) {
+				// 数组转换失败进行下一步
+			}
+		}
+		
+		//泛型转换
+		if(rowType.isEnum()) {
+			return (T) new EnumConverter(rowType).convert(value, defaultValue);
+		}
+		
+		//表示非需要特殊转换的对象
+		return null;
+	}
+
 	/**
 	 * 注册默认转换器
 	 * 
@@ -280,34 +340,6 @@ public class ConverterRegistry {
 		defaultConverterMap.put(BigInteger.class, new NumberConverter(BigInteger.class));
 		defaultConverterMap.put(String.class, new StringConverter());
 
-		// 原始类型数组转换器
-		defaultConverterMap.put(int[].class, new ArrayConverter(int.class));
-		defaultConverterMap.put(long[].class, new ArrayConverter(long.class));
-		defaultConverterMap.put(byte[].class, new ArrayConverter(byte.class));
-		defaultConverterMap.put(short[].class, new ArrayConverter(short.class));
-		defaultConverterMap.put(float[].class, new ArrayConverter(float.class));
-		defaultConverterMap.put(double[].class, new ArrayConverter(double.class));
-		defaultConverterMap.put(boolean[].class, new ArrayConverter(boolean.class));
-		defaultConverterMap.put(char[].class, new ArrayConverter(char.class));
-
-		// 包装数组类型转换器
-		defaultConverterMap.put(Integer[].class, new ArrayConverter(Integer.class));
-		defaultConverterMap.put(Long[].class, new ArrayConverter(Long.class));
-		defaultConverterMap.put(Byte[].class, new ArrayConverter(Byte.class));
-		defaultConverterMap.put(Short[].class, new ArrayConverter(Short.class));
-		defaultConverterMap.put(Float[].class, new ArrayConverter(Float.class));
-		defaultConverterMap.put(Double[].class, new ArrayConverter(Double.class));
-		defaultConverterMap.put(Boolean[].class, new ArrayConverter(Boolean.class));
-		defaultConverterMap.put(Character[].class, new ArrayConverter(Character.class));
-		defaultConverterMap.put(String[].class, new ArrayConverter(String.class));
-
-		// 集合类型转换器
-//		defaultConverterMap.put(Collection.class, new CollectionConverter());
-//		defaultConverterMap.put(List.class, new CollectionConverter(List.class));
-//		defaultConverterMap.put(ArrayList.class, new CollectionConverter(ArrayList.class));
-//		defaultConverterMap.put(Set.class, new CollectionConverter(Set.class));
-//		defaultConverterMap.put(HashSet.class, new CollectionConverter(HashSet.class));
-
 		// URI and URL
 		defaultConverterMap.put(URI.class, new URIConverter());
 		defaultConverterMap.put(URL.class, new URLConverter());
@@ -331,6 +363,7 @@ public class ConverterRegistry {
 		defaultConverterMap.put(Charset.class, new CharsetConverter());
 		defaultConverterMap.put(Path.class, new PathConverter());
 		defaultConverterMap.put(Currency.class, new CurrencyConverter());// since 3.0.8
+		defaultConverterMap.put(UUID.class, new UUIDConverter());// since 4.0.10
 
 		return this;
 	}
