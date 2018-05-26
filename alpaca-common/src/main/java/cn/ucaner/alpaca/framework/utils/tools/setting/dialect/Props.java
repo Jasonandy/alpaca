@@ -13,6 +13,7 @@ package cn.ucaner.alpaca.framework.utils.tools.setting.dialect;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
@@ -23,21 +24,25 @@ import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.util.Properties;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.getter.BasicTypeGetter;
 import cn.ucaner.alpaca.framework.utils.tools.core.getter.OptBasicTypeGetter;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.ClassPathResource;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.FileResource;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.Resource;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.ResourceUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.UrlResource;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.watch.SimpleWatcher;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.watch.WatchMonitor;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.log.Log;
-import cn.ucaner.alpaca.framework.utils.tools.log.StaticLog;
+import cn.ucaner.alpaca.framework.utils.tools.log.LogFactory;
 import cn.ucaner.alpaca.framework.utils.tools.setting.SettingRuntimeException;
 
 /**
@@ -55,7 +60,7 @@ public final class Props extends Properties implements BasicTypeGetter<String>, 
 	
 	private static final long serialVersionUID = 1935981579709590740L;
 	
-	private final static Log log = StaticLog.get();
+	private final static Log log = LogFactory.get();
 
 	// ----------------------------------------------------------------------- 私有属性 start
 	/** 属性文件的URL */
@@ -108,34 +113,34 @@ public final class Props extends Properties implements BasicTypeGetter<String>, 
 	/**
 	 * 构造，使用相对于Class文件根目录的相对路径
 	 * 
-	 * @param pathBaseClassLoader 相对路径（相对于当前项目的classes路径）
+	 * @param path
 	 */
-	public Props(String pathBaseClassLoader) {
-		this(pathBaseClassLoader, CharsetUtil.CHARSET_ISO_8859_1);
+	public Props(String path) {
+		this(path, CharsetUtil.CHARSET_ISO_8859_1);
 	}
 
 	/**
 	 * 构造，使用相对于Class文件根目录的相对路径
 	 * 
-	 * @param pathBaseClassLoader 相对路径（相对于当前项目的classes路径）
+	 * @param path 相对或绝对路径
 	 * @param charsetName 字符集
 	 */
-	public Props(String pathBaseClassLoader, String charsetName) {
-		this(pathBaseClassLoader, CharsetUtil.charset(charsetName));
+	public Props(String path, String charsetName) {
+		this(path, CharsetUtil.charset(charsetName));
 	}
 
 	/**
 	 * 构造，使用相对于Class文件根目录的相对路径
 	 * 
-	 * @param pathBaseClassLoader 相对路径（相对于当前项目的classes路径）
+	 * @param path 相对或绝对路径
 	 * @param charset 字符集
 	 */
-	public Props(String pathBaseClassLoader, Charset charset) {
-		Assert.notBlank(pathBaseClassLoader, "Blank properties file path !");
+	public Props(String path, Charset charset) {
+		Assert.notBlank(path, "Blank properties file path !");
 		if(null != charset) {
 			this.charset = charset;
 		}
-		this.load(new ClassPathResource(pathBaseClassLoader));
+		this.load(ResourceUtil.getResourceObj(path));
 	}
 
 	/**
@@ -166,7 +171,7 @@ public final class Props extends Properties implements BasicTypeGetter<String>, 
 	public Props(File propertiesFile, Charset charset) {
 		Assert.notNull(propertiesFile, "Null properties file!");
 		this.charset = charset;
-		this.load(new UrlResource(propertiesFile));
+		this.load(new FileResource(propertiesFile));
 	}
 
 	/**
@@ -256,7 +261,7 @@ public final class Props extends Properties implements BasicTypeGetter<String>, 
 	 * 
 	 * @param urlResource {@link UrlResource}
 	 */
-	public void load(UrlResource urlResource) {
+	public void load(Resource urlResource) {
 		this.propertiesFileUrl = urlResource.getUrl();
 		if (null == this.propertiesFileUrl) {
 			throw new SettingRuntimeException("Can not find properties file: [{}]", urlResource);
@@ -285,17 +290,17 @@ public final class Props extends Properties implements BasicTypeGetter<String>, 
 		if (autoReload) {
 			if (null != this.watchMonitor) {
 				this.watchMonitor.close();
-				try {
-					watchMonitor = WatchMonitor.create(Paths.get(this.propertiesFileUrl.toURI()));
-					watchMonitor.setWatcher(new SimpleWatcher(){
-						@Override
-						public void onModify(WatchEvent<?> event, Path currentPath) {
-							load();
-						}
-					}).start();
-				} catch (Exception e) {
-					throw new SettingRuntimeException(e, "Setting auto load not support url: [{}]", this.propertiesFileUrl);
-				}
+			}
+			try {
+				watchMonitor = WatchMonitor.create(Paths.get(this.propertiesFileUrl.toURI()));
+				watchMonitor.setWatcher(new SimpleWatcher(){
+					@Override
+					public void onModify(WatchEvent<?> event, Path currentPath) {
+						load();
+					}
+				}).start();
+			} catch (Exception e) {
+				throw new SettingRuntimeException(e, "Setting auto load not support url: [{}]", this.propertiesFileUrl);
 			}
 		} else {
 			IoUtil.close(this.watchMonitor);
@@ -473,13 +478,17 @@ public final class Props extends Properties implements BasicTypeGetter<String>, 
 	 * 持久化当前设置，会覆盖掉之前的设置
 	 * 
 	 * @param absolutePath 设置文件的绝对路径
+	 * @throws IORuntimeException IO异常，可能为文件未找到
 	 */
-	public void store(String absolutePath) {
+	public void store(String absolutePath) throws IORuntimeException{
+		Writer writer = null;
 		try {
-			FileUtil.touch(absolutePath);
-			super.store(FileUtil.getWriter(absolutePath, charset, false), null);
+			writer = FileUtil.getWriter(absolutePath, charset, false);
+			super.store(writer, null);
 		} catch (IOException e) {
-			log.error(e, "Store properties to [{}] error!", absolutePath);
+			throw new IORuntimeException(e, "Store properties to [{}] error!", absolutePath);
+		} finally {
+			IoUtil.close(writer);
 		}
 	}
 

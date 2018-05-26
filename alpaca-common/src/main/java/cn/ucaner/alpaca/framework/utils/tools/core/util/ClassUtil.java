@@ -12,7 +12,6 @@ package cn.ucaner.alpaca.framework.utils.tools.core.util;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -27,8 +26,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.BasicType;
 import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.resource.ResourceUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.ClassScaner;
@@ -370,20 +371,6 @@ public class ClassUtil {
 	}
 
 	/**
-	 * 查找指定类中的所有字段（包括非public字段），也包括父类和Object类的字段， 字段不存在则返回<code>null</code>
-	 * 
-	 * @param clazz 被查找字段的类,不能为null
-	 * @param fieldName 字段名
-	 * @return 字段
-	 * @throws SecurityException 安全异常
-	 * @deprecated 请使用 {@link ReflectUtil#getField(Class, String)}
-	 */
-	@Deprecated
-	public static Field getField(Class<?> clazz, String fieldName) throws SecurityException {
-		return ReflectUtil.getField(clazz, fieldName);
-	}
-
-	/**
 	 * 查找指定类中的所有字段（包括非public字段)
 	 * 
 	 * @param clazz 被查找字段的类
@@ -397,80 +384,83 @@ public class ClassUtil {
 		return clazz.getDeclaredFields();
 	}
 
-	/**
-	 * 是否为equals方法
-	 * 
-	 * @param method 方法
-	 * @return 是否为equals方法
-	 * @deprecated 请使用 {@link ReflectUtil#isEqualsMethod(Method)}
-	 */
-	@Deprecated
-	public static boolean isEqualsMethod(Method method) {
-		return ReflectUtil.isEqualsMethod(method);
-	}
-
-	/**
-	 * 是否为hashCode方法
-	 * 
-	 * @param method 方法
-	 * @return 是否为hashCode方法
-	 * @deprecated 请使用 {@link ReflectUtil#isHashCodeMethod(Method)}
-	 */
-	@Deprecated
-	public static boolean isHashCodeMethod(Method method) {
-		return ReflectUtil.isHashCodeMethod(method);
-	}
-
-	/**
-	 * 是否为toString方法
-	 * 
-	 * @param method 方法
-	 * @return 是否为toString方法
-	 * @deprecated 请使用 {@link ReflectUtil#isToStringMethod(Method)}
-	 */
-	@Deprecated
-	public static boolean isToStringMethod(Method method) {
-		return ReflectUtil.isToStringMethod(method);
-	}
-
 	// ----------------------------------------------------------------------------------------- Classpath
 	/**
-	 * 获得ClassPath
+	 * 获得ClassPath，不解码路径中的特殊字符（例如空格和中文）
 	 * 
 	 * @return ClassPath集合
 	 */
 	public static Set<String> getClassPathResources() {
-		return getClassPaths(StrUtil.EMPTY);
+		return getClassPathResources(false);
+	}
+	
+	/**
+	 * 获得ClassPath
+	 * 
+	 * @param isDecode 是否解码路径中的特殊字符（例如空格和中文）
+	 * @return ClassPath集合
+	 * @since 4.0.11
+	 */
+	public static Set<String> getClassPathResources(boolean isDecode) {
+		return getClassPaths(StrUtil.EMPTY, isDecode);
+	}
+	
+	/**
+	 * 获得ClassPath，不解码路径中的特殊字符（例如空格和中文）
+	 * 
+	 * @param packageName 包名称
+	 * @return ClassPath路径字符串集合
+	 */
+	public static Set<String> getClassPaths(String packageName) {
+		return getClassPaths(packageName, false);
 	}
 
 	/**
 	 * 获得ClassPath
 	 * 
 	 * @param packageName 包名称
+	 * @param isDecode 是否解码路径中的特殊字符（例如空格和中文）
 	 * @return ClassPath路径字符串集合
+	 * @since 4.0.11
 	 */
-	public static Set<String> getClassPaths(String packageName) {
+	public static Set<String> getClassPaths(String packageName, boolean isDecode) {
 		String packagePath = packageName.replace(StrUtil.DOT, StrUtil.SLASH);
 		Enumeration<URL> resources;
 		try {
 			resources = getClassLoader().getResources(packagePath);
 		} catch (IOException e) {
-			throw new UtilException(StrUtil.format("Loading classPath [{}] error!", packagePath), e);
+			throw new UtilException(e, "Loading classPath [{}] error!", packagePath);
 		}
-		Set<String> paths = new HashSet<String>();
+		final Set<String> paths = new HashSet<String>();
+		String path;
 		while (resources.hasMoreElements()) {
-			paths.add(resources.nextElement().getPath());
+			path = resources.nextElement().getPath();
+			paths.add(isDecode ? URLUtil.decode(path, CharsetUtil.systemCharsetName()) : path);
 		}
 		return paths;
 	}
-
+	
 	/**
-	 * 获得ClassPath
+	 * 获得ClassPath，将编码后的中文路径解码为原字符<br>
+	 * 这个ClassPath路径会文件路径被标准化处理
 	 * 
 	 * @return ClassPath
 	 */
 	public static String getClassPath() {
-		return getClassPathURL().getPath();
+		return getClassPath(false);
+	}
+
+	/**
+	 * 获得ClassPath，这个ClassPath路径会文件路径被标准化处理
+	 * 
+	 * @param isEncoded 是否编码路径中的中文
+	 * @return ClassPath
+	 * @since 3.2.1
+	 */
+	public static String getClassPath(boolean isEncoded) {
+		final URL classPathURL = getClassPathURL();
+		String url = isEncoded ? classPathURL.getPath() : URLUtil.getDecodedPath(classPathURL);
+		return FileUtil.normalize(url);
 	}
 
 	/**
@@ -480,18 +470,6 @@ public class ClassUtil {
 	 */
 	public static URL getClassPathURL() {
 		return getResourceURL(StrUtil.EMPTY);
-	}
-
-	/**
-	 * 获得资源的URL
-	 * 
-	 * @param resource 资源（相对Classpath的路径）
-	 * @return 资源URL
-	 * @deprecated 方法名歧义，请使用 {@link #getResourceURL(String)}
-	 */
-	@Deprecated
-	public static URL getURL(String resource) {
-		return getResourceUrl(resource, null);
 	}
 
 	/**
@@ -544,8 +522,7 @@ public class ClassUtil {
 	 * @return 获得Java ClassPath路径，不包括 jre
 	 */
 	public static String[] getJavaClassPaths() {
-		String[] classPaths = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
-		return classPaths;
+		return System.getProperty("java.class.path").split(System.getProperty("path.separator"));
 	}
 
 	/**
@@ -575,60 +552,6 @@ public class ClassUtil {
 	}
 
 	/**
-	 * 实例化对象
-	 * 
-	 * @param <T> 对象类型
-	 * @param clazz 类名
-	 * @return 对象
-	 * @deprecated 请使用 {@link ReflectUtil#newInstance(String)}
-	 */
-	@Deprecated
-	public static <T> T newInstance(String clazz) {
-		return ReflectUtil.newInstance(clazz);
-	}
-
-	/**
-	 * 实例化对象
-	 * 
-	 * @param <T> 对象类型
-	 * @param clazz 类
-	 * @return 对象
-	 * @deprecated 请使用 {@link ReflectUtil#newInstance(Class, Object...)}
-	 */
-	@Deprecated
-	public static <T> T newInstance(Class<T> clazz) {
-		return ReflectUtil.newInstance(clazz);
-	}
-
-	/**
-	 * 实例化对象
-	 * 
-	 * @param <T> 对象类型
-	 * @param clazz 类
-	 * @param params 构造函数参数
-	 * @return 对象
-	 * @deprecated 请使用 {@link ReflectUtil#newInstance(Class, Object...)}
-	 */
-	@Deprecated
-	public static <T> T newInstance(Class<T> clazz, Object... params) {
-		return ReflectUtil.newInstance(clazz, params);
-	}
-
-	/**
-	 * 查找类中的指定参数的构造方法
-	 * 
-	 * @param <T> 对象类型
-	 * @param clazz 类
-	 * @param parameterTypes 参数类型，只要任何一个参数是指定参数的父类或接口或相等即可
-	 * @return 构造方法，如果未找到返回null
-	 * @deprecated 请使用 {@link ReflectUtil#getConstructor(Class, Class...)}
-	 */
-	@Deprecated
-	public static <T> Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameterTypes) {
-		return ReflectUtil.getConstructor(clazz, parameterTypes);
-	}
-
-	/**
 	 * 比较判断types1和types2两组类，如果types1中所有的类都与types2对应位置的类相同，或者是其父类或接口，则返回<code>true</code>
 	 * 
 	 * @param types1 类组1
@@ -639,15 +562,25 @@ public class ClassUtil {
 		if (ArrayUtil.isEmpty(types1) && ArrayUtil.isEmpty(types2)) {
 			return true;
 		}
-		if (types1.length == types2.length) {
-			for (int i = 0; i < types1.length; i++) {
-				if (false == types1[i].isAssignableFrom(types2[i])) {
+		if (types1.length != types2.length) {
+			return false;
+		}
+		
+		Class<?> type1;
+		Class<?> type2;
+		for (int i = 0; i < types1.length; i++) {
+			type1 = types1[i];
+			type2 = types2[i];
+			if(isBasicType(type1) && isBasicType(type2)) {
+				//原始类型和包装类型存在不一致情况
+				if(BasicType.unWrap(type1) != BasicType.unWrap(type2)) {
 					return false;
 				}
+			}else if (false == type1.isAssignableFrom(type2)) {
+				return false;
 			}
-			return true;
 		}
-		return false;
+		return true;
 	}
 
 	/**
@@ -757,62 +690,15 @@ public class ClassUtil {
 				throw new NoSuchMethodException(StrUtil.format("No such method: [{}]", methodName));
 			}
 			if (isStatic(method)) {
-				return invoke(null, method, args);
+				return ReflectUtil.invoke(null, method, args);
 			} else {
-				return invoke(isSingleton ? Singleton.get(clazz) : clazz.newInstance(), method, args);
+				return ReflectUtil.invoke(isSingleton ? Singleton.get(clazz) : clazz.newInstance(), method, args);
 			}
 		} catch (Exception e) {
 			throw new UtilException(e);
 		}
 	}
 
-	/**
-	 * 执行方法<br>
-	 * 可执行Private方法，也可执行static方法<br>
-	 * 
-	 * @param <T> 对象类型
-	 * @param obj 对象
-	 * @param methodName 方法名
-	 * @param args 参数，必须严格对应指定方法的参数类型和数量
-	 * @return 返回结果
-	 * @throws UtilException 各种异常包装
-	 * @deprecated 请使用{@link ReflectUtil#invoke(Object, String, Object...)}
-	 */
-	@Deprecated
-	public static <T> T invoke(Object obj, String methodName, Object[] args) throws UtilException{
-		return ReflectUtil.invoke(obj, methodName, args);
-	}
-
-	/**
-	 * 执行静态方法
-	 * 
-	 * @param <T> 对象类型
-	 * @param method 方法（对象方法或static方法都可）
-	 * @param args 参数对象
-	 * @return 结果
-	 * @throws UtilException IllegalAccessException and IllegalArgumentException
-	 * @deprecated 请使用 {@link ReflectUtil#invokeStatic(Method, Object...)}
-	 */
-	@Deprecated
-	public static <T> T invokeStatic(Method method, Object... args) throws UtilException {
-		return ReflectUtil.invokeStatic(method, args);
-	}
-
-	/**
-	 * 执行方法
-	 * 
-	 * @param <T> 对象类型
-	 * @param obj 对象，如果执行静态方法，此值为<code>null</code>
-	 * @param method 方法（对象方法或static方法都可）
-	 * @param args 参数对象
-	 * @return 结果
-	 * @throws UtilException IllegalAccessException and IllegalArgumentException
-	 * @deprecated 请使用 {@link ReflectUtil#invoke(Object, Method, Object...)}
-	 */
-	@Deprecated
-	public static <T> T invoke(Object obj, Method method, Object... args) throws UtilException {
-		return ReflectUtil.invoke(obj, method, args);
-	}
 	// ---------------------------------------------------------------------------------------------------- Invoke end
 
 	/**
@@ -1008,6 +894,16 @@ public class ClassUtil {
 				&& false == clazz.isAnnotation() //
 				&& false == clazz.isSynthetic() //
 				&& false == clazz.isPrimitive();//
+	}
+	
+	/**
+	 * 判断类是否为枚举类型
+	 * @param clazz 类
+	 * @return 是否为枚举类型
+	 * @since 3.2.0
+	 */
+	public static boolean isEnum(Class<?> clazz) {
+		return null == clazz ? false : clazz.isEnum();
 	}
 
 	/**

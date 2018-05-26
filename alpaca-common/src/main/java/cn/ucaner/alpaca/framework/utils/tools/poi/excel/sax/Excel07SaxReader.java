@@ -24,17 +24,19 @@ import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.date.DatePattern;
-import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.DependencyException;
+import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.ExceptionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.lang.Console;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
+import cn.ucaner.alpaca.framework.utils.tools.poi.excel.sax.handler.RowHandler;
 import cn.ucaner.alpaca.framework.utils.tools.poi.exceptions.POIException;
 
 /**
@@ -49,7 +51,7 @@ import cn.ucaner.alpaca.framework.utils.tools.poi.exceptions.POIException;
 * @Modify marker：   
 * @version    V1.0
  */
-public class Excel07SaxReader extends DefaultHandler {
+public class Excel07SaxReader extends AbstractExcelSaxReader<Excel07SaxReader> implements ContentHandler {
 
 	// saxParser
 	private static final String CLASS_SAXPARSER = "org.apache.xerces.parsers.SAXParser";
@@ -94,7 +96,7 @@ public class Excel07SaxReader extends DefaultHandler {
 	private int sheetIndex;
 
 	// 存储每行的列元素
-	List<String> rowCellList = new ArrayList<String>();
+	List<Object> rowCellList = new ArrayList<>();
 
 	/** 行处理器 */
 	private RowHandler rowHandler;
@@ -120,59 +122,7 @@ public class Excel07SaxReader extends DefaultHandler {
 	}
 
 	// ------------------------------------------------------------------------------ Read start
-	/**
-	 * 开始读取Excel，读取所有sheet
-	 * 
-	 * @param path Excel文件路径
-	 * @return this
-	 * @throws POIException POI异常
-	 */
-	public Excel07SaxReader read(String path) throws POIException {
-		return read(FileUtil.file(path));
-	}
-
-	/**
-	 * 开始读取Excel，读取所有sheet
-	 * 
-	 * @param file Excel文件
-	 * @return this
-	 * @throws POIException POI异常
-	 */
-	public Excel07SaxReader read(File file) throws POIException {
-		return read(file, -1);
-	}
-
-	/**
-	 * 开始读取Excel，读取所有sheet，读取结束后并不关闭流
-	 * 
-	 * @param in Excel包流
-	 * @return this
-	 * @throws POIException POI异常
-	 */
-	public Excel07SaxReader read(InputStream in) throws POIException {
-		return read(in, -1);
-	}
-
-	/**
-	 * 开始读取Excel
-	 * 
-	 * @param path 文件路径
-	 * @param sheetIndex Excel中的sheet编号，如果为-1处理所有编号的sheet
-	 * @return this
-	 * @throws POIException POI异常
-	 */
-	public Excel07SaxReader read(String path, int sheetIndex) throws POIException {
-		return read(FileUtil.file(path), sheetIndex);
-	}
-
-	/**
-	 * 开始读取Excel
-	 * 
-	 * @param file Excel文件
-	 * @param sheetIndex Excel中的sheet编号，如果为-1处理所有编号的sheet
-	 * @return this
-	 * @throws POIException POI异常
-	 */
+	@Override
 	public Excel07SaxReader read(File file, int sheetIndex) throws POIException {
 		try {
 			return read(OPCPackage.open(file), sheetIndex);
@@ -181,19 +131,14 @@ public class Excel07SaxReader extends DefaultHandler {
 		}
 	}
 
-	/**
-	 * 开始读取Excel，读取结束后并不关闭流
-	 * 
-	 * @param in Excel流
-	 * @param sheetIndex Excel中的sheet编号，如果为-1处理所有编号的sheet
-	 * @return this
-	 * @throws POIException POI异常
-	 */
+	@Override
 	public Excel07SaxReader read(InputStream in, int sheetIndex) throws POIException {
 		try {
 			return read(OPCPackage.open(in), sheetIndex);
-		} catch (Exception e) {
-			throw new POIException(e);
+		} catch (DependencyException e) {
+			throw e;
+		}catch (Exception e) {
+			throw ExceptionUtil.wrap(e, POIException.class);
 		}
 	}
 
@@ -218,7 +163,7 @@ public class Excel07SaxReader extends DefaultHandler {
 			if (sheetIndex > -1) {
 				this.sheetIndex = sheetIndex;
 				// 根据 rId# 或 rSheet# 查找sheet
-				sheetInputStream = xssfReader.getSheet(RID_PREFIX + (sheetIndex+1));
+				sheetInputStream = xssfReader.getSheet(RID_PREFIX + (sheetIndex + 1));
 				parse(sheetInputStream);
 			} else {
 				this.sheetIndex = -1;
@@ -232,8 +177,10 @@ public class Excel07SaxReader extends DefaultHandler {
 					parse(sheetInputStream);
 				}
 			}
-		} catch (Exception e) {
-			throw new POIException(e);
+		} catch (DependencyException e) {
+			throw e;
+		}catch (Exception e) {
+			throw ExceptionUtil.wrap(e, POIException.class);
 		} finally {
 			IoUtil.close(sheetInputStream);
 		}
@@ -318,7 +265,6 @@ public class Excel07SaxReader extends DefaultHandler {
 
 				// 补全一行尾部可能缺失的单元格
 				if (maxCellCoordinate != null) {
-					Console.log("{} {}", curCoordinate, maxCellCoordinate);
 					fillBlankCell(curCoordinate, maxCellCoordinate, true);
 				}
 
@@ -344,6 +290,48 @@ public class Excel07SaxReader extends DefaultHandler {
 		lastContent = lastContent.concat(new String(ch, start, length));
 	}
 
+	// --------------------------------------------------------------------------------------- Pass method start
+	@Override
+	public void setDocumentLocator(Locator locator) {
+		// pass
+	}
+
+	@Override
+	public void startDocument() throws SAXException {
+		// pass
+	}
+
+	@Override
+	public void endDocument() throws SAXException {
+		// pass
+	}
+
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		// pass
+	}
+
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {
+		// pass
+	}
+
+	@Override
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+		// pass
+	}
+
+	@Override
+	public void processingInstruction(String target, String data) throws SAXException {
+		// pass
+	}
+
+	@Override
+	public void skippedEntity(String name) throws SAXException {
+		// pass
+	}
+	// --------------------------------------------------------------------------------------- Pass method end
+
 	// --------------------------------------------------------------------------------------- Private method start
 	/**
 	 * 处理流中的Excel数据
@@ -361,6 +349,7 @@ public class Excel07SaxReader extends DefaultHandler {
 	 *
 	 * @param preCoordinate 前一个单元格坐标
 	 * @param curCoordinate 当前单元格坐标
+	 * @param isEnd 是否为最后一个单元格
 	 */
 	private void fillBlankCell(String preCoordinate, String curCoordinate, boolean isEnd) {
 		if (false == curCoordinate.equals(preCoordinate)) {
@@ -368,7 +357,7 @@ public class Excel07SaxReader extends DefaultHandler {
 			if (isEnd) {
 				len++;
 			}
-			while (--len > 0 ) {
+			while (len-- > 0) {
 				rowCellList.add(curCell++, "");
 			}
 		}
@@ -382,7 +371,16 @@ public class Excel07SaxReader extends DefaultHandler {
 	 * @throws SAXException SAX异常
 	 */
 	private XMLReader fetchSheetReader() throws SAXException {
-		final XMLReader xmlReader = XMLReaderFactory.createXMLReader(CLASS_SAXPARSER);
+		XMLReader xmlReader = null;
+		try {
+			xmlReader = XMLReaderFactory.createXMLReader(CLASS_SAXPARSER);
+		} catch (SAXException e) {
+			if(e.getMessage().contains("org.apache.xerces.parsers.SAXParser")) {
+				throw new DependencyException(e, "You need to add 'xerces:xercesImpl' to your project and version >= 2.11.0");
+			}else {
+				throw e;
+			}
+		}
 		xmlReader.setContentHandler(this);
 		return xmlReader;
 	}

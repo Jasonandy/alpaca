@@ -21,6 +21,7 @@ import java.util.List;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.format.DateParser;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.format.DatePrinter;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.format.FastDateFormat;
+import cn.ucaner.alpaca.framework.utils.tools.core.lang.Validator;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
@@ -36,20 +37,9 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
  */
 public class DateUtil {
 
-	/** 标准日期格式 */
-	public final static String NORM_DATE_PATTERN = DatePattern.NORM_DATE_PATTERN;
-	/** 标准时间格式 */
-	public final static String NORM_TIME_PATTERN = DatePattern.NORM_TIME_PATTERN;
-	/** 标准日期时间格式，精确到分 */
-	public final static String NORM_DATETIME_MINUTE_PATTERN = DatePattern.NORM_DATETIME_MINUTE_PATTERN;
-	/** 标准日期时间格式，精确到秒 */
-	public final static String NORM_DATETIME_PATTERN = DatePattern.NORM_DATETIME_PATTERN;
-	/** 标准日期时间格式，精确到毫秒 */
-	public final static String NORM_DATETIME_MS_PATTERN = DatePattern.NORM_DATETIME_MS_PATTERN;
-	/** HTTP头中日期时间格式 */
-	public final static String HTTP_DATETIME_PATTERN = DatePattern.HTTP_DATETIME_PATTERN;
-
 	/**
+	 * 转换为{@link DateTime}对象
+	 * 
 	 * @return 当前时间
 	 */
 	public static DateTime date() {
@@ -130,6 +120,16 @@ public class DateUtil {
 	 */
 	public static long current(boolean isNano) {
 		return isNano ? System.nanoTime() : System.currentTimeMillis();
+	}
+	
+	/**
+	 * 当前时间秒数
+	 * 
+	 * @return 当前时间秒数
+	 * @since 4.0.0
+	 */
+	public static long currentSeconds() {
+		return System.currentTimeMillis() / 1000;
 	}
 
 	/**
@@ -213,7 +213,7 @@ public class DateUtil {
 	}
 
 	/**
-	 * 获得指定日期是星期几
+	 * 获得指定日期是星期几，1表示周日，2表示周一
 	 * 
 	 * @param date 日期
 	 * @return 天
@@ -434,6 +434,9 @@ public class DateUtil {
 	 * @return 格式化后的字符串
 	 */
 	public static String format(Date date, String format) {
+		if(null == date || StrUtil.isBlank(format)) {
+			return null;
+		}
 		return format(date, FastDateFormat.getInstance(format));
 	}
 
@@ -445,6 +448,9 @@ public class DateUtil {
 	 * @return 格式化后的字符串
 	 */
 	public static String format(Date date, DatePrinter format) {
+		if(null == format || null == date) {
+			return null;
+		}
 		return format.format(date);
 	}
 
@@ -456,6 +462,9 @@ public class DateUtil {
 	 * @return 格式化后的字符串
 	 */
 	public static String format(Date date, DateFormat format) {
+		if(null == format || null == date) {
+			return null;
+		}
 		return format.format(date);
 	}
 
@@ -558,6 +567,7 @@ public class DateUtil {
 	 * @return 日期对象
 	 */
 	public static DateTime parseDateTime(String dateString) {
+		dateString = normalize(dateString);
 		return parse(dateString, DatePattern.NORM_DATETIME_FORMAT);
 	}
 
@@ -568,6 +578,7 @@ public class DateUtil {
 	 * @return 日期对象
 	 */
 	public static DateTime parseDate(String dateString) {
+		dateString = normalize(dateString);
 		return parse(dateString, DatePattern.NORM_DATE_FORMAT);
 	}
 
@@ -578,6 +589,7 @@ public class DateUtil {
 	 * @return 日期对象
 	 */
 	public static DateTime parseTime(String timeString) {
+		timeString = normalize(timeString);
 		return parse(timeString, DatePattern.NORM_TIME_FORMAT);
 	}
 
@@ -594,13 +606,22 @@ public class DateUtil {
 	}
 
 	/**
-	 * 格式：<br>
+	 * 将日期字符串转换为{@link DateTime}对象，格式：<br>
 	 * <ol>
 	 * <li>yyyy-MM-dd HH:mm:ss</li>
+	 * <li>yyyy/MM/dd HH:mm:ss</li>
+	 * <li>yyyy.MM.dd HH:mm:ss</li>
+	 * <li>yyyy年MM月dd日 HH时mm分ss秒</li>
 	 * <li>yyyy-MM-dd</li>
+	 * <li>yyyy/MM/dd</li>
+	 * <li>yyyy.MM.dd</li>
 	 * <li>HH:mm:ss</li>
+	 * <li>HH时mm分ss秒</li>
 	 * <li>yyyy-MM-dd HH:mm</li>
 	 * <li>yyyy-MM-dd HH:mm:ss.SSS</li>
+	 * <li>yyyyMMddHHmmss</li>
+	 * <li>yyyyMMddHHmmssSSS</li>
+	 * <li>yyyyMMdd</li>
 	 * </ol>
 	 * 
 	 * @param dateStr 日期字符串
@@ -610,27 +631,39 @@ public class DateUtil {
 		if (null == dateStr) {
 			return null;
 		}
-		dateStr = dateStr.trim();
+		//去掉两边空格并去掉中文日期中的“日”，以规范长度
+		dateStr = dateStr.trim().replace("日", "");
 		int length = dateStr.length();
-		try {
-			if (length == NORM_DATETIME_PATTERN.length()) {
-				return parseDateTime(dateStr);
-			} else if (length == NORM_DATE_PATTERN.length()) {
-				return parseDate(dateStr);
-			} else if (length == NORM_TIME_PATTERN.length()) {
-				return parseTime(dateStr);
-			} else if (length == NORM_DATETIME_MINUTE_PATTERN.length()) {
-				return parse(dateStr, NORM_DATETIME_MINUTE_PATTERN);
-			} else if (length >= NORM_DATETIME_MS_PATTERN.length() - 2) {
-				return parse(dateStr, NORM_DATETIME_MS_PATTERN);
+		
+		if(Validator.isNumber(dateStr)) {
+			//纯数字形式
+			if(length == DatePattern.PURE_DATETIME_PATTERN.length()) {
+				return parse(dateStr, DatePattern.PURE_DATETIME_FORMAT);
+			} else if(length == DatePattern.PURE_DATETIME_MS_PATTERN.length()) {
+				return parse(dateStr, DatePattern.PURE_DATETIME_MS_FORMAT);
+			} else if(length == DatePattern.PURE_DATE_PATTERN.length()) {
+				return parse(dateStr, DatePattern.PURE_DATE_FORMAT);
+			} else if(length == DatePattern.PURE_TIME_PATTERN.length()) {
+				return parse(dateStr, DatePattern.PURE_TIME_FORMAT);
 			}
-		} catch (Exception e) {
-			throw new DateException(StrUtil.format("Parse [{}] with format normal error!", dateStr));
+		}
+		
+		if (length == DatePattern.NORM_DATETIME_PATTERN.length() || length == DatePattern.NORM_DATETIME_PATTERN.length()+1) {
+			return parseDateTime(dateStr);
+		} else if (length == DatePattern.NORM_DATE_PATTERN.length()) {
+			return parseDate(dateStr);
+		} else if (length == DatePattern.NORM_TIME_PATTERN.length() || length == DatePattern.NORM_TIME_PATTERN.length()+1) {
+			return parseTime(dateStr);
+		} else if (length == DatePattern.NORM_DATETIME_MINUTE_PATTERN.length() || length == DatePattern.NORM_DATETIME_MINUTE_PATTERN.length()+1) {
+			return parse(normalize(dateStr), DatePattern.NORM_DATETIME_MINUTE_PATTERN);
+		} else if (length >= DatePattern.NORM_DATETIME_MS_PATTERN.length() - 2) {
+			return parse(normalize(dateStr), DatePattern.NORM_DATETIME_MS_PATTERN);
 		}
 
 		// 没有更多匹配的时间格式
-		throw new DateException(StrUtil.format(" [{}] format is not fit for date pattern!", dateStr));
+		throw new DateException("No format fit for date String [{}] !", dateStr);
 	}
+	
 	// ------------------------------------ Parse end ----------------------------------------------
 
 	// ------------------------------------ Offset start ----------------------------------------------
@@ -721,7 +754,13 @@ public class DateUtil {
 	 * @since 3.1.2
 	 */
 	public static Calendar beginOfWeek(Calendar calendar, boolean isMondayAsFirstDay) {
-		calendar.set(Calendar.DAY_OF_WEEK, isMondayAsFirstDay ? Calendar.MONDAY : Calendar.SUNDAY);
+		if(isMondayAsFirstDay) {
+			//设置周一为一周开始
+			calendar.setFirstDayOfWeek(Week.MONDAY.getValue());
+			calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+		}else {
+			calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		}
 		return beginOfDay(calendar);
 	}
 	
@@ -744,7 +783,13 @@ public class DateUtil {
 	 * @since 3.1.2
 	 */
 	public static Calendar endOfWeek(Calendar calendar, boolean isSundayAsLastDay) {
-		calendar.set(Calendar.DAY_OF_WEEK, isSundayAsLastDay ? Calendar.SUNDAY : Calendar.SATURDAY);
+		if(isSundayAsLastDay) {
+			//设置周一为一周开始
+			calendar.setFirstDayOfWeek(Week.MONDAY.getValue());
+			calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		}else {
+			calendar.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+		}
 		return endOfDay(calendar);
 	}
 
@@ -998,7 +1043,7 @@ public class DateUtil {
 	// ------------------------------------ Offset end ----------------------------------------------
 
 	/**
-	 * 判断两个日期相差的时长
+	 * 判断两个日期相差的时长，只保留绝对值
 	 * 
 	 * @param beginDate 起始日期
 	 * @param endDate 结束日期
@@ -1006,7 +1051,21 @@ public class DateUtil {
 	 * @return 日期差
 	 */
 	public static long between(Date beginDate, Date endDate, DateUnit unit) {
-		return new DateBetween(beginDate, endDate).between(unit);
+		return between(beginDate, endDate, unit, true);
+	}
+	
+	/**
+	 * 判断两个日期相差的时长
+	 * 
+	 * @param beginDate 起始日期
+	 * @param endDate 结束日期
+	 * @param unit 相差的单位：相差 天{@link DateUnit#DAY}、小时{@link DateUnit#HOUR} 等
+	 * @param isAbs 日期间隔是否只保留绝对值正数
+	 * @return 日期差
+	 * @since 3.3.1
+	 */
+	public static long between(Date beginDate, Date endDate, DateUnit unit, boolean isAbs) {
+		return new DateBetween(beginDate, endDate, isAbs).between(unit);
 	}
 
 	/**
@@ -1066,7 +1125,7 @@ public class DateUtil {
 	 * @param beginDate 起始日期
 	 * @param endDate 结束日期
 	 * @param isReset 是否重置时间为起始时间（重置月天时分秒）
-	 * @return 相差月数
+	 * @return 相差年数
 	 * @since 3.0.8
 	 */
 	public static long betweenYear(Date beginDate, Date endDate, boolean isReset) {
@@ -1352,6 +1411,63 @@ public class DateUtil {
 	 */
 	private static String yearAndSeason(Calendar cal) {
 		return new StringBuilder().append(cal.get(Calendar.YEAR)).append(cal.get(Calendar.MONTH) / 3 + 1).toString();
+	}
+	
+	/**
+	 * 标准化日期，默认处理以空格区分的日期时间格式，空格前为日期，空格后为时间：<br>
+	 * 将以下字符替换为"-"
+	 * <pre>
+	 * "."
+	 * "/"
+	 * "年"
+	 * "月"
+	 * </pre>
+	 * 
+	 * 将以下字符去除
+	 * <pre>
+	 * "日"
+	 * </pre>
+	 * 
+	 * 将以下字符替换为":"
+	 * <pre>
+	 * "时"
+	 * "分"
+	 * "秒"
+	 * </pre>
+	 * 当末位是":"时去除之（不存在毫秒时）
+	 * 
+	 * @param dateStr 日期时间字符串
+	 * @return 格式化后的日期字符串
+	 */
+	private static String normalize(String dateStr) {
+		if(StrUtil.isBlank(dateStr)) {
+			return dateStr;
+		}
+		
+		//日期时间分开处理
+		final List<String> dateAndTime = StrUtil.splitTrim(dateStr, ' ');
+		final int size = dateAndTime.size();
+		if(size < 1 || size > 2) {
+			//非可被标准处理的格式
+			return dateStr;
+		}
+		
+		final StringBuilder builder = StrUtil.builder();
+		
+		//日期部分（"\"、"/"、"."、"年"、"月"都替换为"-"）
+		String datePart = dateAndTime.get(0).replaceAll("[\\/.年月]", "-");
+		datePart = StrUtil.removeSuffix(datePart, "日");
+		builder.append(datePart);
+		
+		//时间部分
+		if(size  == 2) {
+			builder.append(' ');
+			String timePart = dateAndTime.get(1).replaceAll("[时分秒]", ":");
+			timePart = StrUtil.removeSuffix(timePart, ":");
+			builder.append(timePart);
+		}
+		
+		return builder.toString();
 	}
 	// ------------------------------------------------------------------------ Private method end
 }

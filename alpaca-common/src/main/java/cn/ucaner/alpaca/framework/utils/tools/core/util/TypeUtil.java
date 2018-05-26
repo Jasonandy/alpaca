@@ -14,9 +14,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Iterator;
-
-import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.util   
@@ -166,9 +163,9 @@ public class TypeUtil {
 		return null == method ? null : method.getParameterTypes();
 	}
 
-	//----------------------------------------------------------------------------------- Return Type
+	// ----------------------------------------------------------------------------------- Return Type
 	/**
-	 * 获取方法的参数类型列表<br>
+	 * 获取方法的返回值类型<br>
 	 * 获取方法的GenericReturnType
 	 * 
 	 * @param method 方法
@@ -255,31 +252,5 @@ public class TypeUtil {
 			return genericSuperclass.getActualTypeArguments();
 		}
 		return null;
-	}
-
-	/**
-	 * 获取元素类型<br>
-	 * 通过{@link Iterator}的next方法返回值获取其泛型类型从而确定元素类型
-	 * 
-	 * @param clazz {@link Iterator}
-	 * @return 泛型元素类型
-	 */
-	public static Type getElementType(Class<?> clazz) {
-		if (null == clazz) {
-			return null;
-		}
-
-		Method nextMethod = null;
-		try {
-			if (Iterator.class.isAssignableFrom(clazz)) {
-				nextMethod = clazz.getMethod("next");
-			}
-		} catch (NoSuchMethodException e) {
-			return null;
-		} catch (SecurityException e) {
-			throw new UtilException(e);
-		}
-
-		return getReturnType(nextMethod);
 	}
 }

@@ -15,12 +15,19 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.handler.BeanListHandler;
 import cn.ucaner.alpaca.framework.utils.tools.db.handler.EntityHandler;
 import cn.ucaner.alpaca.framework.utils.tools.db.handler.EntityListHandler;
+import cn.ucaner.alpaca.framework.utils.tools.db.handler.NumberHandler;
 import cn.ucaner.alpaca.framework.utils.tools.db.handler.RsHandler;
+import cn.ucaner.alpaca.framework.utils.tools.db.handler.StringHandler;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.Condition;
 import cn.ucaner.alpaca.framework.utils.tools.db.sql.Condition.LikeType;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.Query;
 import cn.ucaner.alpaca.framework.utils.tools.db.sql.SqlExecutor;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.SqlUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.Wrapper;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.db   
@@ -59,17 +66,66 @@ public abstract class AbstractSqlRunner{
 	/**
 	 * 查询
 	 * 
-	 * @param <T> 结果集需要处理的对象类型
 	 * @param sql 查询语句
 	 * @param params 参数
 	 * @return 结果对象
 	 * @throws SQLException SQL执行异常
 	 * @since 3.1.1
 	 */
-	public <T> List<Entity> query(String sql, Object... params) throws SQLException {
+	public List<Entity> query(String sql, Object... params) throws SQLException {
 		return query(sql, new EntityListHandler(), params);
 	}
+	
+	/**
+	 * 查询
+	 * 
+	 * @param <T> 结果集需要处理的对象类型
+	 * 
+	 * @param sql 查询语句
+	 * @param beanClass 元素Bean类型
+	 * @param params 参数
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.2
+	 */
+	public <T> List<T> query(String sql, Class<T> beanClass, Object... params) throws SQLException {
+		return query(sql, new BeanListHandler<T>(beanClass), params);
+	}
+	
+	/**
+	 * 查询单条记录
+	 *
+	 * @param sql 查询语句
+	 * @param params 参数
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 */
+	public Entity queryOne(String sql, Object... params) throws SQLException {
+		return query(sql, new EntityHandler(), params);
+	}
+	/**
+	 * 查询单条单个字段记录,并将其转换为Number
+	 *
+	 * @param sql 查询语句
+	 * @param params 参数
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 */
+	public Number queryNumber(String sql, Object... params) throws SQLException {
+		return query(sql, new NumberHandler(), params);
+	}
 
+	/**
+	 * 查询单条单个字段记录,并将其转换为String
+	 *
+	 * @param sql 查询语句
+	 * @param params 参数
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 */
+	public String queryString(String sql, Object... params) throws SQLException {
+		return query(sql, new StringHandler(), params);
+	}
 	/**
 	 * 查询
 	 * 
@@ -166,6 +222,28 @@ public abstract class AbstractSqlRunner{
 		try {
 			conn = this.getConnection();
 			return runner.insert(conn, record);
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			this.closeConnection(conn);
+		}
+	}
+	
+	/**
+	 * 插入或更新数据<br>
+	 * 根据给定的字段名查询数据，如果存在则更新这些数据，否则执行插入
+	 * 
+	 * @param record 记录
+	 * @param keys 需要检查唯一性的字段
+	 * @return 插入行数
+	 * @throws SQLException SQL执行异常
+	 * @since 4.0.10
+	 */
+	public int insertOrUpdate(Entity record, String... keys) throws SQLException {
+		Connection conn = null;
+		try {
+			conn = this.getConnection();
+			return runner.insertOrUpdate(conn, record, keys);
 		} catch (SQLException e) {
 			throw e;
 		} finally {
@@ -307,7 +385,8 @@ public abstract class AbstractSqlRunner{
 	 * @throws SQLException SQL执行异常
 	 */
 	public Entity get(Entity where) throws SQLException {
-		return find(null, where, new EntityHandler());
+		return find(where.getFieldNames(), where, new EntityHandler());
+
 	}
 	//------------------------------------------------------------- Get end
 	
@@ -335,6 +414,29 @@ public abstract class AbstractSqlRunner{
 	}
 	
 	/**
+	 * 查询<br>
+	 * Query为查询所需数据的一个实体类，此对象中可以定义返回字段、查询条件，查询的表、分页等信息
+	 * 
+	 * @param <T> 需要处理成的结果对象类型
+	 * @param query {@link Query}对象，此对象中可以定义返回字段、查询条件，查询的表、分页等信息
+	 * @param rsh 结果集处理对象
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 * @since 4.0.0
+	 */
+	public <T> T find(Query query, RsHandler<T> rsh) throws SQLException {
+		Connection conn = null;
+		try {
+			conn = this.getConnection();
+			return runner.find(conn, query, rsh);
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			this.closeConnection(conn);
+		}
+	}
+	
+	/**
 	 * 查询，返回所有字段<br>
 	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
 	 * 
@@ -350,6 +452,33 @@ public abstract class AbstractSqlRunner{
 	}
 	
 	/**
+	 * 查询数据列表，返回字段由where参数指定<br>
+	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
+	 * 
+	 * @param where 条件实体类（包含表名）
+	 * @return 数据对象列表
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.1
+	 */
+	public List<Entity> find(Entity where) throws SQLException{
+		return find(where.getFieldNames(), where, EntityListHandler.create());
+	}
+	
+	/**
+	 * 查询数据列表，返回字段由where参数指定<br>
+	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
+	 * 
+	 * @param <T> Bean类型
+	 * @param where 条件实体类（包含表名）
+	 * @return 数据对象列表
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.2
+	 */
+	public <T> List<T> find(Entity where, Class<T> beanClass) throws SQLException{
+		return find(where.getFieldNames(), where,BeanListHandler.create(beanClass));
+	}
+	
+	/**
 	 * 查询数据列表，返回所有字段<br>
 	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
 	 * 
@@ -359,6 +488,20 @@ public abstract class AbstractSqlRunner{
 	 */
 	public List<Entity> findAll(Entity where) throws SQLException{
 		return find(where, EntityListHandler.create());
+	}
+	
+	/**
+	 * 查询数据列表，返回所有字段<br>
+	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
+	 * 
+	 * @param <T> Bean类型
+	 * @param where 条件实体类（包含表名）
+	 * @return 数据对象列表
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.2
+	 */
+	public <T> List<T> findAll(Entity where, Class<T> beanClass) throws SQLException{
+		return find(where, BeanListHandler.create(beanClass));
 	}
 	
 	/**
@@ -384,6 +527,19 @@ public abstract class AbstractSqlRunner{
 	public List<Entity> findBy(String tableName, String field, Object value) throws SQLException{
 		return findAll(Entity.create(tableName).set(field, value));
 	}
+	/**
+	 * 根据某个字段名条件查询数据列表，返回所有字段
+	 * 
+	 * @param tableName 表名
+	 * @param wheres 字段名
+	 * @return 数据对象列表
+	 * @throws SQLException SQL执行异常
+	 * @since 4.0.0
+	 */
+	public List<Entity> findBy(String tableName, Condition... wheres) throws SQLException{
+		final Query query = new Query(wheres, tableName);
+		return find(query, EntityListHandler.create());
+	}
 	
 	/**
 	 * 根据某个字段名条件查询数据列表，返回所有字段
@@ -396,7 +552,7 @@ public abstract class AbstractSqlRunner{
 	 * @throws SQLException SQL执行异常
 	 */
 	public List<Entity> findLike(String tableName, String field, String value, LikeType likeType) throws SQLException{
-		return findAll(Entity.create(tableName).set(field, DbUtil.buildLikeValue(value, likeType)));
+		return findAll(Entity.create(tableName).set(field, SqlUtil.buildLikeValue(value, likeType, true)));
 	}
 	
 	/**
@@ -447,6 +603,68 @@ public abstract class AbstractSqlRunner{
 	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
 	 * 
 	 * @param <T> 结果对象类型
+	 * @param where 条件实体类（包含表名）
+	 * @param page 页码
+	 * @param numPerPage 每页条目数
+	 * @param rsh 结果集处理对象
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.2
+	 */
+	public <T> T page(Entity where, int page, int numPerPage, RsHandler<T> rsh) throws SQLException {
+		return page(where, new Page(page, numPerPage), rsh);
+	}
+	
+	/**
+	 * 分页查询，结果为Entity列表，不计算总数<br>
+	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
+	 * 
+	 * @param where 条件实体类（包含表名）
+	 * @param page 页码
+	 * @param numPerPage 每页条目数
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.2
+	 */
+	public List<Entity> pageForEntityList(Entity where, int page, int numPerPage) throws SQLException {
+		return pageForEntityList(where, new Page(page, numPerPage));
+	}
+	
+	/**
+	 * 分页查询，结果为Entity列表，不计算总数<br>
+	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
+	 * 
+	 * @param where 条件实体类（包含表名）
+	 * @param page 分页对象
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.2
+	 */
+	public List<Entity> pageForEntityList(Entity where, Page page) throws SQLException {
+		return page(where, page, EntityListHandler.create());
+	}
+	
+	/**
+	 * 分页查询<br>
+	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
+	 * 
+	 * @param <T> 结果对象类型
+	 * @param where 条件实体类（包含表名）
+	 * @param page 分页对象
+	 * @param rsh 结果集处理对象
+	 * @return 结果对象
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.2
+	 */
+	public <T> T page(Entity where, Page page, RsHandler<T> rsh) throws SQLException {
+		return page(where.getFieldNames(), where, page, rsh);
+	}
+	
+	/**
+	 * 分页查询<br>
+	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
+	 * 
+	 * @param <T> 结果对象类型
 	 * @param fields 返回的字段列表，null则返回所有字段
 	 * @param where 条件实体类（包含表名）
 	 * @param page 分页对象
@@ -472,7 +690,7 @@ public abstract class AbstractSqlRunner{
 	 * 
 	 * @param fields 返回的字段列表，null则返回所有字段
 	 * @param where 条件实体类（包含表名）
-	 * @param page 页码
+	 * @param page 分页对象
 	 * @param numPerPage 每页条目数
 	 * @return 结果对象
 	 * @throws SQLException SQL执行异常
@@ -495,7 +713,7 @@ public abstract class AbstractSqlRunner{
 	 * 
 	 * @param fields 返回的字段列表，null则返回所有字段
 	 * @param where 条件实体类（包含表名）
-	 * @param page 页码
+	 * @param page 分页对象
 	 * @return 结果对象
 	 * @throws SQLException SQL执行异常
 	 */
@@ -517,11 +735,26 @@ public abstract class AbstractSqlRunner{
 	 * 
 	 * @param where 条件实体类（包含表名）
 	 * @param page 页码
+	 * @param numPerPage 每页条目数
+	 * @return 分页结果集
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.2
+	 */
+	public PageResult<Entity> page(Entity where, int page, int numPerPage) throws SQLException {
+		return this.page(where, new Page(page, numPerPage));
+	}
+	
+	/**
+	 * 分页查询<br>
+	 * 查询条件为多个key value对表示，默认key = value，如果使用其它条件可以使用：where.put("key", " &gt; 1")，value也可以传Condition对象，key被忽略
+	 * 
+	 * @param where 条件实体类（包含表名）
+	 * @param page 分页对象
 	 * @return 分页结果集
 	 * @throws SQLException SQL执行异常
 	 */
 	public PageResult<Entity> page(Entity where, Page page) throws SQLException {
-		return this.page(null, where, page);
+		return this.page(where.getFieldNames(), where, page);
 	}
 	//---------------------------------------------------------------------------- CRUD end
 	
@@ -540,6 +773,27 @@ public abstract class AbstractSqlRunner{
 	 */
 	public void setRunner(SqlConnRunner runner) {
 		this.runner = runner;
+	}
+	
+	/**
+	 * 设置包装器，包装器用于对表名、字段名进行符号包装（例如双引号），防止关键字与这些表名或字段冲突
+	 * @param wrapperChar 包装字符，字符会在SQL生成时位于表名和字段名两边，null时表示取消包装
+	 * @return this
+	 * @since 4.0.0
+	 */
+	public AbstractSqlRunner setWrapper(Character wrapperChar) {
+		return setWrapper(new Wrapper(wrapperChar));
+	}
+	
+	/**
+	 * 设置包装器，包装器用于对表名、字段名进行符号包装（例如双引号），防止关键字与这些表名或字段冲突
+	 * @param wrapper 包装器，null表示取消包装
+	 * @return this
+	 * @since 4.0.0
+	 */
+	public AbstractSqlRunner setWrapper(Wrapper wrapper) {
+		this.runner.setWrapper(wrapper);
+		return this;
 	}
 	//---------------------------------------------------------------------------- Getters and Setters end
 	

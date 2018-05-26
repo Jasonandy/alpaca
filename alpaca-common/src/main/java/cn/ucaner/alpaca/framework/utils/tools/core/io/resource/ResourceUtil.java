@@ -18,10 +18,10 @@ import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.List;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassLoaderUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
-
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.io.resource   
@@ -61,12 +61,29 @@ public class ResourceUtil {
 	 * 从ClassPath资源中获取{@link InputStream}
 	 * @param resurce ClassPath资源
 	 * @return {@link InputStream}
+	 * @throws NoResourceException 资源不存在异常
 	 * @since 3.1.2
 	 */
-	public static InputStream getStream(String resurce) {
+	public static InputStream getStream(String resurce) throws NoResourceException {
 		return new ClassPathResource(resurce).getStream();
 	}
-	
+
+	/**
+	 * 从ClassPath资源中获取{@link InputStream}，当资源不存在时返回null
+	 * 
+	 * @param resurce ClassPath资源
+	 * @return {@link InputStream}
+	 * @since 4.0.3
+	 */
+	public static InputStream getStreamSafe(String resurce) {
+		try {
+			return new ClassPathResource(resurce).getStream();
+		} catch (NoResourceException e) {
+			// ignore
+		}
+		return null;
+	}
+
 	/**
 	 * 从ClassPath资源中获取{@link BufferedReader}
 	 * @param resurce ClassPath资源
@@ -122,5 +139,17 @@ public class ResourceUtil {
 	 */
 	public static URL getResource(String resource, Class<?> baseClass){
 		return (null != baseClass) ? baseClass.getResource(resource) : ClassLoaderUtil.getClassLoader().getResource(resource);
+	}
+
+	/**
+	 * 获取{@link Resource} 资源对象<br>
+	 * 如果提供路径为绝对路径，返回{@link FileResource}，否则返回{@link ClassPathResource}
+	 * 
+	 * @param path 路径，可以是绝对路径，也可以是相对路径
+	 * @return {@link Resource} 资源对象
+	 * @since 3.2.1
+	 */
+	public static Resource getResourceObj(String path) {
+		return FileUtil.isAbsolutePath(path) ? new FileResource(path) : new ClassPathResource(path);
 	}
 }

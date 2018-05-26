@@ -1,15 +1,20 @@
 package cn.ucaner.alpaca.framework.utils.tools.core.convert;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.CollectionConverter;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.impl.GenericEnumConverter;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.HexUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
@@ -51,6 +56,17 @@ public final class Convert {
 	public static String toStr(Object value) {
 		return toStr(value, null);
 	}
+	
+	/**
+	 * 转换为String数组
+	 * 
+	 * @param value 被转换的值
+	 * @return String数组
+	 * @since 3.2.0
+	 */
+	public static String[] toStrArray(Object value) {
+		return convert(String[].class, value);
+	}
 
 	/**
 	 * 转换为字符<br>
@@ -75,6 +91,17 @@ public final class Convert {
 	 */
 	public static Character toChar(Object value) {
 		return toChar(value, null);
+	}
+	
+	/**
+	 * 转换为Character数组
+	 * 
+	 * @param value 被转换的值
+	 * @return Character数组
+	 * @since 3.2.0
+	 */
+	public static Character[] toCharArray(Object value) {
+		return convert(Character[].class, value);
 	}
 
 	/**
@@ -101,6 +128,17 @@ public final class Convert {
 	public static Byte toByte(Object value) {
 		return toByte(value, null);
 	}
+	
+	/**
+	 * 转换为Byte数组
+	 * 
+	 * @param value 被转换的值
+	 * @return Byte数组
+	 * @since 3.2.0
+	 */
+	public static Byte[] toByteArray(Object value) {
+		return convert(Byte[].class, value);
+	}
 
 	/**
 	 * 转换为Short<br>
@@ -126,6 +164,17 @@ public final class Convert {
 	public static Short toShort(Object value) {
 		return toShort(value, null);
 	}
+	
+	/**
+	 * 转换为Short数组
+	 * 
+	 * @param value 被转换的值
+	 * @return Short数组
+	 * @since 3.2.0
+	 */
+	public static Short[] toShortArray(Object value) {
+		return convert(Short[].class, value);
+	}
 
 	/**
 	 * 转换为Number<br>
@@ -150,6 +199,17 @@ public final class Convert {
 	 */
 	public static Number toNumber(Object value) {
 		return toNumber(value, null);
+	}
+	
+	/**
+	 * 转换为Number数组
+	 * 
+	 * @param value 被转换的值
+	 * @return Number数组
+	 * @since 3.2.0
+	 */
+	public static Number[] toNumberArray(Object value) {
+		return convert(Number[].class, value);
 	}
 
 	/**
@@ -388,23 +448,7 @@ public final class Convert {
 	 * @return Enum
 	 */
 	public static <E extends Enum<E>> E toEnum(Class<E> clazz, Object value, E defaultValue) {
-		if (value == null) {
-			return defaultValue;
-		}
-		if (clazz.isAssignableFrom(value.getClass())) {
-			@SuppressWarnings("unchecked")
-			E myE = (E) value;
-			return myE;
-		}
-		final String valueStr = toStr(value, null);
-		if (StrUtil.isBlank(valueStr)) {
-			return defaultValue;
-		}
-		try {
-			return Enum.valueOf(clazz, valueStr);
-		} catch (Exception e) {
-			return defaultValue;
-		}
+		return (new GenericEnumConverter<>(clazz)).convert(value, defaultValue);
 	}
 
 	/**
@@ -433,6 +477,33 @@ public final class Convert {
 	}
 
 	/**
+	 * 转换为ArrayList
+	 * 
+	 * @param elementType 集合中元素类型
+	 * @param value 被转换的值
+	 * @return {@link Collection}
+	 * @since 4.0.11
+	 */
+	public static List<?> toList(Class<?> elementType, Object value) {
+		return (List<?>) toCollection(ArrayList.class, elementType, value);
+	}
+	
+	/**
+	 * 转换值为指定类型，类型采用字符串表示
+	 * 
+	 * @param <T> 目标类型
+	 * @param className 类的字符串表示
+	 * @param value 值
+	 * @return 转换后的值
+	 * @since 4.0.7
+	 * @throws ConvertException 转换器不存在
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T convertByClassName(String className, Object value) throws ConvertException{
+		return (T) convert(ClassUtil.loadClass(className), value);
+	}
+	
+	/**
 	 * 转换值为指定类型
 	 * 
 	 * @param <T> 目标类型
@@ -440,7 +511,20 @@ public final class Convert {
 	 * @param value 值
 	 * @return 转换后的值
 	 */
-	public static <T> T convert(Class<T> type, Object value) {
+	public static <T> T convert(Class<T> type, Object value) throws ConvertException{
+		return convert((Type)type, value);
+	}
+
+	/**
+	 * 转换值为指定类型
+	 * 
+	 * @param <T> 目标类型
+	 * @param type 类型
+	 * @param value 值
+	 * @return 转换后的值
+	 * @throws ConvertException 转换器不存在
+	 */
+	public static <T> T convert(Type type, Object value) throws ConvertException{
 		return convert(type, value, null);
 	}
 
@@ -455,6 +539,20 @@ public final class Convert {
 	 * @throws ConvertException 转换器不存在
 	 */
 	public static <T> T convert(Class<T> type, Object value, T defaultValue) throws ConvertException {
+		return convert((Type)type, value, defaultValue);
+	}
+	
+	/**
+	 * 转换值为指定类型
+	 * 
+	 * @param <T> 目标类型
+	 * @param type 类型
+	 * @param value 值
+	 * @param defaultValue 默认值
+	 * @return 转换后的值
+	 * @throws ConvertException 转换器不存在
+	 */
+	public static <T> T convert(Type type, Object value, T defaultValue) throws ConvertException {
 		return ConverterRegistry.getInstance().convert(type, value, defaultValue);
 	}
 
@@ -593,8 +691,8 @@ public final class Convert {
 			strHex = Integer.toHexString(strText.charAt(i));
 			strHexLen = strHex.length();
 			str.append("\\u");
-			//对不够4位的在前补零
-			if(strHexLen > 0 && strHexLen < 4){
+			// 对不够4位的在前补零
+			if (strHexLen > 0 && strHexLen < 4) {
 				str.append(StrUtil.repeat('0', 4 - strHexLen));
 			}
 			str.append(strHex);
@@ -652,40 +750,6 @@ public final class Convert {
 		return destUnit.convert(sourceDuration, sourceUnit);
 	}
 
-	/**
-	 * 数字金额大写转换 先写个完整的然后将如零拾替换成零
-	 * 
-	 * @param n 数字
-	 * @return 中文大写数字
-	 */
-	public static String digitUppercase(double n) {
-		String fraction[] = { "角", "分" };
-		String digit[] = { "零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖" };
-		String unit[][] = { { "元", "万", "亿" }, { "", "拾", "佰", "仟" } };
-
-		String head = n < 0 ? "负" : "";
-		n = Math.abs(n);
-
-		String s = "";
-		for (int i = 0; i < fraction.length; i++) {
-			s += (digit[(int) (Math.floor(n * 10 * Math.pow(10, i)) % 10)] + fraction[i]).replaceAll("(零.)+", "");
-		}
-		if (s.length() < 1) {
-			s = "整";
-		}
-		int integerPart = (int) Math.floor(n);
-
-		for (int i = 0; i < unit[0].length && integerPart > 0; i++) {
-			String p = "";
-			for (int j = 0; j < unit[1].length && n > 0; j++) {
-				p = digit[integerPart % 10] + unit[1][j] + p;
-				integerPart = integerPart / 10;
-			}
-			s = p.replaceAll("(零.)*零$", "").replaceAll("^$", "零") + unit[0][i] + s;
-		}
-		return head + s.replaceAll("(零.)*零元", "元").replaceFirst("(零.)+", "").replaceAll("(零.)+", "零").replaceAll("^整$", "零元整");
-	}
-
 	// --------------------------------------------------------------- 原始包装类型转换
 	/**
 	 * 原始类转为包装类，非原始类返回原类
@@ -708,15 +772,156 @@ public final class Convert {
 	public static Class<?> unWrap(Class<?> clazz) {
 		return BasicType.unWrap(clazz);
 	}
-	
-	//-------------------------------------------------------------------------- 数字和英文转换
+
+	// -------------------------------------------------------------------------- 数字和英文转换
 	/**
-	 * 将阿拉伯数字转为英文表达式
+	 * 将阿拉伯数字转为英文表达方式
+	 * 
 	 * @param number {@link Number}对象
 	 * @return 英文表达式
 	 * @since 3.0.9
 	 */
 	public static String numberToWord(Number number) {
 		return NumberWordFormater.format(number);
+	}
+	
+	/**
+	 * 将阿拉伯数字转为中文表达方式
+	 * 
+	 * @param number 数字
+	 * @param isUseTraditonal 是否使用繁体字（金额形式）
+	 * @return 中文
+	 * @since 3.2.3
+	 */
+	public static String numberToChinese(double number, boolean isUseTraditonal) {
+		return NumberChineseFormater.format(number, isUseTraditonal);
+	}
+	
+	/**
+	 * 金额转为中文形式
+	 * 
+	 * @param n 数字
+	 * @return 中文大写数字
+	 * @since 3.2.3
+	 */
+	public static String digitToChinese(Number n) {
+		if(null == n) {
+			return "零";
+		}
+		return NumberChineseFormater.format(n.doubleValue(), true, true);
+	}
+	
+	// -------------------------------------------------------------------------- 数字转换
+	/**
+	 * int转byte
+	 * 
+	 * @param intValue int值
+	 * @return byte值
+	 * @since 3.2.0
+	 */
+	public static byte intToByte(int intValue) {
+		return (byte) intValue;
+	}
+
+	/**
+	 * byte转无符号int
+	 * 
+	 * @param byteValue byte值
+	 * @return 无符号int值
+	 * @since 3.2.0
+	 */
+	public static int byteToUnsignedInt(byte byteValue) {
+		// Java 总是把 byte 当做有符处理；我们可以通过将其和 0xFF 进行二进制与得到它的无符值
+		return byteValue & 0xFF;
+	}
+
+	/**
+	 * byte数组转short
+	 * 
+	 * @param bytes byte数组
+	 * @return short值
+	 * @since 3.2.0
+	 */
+	public static short bytesToShort(byte[] bytes) {
+		return (short) (bytes[1] & 0xff | (bytes[0] & 0xff) << 8);
+	}
+
+	/**
+	 * short转byte数组
+	 * @param shortValue short值
+	 * @return byte数组
+	 * @since 3.2.0
+	 */
+	public static byte[] shortToBytes(short shortValue) {
+		byte[] b = new byte[2];
+		b[1] = (byte) (shortValue & 0xff);
+		b[0] = (byte) ((shortValue >> 8) & 0xff);
+		return b;
+	}
+
+	/**
+	 * byte[]转int值
+	 * 
+	 * @param bytes byte数组
+	 * @return int值
+	 * @since 3.2.0
+	 */
+	public static int bytesToInt(byte[] bytes) {
+		return bytes[3] & 0xFF | //
+				(bytes[2] & 0xFF) << 8 | //
+				(bytes[1] & 0xFF) << 16 | //
+				(bytes[0] & 0xFF) << 24; //
+	}
+
+	/**
+	 * int转byte数组
+	 * 
+	 * @param intValue int值
+	 * @return byte数组
+	 * @since 3.2.0
+	 */
+	public static byte[] intToBytes(int intValue) {
+		return new byte[] { //
+				(byte) ((intValue >> 24) & 0xFF), //
+				(byte) ((intValue >> 16) & 0xFF), //
+				(byte) ((intValue >> 8) & 0xFF), //
+				(byte) (intValue & 0xFF) //
+		};
+	}
+
+	/**
+	 * long转byte数组<br>
+	 * from: https://stackoverflow.com/questions/4485128/how-do-i-convert-long-to-byte-and-back-in-java
+	 * 
+	 * @param longValue long值
+	 * @return byte数组
+	 * @since 3.2.0
+	 */
+	public static byte[] longToBytes(long longValue) {
+		// Magic number 8 should be defined as Long.SIZE / Byte.SIZE
+		final byte[] result = new byte[8];
+		for (int i = 7; i >= 0; i--) {
+			result[i] = (byte) (longValue & 0xFF);
+			longValue >>= 8;
+		}
+		return result;
+	}
+
+	/**
+	 * byte数组转long<br>
+	 * from: https://stackoverflow.com/questions/4485128/how-do-i-convert-long-to-byte-and-back-in-java
+	 * 
+	 * @param bytes byte数组
+	 * @return long值
+	 * @since 3.2.0
+	 */
+	public static long bytesToLong(byte[] bytes) {
+		// Magic number 8 should be defined as Long.SIZE / Byte.SIZE
+		long values = 0;
+		for (int i = 0; i < 8; i++) {
+			values <<= 8;
+			values |= (bytes[i] & 0xff);
+		}
+		return values;
 	}
 }

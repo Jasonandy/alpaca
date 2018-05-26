@@ -180,7 +180,13 @@ public class RuntimeUtil {
 		}
 	}
 	
-	public static void main(String[] args) {
-		execForStr("ls");
+	/**
+	 * 增加一个JVM关闭后的钩子，用于在JVM关闭时执行某些操作
+	 * 
+	 * @param hook 钩子
+	 * @since 4.0.5
+	 */
+	public static void addShutdownHook(Runnable hook) {
+		Runtime.getRuntime().addShutdownHook((hook instanceof Thread) ? (Thread)hook : new Thread(hook));
 	}
 }

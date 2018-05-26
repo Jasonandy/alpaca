@@ -10,8 +10,10 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.script;
 
+import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -27,8 +29,8 @@ import javax.script.ScriptException;
 * @Modify marker：   
 * @version    V1.0
  */
-public final class ScriptUtil {
-	
+public class ScriptUtil {
+
 	/**
 	 * 获得 {@link ScriptEngine} 实例
 	 * @param name 脚本名称
@@ -48,14 +50,81 @@ public final class ScriptUtil {
 	
 	/**
 	 * 编译脚本
+	 * 
+	 * @param script 脚本内容
+	 * @return {@link CompiledScript}
+	 * @throws ScriptRuntimeException 脚本异常
+	 * @since 3.2.0
+	 */
+	public static Object eval(String script) throws ScriptRuntimeException {
+		try {
+			return compile(script).eval();
+		} catch (ScriptException e) {
+			throw new ScriptRuntimeException(e);
+		}
+	}
+	
+	/**
+	 * 编译脚本
+	 * 
+	 * @param script 脚本内容
+	 * @param context 脚本上下文
+	 * @return {@link CompiledScript}
+	 * @throws ScriptRuntimeException 脚本异常
+	 * @since 3.2.0
+	 */
+	public static Object eval(String script, ScriptContext context) throws ScriptRuntimeException {
+		try {
+			return compile(script).eval(context);
+		} catch (ScriptException e) {
+			throw new ScriptRuntimeException(e);
+		}
+	}
+	
+	/**
+	 * 编译脚本
+	 * 
+	 * @param script 脚本内容
+	 * @param bindings 绑定的参数
+	 * @return {@link CompiledScript}
+	 * @throws ScriptRuntimeException 脚本异常
+	 * @since 3.2.0
+	 */
+	public static Object eval(String script, Bindings bindings) throws ScriptRuntimeException {
+		try {
+			return compile(script).eval(bindings);
+		} catch (ScriptException e) {
+			throw new ScriptRuntimeException(e);
+		}
+	}
+
+	/**
+	 * 编译脚本
+	 * 
+	 * @param script 脚本内容
+	 * @return {@link CompiledScript}
+	 * @throws ScriptRuntimeException 脚本异常
+	 * @since 3.2.0
+	 */
+	public static CompiledScript compile(String script) throws ScriptRuntimeException {
+		try {
+			return compile(getJavaScriptEngine(), script);
+		} catch (ScriptException e) {
+			throw new ScriptRuntimeException(e);
+		}
+	}
+
+	/**
+	 * 编译脚本
+	 * 
 	 * @param engine 引擎
 	 * @param script 脚本内容
 	 * @return {@link CompiledScript}
 	 * @throws ScriptException 脚本异常
 	 */
-	public static CompiledScript compile(ScriptEngine engine, String script) throws ScriptException{
-		if(engine instanceof Compilable){
-			Compilable compEngine = (Compilable)engine;
+	public static CompiledScript compile(ScriptEngine engine, String script) throws ScriptException {
+		if (engine instanceof Compilable) {
+			Compilable compEngine = (Compilable) engine;
 			return compEngine.compile(script);
 		}
 		return null;

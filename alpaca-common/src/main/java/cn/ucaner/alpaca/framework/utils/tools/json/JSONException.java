@@ -10,6 +10,7 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.json;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.ExceptionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
@@ -25,17 +26,21 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
  */
 public class JSONException extends RuntimeException {
 	private static final long serialVersionUID = 0;
+	
+	public JSONException(Throwable e) {
+		super(ExceptionUtil.getMessage(e), e);
+	}
 
-	public JSONException(final String message) {
+	public JSONException(String message) {
 		super(message);
 	}
-
-	public JSONException(final String message, final Throwable cause) {
-		super(message, cause);
+	
+	public JSONException(String messageTemplate, Object... params) {
+		super(StrUtil.format(messageTemplate, params));
 	}
 
-	public JSONException(final Throwable cause) {
-		super(cause.getMessage(), cause);
+	public JSONException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 	public JSONException(Throwable throwable, String messageTemplate, Object... params) {

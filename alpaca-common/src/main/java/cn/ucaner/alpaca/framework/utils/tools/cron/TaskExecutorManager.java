@@ -13,7 +13,7 @@ package cn.ucaner.alpaca.framework.utils.tools.cron;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.util.ThreadUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.thread.ThreadUtil;
 import cn.ucaner.alpaca.framework.utils.tools.cron.task.Task;
 
 /**

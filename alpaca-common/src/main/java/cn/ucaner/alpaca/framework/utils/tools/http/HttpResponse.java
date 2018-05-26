@@ -11,10 +11,13 @@
 package cn.ucaner.alpaca.framework.utils.tools.http;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpCookie;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -23,8 +26,12 @@ import java.util.zip.GZIPInputStream;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.FastByteArrayOutputStream;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.io.StreamProgress;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.ReUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
@@ -38,7 +45,7 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 * @Modify marker：   
 * @version    V1.0
  */
-public class HttpResponse extends HttpBase<HttpResponse> {
+public class HttpResponse extends HttpBase<HttpResponse> implements Closeable{
 	
 	/** 持有连接对象 */
 	private HttpConnection httpConnection;
@@ -46,8 +53,6 @@ public class HttpResponse extends HttpBase<HttpResponse> {
 	private InputStream in;
 	/** 是否异步，异步下只持有流，否则将在初始化时直接读取body内容 */
 	private volatile boolean isAsync;
-	/** 读取服务器返回的流保存至内存 */
-	private FastByteArrayOutputStream out;
 	/** 响应状态码 */
 	private int status;
 	/** 是否忽略读取Http响应体 */
@@ -135,7 +140,8 @@ public class HttpResponse extends HttpBase<HttpResponse> {
 	/**
 	 * 获得服务区响应流<br>
 	 * 异步模式下获取Http原生流，同步模式下获取获取到的在内存中的副本<br>
-	 * 如果想在同步模式下获取流，请先调用{@link #sync()}方法强制同步
+	 * 如果想在同步模式下获取流，请先调用{@link #sync()}方法强制同步<br>
+	 * 流获取后处理完毕需关闭此类
 	 * 
 	 * @return 响应流
 	 */
@@ -143,7 +149,7 @@ public class HttpResponse extends HttpBase<HttpResponse> {
 		if(isAsync) {
 			return this.in;
 		}
-		return new ByteArrayInputStream(this.out.toByteArray());
+		return new ByteArrayInputStream(this.bodyBytes);
 	}
 	
 	/**
@@ -154,7 +160,7 @@ public class HttpResponse extends HttpBase<HttpResponse> {
 	 */
 	public byte[] bodyBytes() {
 		sync();
-		return (null == this.out) ? null : this.out.toByteArray();
+		return this.bodyBytes;
 	}
 
 	/**
@@ -169,7 +175,104 @@ public class HttpResponse extends HttpBase<HttpResponse> {
 			throw new HttpException(e);
 		}
 	}
+	
+	/**
+	 * 将响应内容写出到{@link OutputStream}<br>
+	 * 异步模式下直接读取Http流写出，同步模式下将存储在内存中的响应内容写出<br>
+	 * 写出后会关闭Http流（异步模式）
+	 * 
+	 * @param out 写出的流
+	 * @param isCloseOut 是否关闭输出流
+	 * @param streamProgress 进度显示接口，通过实现此接口显示下载进度
+	 * @return 写出bytes数
+	 * @since 3.3.2
+	 */
+	public long writeBody(OutputStream out, boolean isCloseOut, StreamProgress streamProgress) {
+		if (null == out) {
+			throw new NullPointerException("[out] is null!");
+		}
+		try {
+			return IoUtil.copyByNIO(in, out, IoUtil.DEFAULT_BUFFER_SIZE, streamProgress);
+		} finally {
+			IoUtil.close(this);
+			if (isCloseOut) {
+				IoUtil.close(out);
+			}
+		}
+	}
+	
+	/**
+	 * 将响应内容写出到文件<br>
+	 * 异步模式下直接读取Http流写出，同步模式下将存储在内存中的响应内容写出<br>
+	 * 写出后会关闭Http流（异步模式）
+	 * 
+	 * @param destFile 写出到的文件
+	 * @param streamProgress 进度显示接口，通过实现此接口显示下载进度
+	 * @return 写出bytes数
+	 * @since 3.3.2
+	 */
+	public long writeBody(File destFile, StreamProgress streamProgress) {
+		if (null == destFile) {
+			throw new NullPointerException("[destFile] is null!");
+		}
+		if (destFile.isDirectory()) {
+			//从头信息中获取文件名
+			String fileName = getFileNameFromDisposition();
+			if(StrUtil.isBlank(fileName)) {
+				final String path = this.httpConnection.getUrl().getPath();
+				//从路径中获取文件名
+				fileName = StrUtil.subSuf(path, path.lastIndexOf('/') + 1);
+				if (StrUtil.isBlank(fileName)) {
+					//编码后的路径做为文件名
+					fileName = HttpUtil.encode(path, CharsetUtil.CHARSET_UTF_8);
+				}
+			}
+			destFile = FileUtil.file(destFile, fileName);
+		}
+		OutputStream out = null;
+		try {
+			out = FileUtil.getOutputStream(destFile);
+			return writeBody(out, false, streamProgress);
+		} catch (IORuntimeException e) {
+			throw new HttpException(e);
+		} finally {
+			IoUtil.close(out);
+		}
+	}
+	
+	/**
+	 * 将响应内容写出到文件<br>
+	 * 异步模式下直接读取Http流写出，同步模式下将存储在内存中的响应内容写出<br>
+	 * 写出后会关闭Http流（异步模式）
+	 * 
+	 * @param destFile 写出到的文件
+	 * @return 写出bytes数
+	 * @since 3.3.2
+	 */
+	public long writeBody(File destFile) {
+		return writeBody(destFile, null);
+	}
+	
+	/**
+	 * 将响应内容写出到文件<br>
+	 * 异步模式下直接读取Http流写出，同步模式下将存储在内存中的响应内容写出<br>
+	 * 写出后会关闭Http流（异步模式）
+	 * 
+	 * @param destFilePath 写出到的文件的路径
+	 * @return 写出bytes数
+	 * @since 3.3.2
+	 */
+	public long writeBody(String destFilePath) {
+		return writeBody(FileUtil.file(destFilePath));
+	}
 	// ---------------------------------------------------------------- Body end
+	
+	@Override
+	public void close() {
+		IoUtil.close(this.in);
+		//关闭连接
+		this.httpConnection.disconnect();
+	}
 	
 	@Override
 	public String toString() {
@@ -212,7 +315,18 @@ public class HttpResponse extends HttpBase<HttpResponse> {
 			if(e instanceof FileNotFoundException){
 				//服务器无返回内容，忽略之
 			}else{
-				throw new HttpException(e.getMessage(), e);
+				throw new HttpException(e);
+			}
+		}
+		if(null == this.in) {
+			//在一些情况下，返回的流为null，此时提供状态码说明
+			this.in = new ByteArrayInputStream(StrUtil.format("Error request, response status: {}", this.status).getBytes());
+		} else if(isGzip() && false == (in instanceof GZIPInputStream)){
+			try {
+				in = new GZIPInputStream(in);
+			} catch (IOException e) {
+				//在类似于Head等方法中无body返回，此时GZIPInputStream构造会出现错误，在此忽略此错误读取普通数据
+				//ignore
 			}
 		}
 		
@@ -231,26 +345,18 @@ public class HttpResponse extends HttpBase<HttpResponse> {
 			return;
 		}
 		
-		if(isGzip() && false == (in instanceof GZIPInputStream)){
-			try {
-				in = new GZIPInputStream(in);
-			} catch (IOException e) {
-				//在类似于Head等方法中无body返回，此时GZIPInputStream构造会出现错误，在此忽略此错误读取普通数据
-				//ignore
-			}
-		}
-		
 		int contentLength = Convert.toInt(header(Header.CONTENT_LENGTH), 0);
-		this.out = contentLength > 0 ? new FastByteArrayOutputStream(contentLength) : new FastByteArrayOutputStream();
+		final FastByteArrayOutputStream out = contentLength > 0 ? new FastByteArrayOutputStream(contentLength) : new FastByteArrayOutputStream();
 		try {
-			IoUtil.copy(in, this.out);
+			IoUtil.copy(in, out);
 		} catch (IORuntimeException e) {
-			if(e.getCause() instanceof EOFException) {
+			if(e.getCause() instanceof EOFException || StrUtil.containsIgnoreCase(e.getMessage(), "Premature EOF")) {
 				//忽略读取HTTP流中的EOF错误
 			}else {
 				throw e;
 			}
 		}
+		this.bodyBytes = out.toByteArray();
 	}
 	
 	/**
@@ -279,11 +385,25 @@ public class HttpResponse extends HttpBase<HttpResponse> {
 			if(this.isAsync) {
 				this.isAsync = false;
 			}
-			IoUtil.close(this.in);
-			//关闭连接
-			this.httpConnection.disconnect();
+			this.close();
 		}
 		return this;
+	}
+	
+	/**
+	 * 从Content-Disposition头中获取文件名
+	 * @return 文件名，empty表示无
+	 */
+	private String getFileNameFromDisposition() {
+		String fileName = null;
+		final String desposition = header(Header.CONTENT_DISPOSITION);
+		if(StrUtil.isNotBlank(desposition)) {
+			fileName = ReUtil.get("filename=\"(.*?)\"", desposition, 1);
+			if(StrUtil.isBlank(fileName)) {
+				fileName = StrUtil.subAfter(desposition, "filename=", true);
+			}
+		}
+		return fileName;
 	}
 	// ---------------------------------------------------------------- Private method end
 }

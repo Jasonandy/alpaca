@@ -18,9 +18,10 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
+import cn.ucaner.alpaca.framework.utils.tools.core.map.MapUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.dialect.Dialect;
 import cn.ucaner.alpaca.framework.utils.tools.db.dialect.DialectFactory;
@@ -31,6 +32,8 @@ import cn.ucaner.alpaca.framework.utils.tools.db.handler.RsHandler;
 import cn.ucaner.alpaca.framework.utils.tools.db.sql.Condition.LikeType;
 import cn.ucaner.alpaca.framework.utils.tools.db.sql.Query;
 import cn.ucaner.alpaca.framework.utils.tools.db.sql.SqlExecutor;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.SqlUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.Wrapper;
 import cn.ucaner.alpaca.framework.utils.tools.log.StaticLog;
 
 /**
@@ -125,8 +128,28 @@ public class SqlConnRunner{
 	}
 	
 	/**
+	 * 插入数据<br>
+	 * 此方法不会关闭Connection
+	 * 
+	 * @param conn 数据库连接
+	 * @param record 记录
+	 * @param keys 需要检查唯一性的字段
+	 * @return 插入行数
+	 * @throws SQLException SQL执行异常
+	 */
+	public int insertOrUpdate(Connection conn, Entity record, String... keys) throws SQLException {
+		final Entity where = record.filter(keys);
+		if(MapUtil.isNotEmpty(where) && count(conn, where) > 0) {
+			return update(conn, record, where);
+		}else {
+			return insert(conn, record);
+		}
+	}
+	
+	/**
 	 * 批量插入数据<br>
-	 * 批量插入必须严格保持Entity的结构一致，不一致会导致插入数据出现不可预知的结果<br>
+	 * 需要注意的是，批量插入每一条数据结构必须一致。批量插入数据时会获取第一条数据的字段结构，之后的数据会按照这个格式插入。<br>
+	 * 也就是说假如第一条数据只有2个字段，后边数据多于这两个字段的部分将被抛弃。
 	 * 此方法不会关闭Connection
 	 * 
 	 * @param conn 数据库连接
@@ -186,7 +209,7 @@ public class SqlConnRunner{
 		try {
 			ps = dialect.psForInsert(conn, record);
 			ps.executeUpdate();
-			return DbUtil.getGeneratedKeys(ps);
+			return StatementUtil.getGeneratedKeys(ps);
 		} catch (SQLException e) {
 			throw e;
 		} finally {
@@ -212,7 +235,7 @@ public class SqlConnRunner{
 		try {
 			ps = dialect.psForInsert(conn, record);
 			ps.executeUpdate();
-			return DbUtil.getGeneratedKeyOfLong(ps);
+			return StatementUtil.getGeneratedKeyOfLong(ps);
 		} catch (SQLException e) {
 			throw e;
 		} finally {
@@ -235,7 +258,7 @@ public class SqlConnRunner{
 			throw new SQLException("Empty entity provided!");
 		}
 		
-		final Query query = new Query(DbUtil.buildConditions(where), where.getTableName());
+		final Query query = new Query(SqlUtil.buildConditions(where), where.getTableName());
 		PreparedStatement ps = null;
 		try {
 			ps = dialect.psForDelete(conn, query);
@@ -273,7 +296,7 @@ public class SqlConnRunner{
 			record.setTableName(tableName);
 		}
 		
-		final Query query = new Query(DbUtil.buildConditions(where), tableName);
+		final Query query = new Query(SqlUtil.buildConditions(where), tableName);
 		PreparedStatement ps = null;
 		try {
 			ps = dialect.psForUpdate(conn, record, query);
@@ -324,15 +347,13 @@ public class SqlConnRunner{
 	 * @throws SQLException SQL执行异常
 	 */
 	public <T> T find(Connection conn, Collection<String> fields, Entity where, RsHandler<T> rsh) throws SQLException {
-		checkConn(conn);
-		
-		final Query query = new Query(DbUtil.buildConditions(where), where.getTableName());
+		final Query query = new Query(SqlUtil.buildConditions(where), where.getTableName());
 		query.setFields(fields);
 		return find(conn, query, rsh);
 	}
 	
 	/**
-	 * 查询，返回所有字段<br>
+	 * 查询，返回指定字段列表<br>
 	 * 此方法不会关闭Connection
 	 * 
 	 * @param <T> 结果对象类型
@@ -345,6 +366,19 @@ public class SqlConnRunner{
 	 */
 	public <T> T find(Connection conn, Entity where, RsHandler<T> rsh, String... fields) throws SQLException {
 		return find(conn, CollectionUtil.newArrayList(fields), where, rsh);
+	}
+	
+	/**
+	 * 查询数据列表，返回字段在where参数中定义
+	 * 
+	 * @param conn 数据库连接对象
+	 * @param where 条件实体类（包含表名）
+	 * @return 数据对象列表
+	 * @throws SQLException SQL执行异常
+	 * @since 3.2.1
+	 */
+	public List<Entity> find(Connection conn, Entity where) throws SQLException{
+		return find(conn, where.getFieldNames(), where, EntityListHandler.create());
 	}
 	
 	/**
@@ -397,7 +431,7 @@ public class SqlConnRunner{
 	 * @throws SQLException SQL执行异常
 	 */
 	public List<Entity> findLike(Connection conn, String tableName, String field, String value, LikeType likeType) throws SQLException{
-		return findAll(conn, Entity.create(tableName).set(field, DbUtil.buildLikeValue(value, likeType)));
+		return findAll(conn, Entity.create(tableName).set(field, SqlUtil.buildLikeValue(value, likeType, true)));
 	}
 	
 	/**
@@ -424,7 +458,7 @@ public class SqlConnRunner{
 	public int count(Connection conn, Entity where) throws SQLException {
 		checkConn(conn);
 		
-		final Query query = new Query(DbUtil.buildConditions(where), where.getTableName());
+		final Query query = new Query(SqlUtil.buildConditions(where), where.getTableName());
 		PreparedStatement ps = null;
 		try {
 			ps = dialect.psForCount(conn, query);
@@ -473,7 +507,7 @@ public class SqlConnRunner{
 			return this.find(conn, fields, where, rsh);
 		}
 		
-		final Query query = new Query(DbUtil.buildConditions(where), where.getTableName());
+		final Query query = new Query(SqlUtil.buildConditions(where), where.getTableName());
 		query.setFields(fields);
 		query.setPage(page);
 		return SqlExecutor.queryAndClosePs(dialect.psForPage(conn, query), rsh);
@@ -516,13 +550,13 @@ public class SqlConnRunner{
 		//查询全部
 		if(null == page){
 			List<Entity> entityList = this.find(conn, fields, where, new EntityListHandler());
-			PageResult<Entity> pageResult = new PageResult<Entity>(0, entityList.size(), entityList.size());
+			final PageResult<Entity> pageResult = new PageResult<Entity>(0, entityList.size(), entityList.size());
 			pageResult.addAll(entityList);
 			return pageResult;
 		}
 		
 		final int count = count(conn, where);
-		PageResultHandler pageResultHandler = PageResultHandler.create(new PageResult<Entity>(page.getPageNumber(), page.getNumPerPage(), count));
+		PageResultHandler pageResultHandler = PageResultHandler.create(new PageResult<Entity>(page.getPageNumber(), page.getPageSize(), count));
 		return this.page(conn, fields, where, page, pageResultHandler);
 	}
 	
@@ -552,8 +586,30 @@ public class SqlConnRunner{
 	 * 设置SQL方言
 	 * @param dialect 方言
 	 */
-	public void setDialect(Dialect dialect) {
+	public SqlConnRunner setDialect(Dialect dialect) {
 		this.dialect = dialect;
+		return this;
+	}
+	
+	/**
+	 * 设置包装器，包装器用于对表名、字段名进行符号包装（例如双引号），防止关键字与这些表名或字段冲突
+	 * @param wrapperChar 包装字符，字符会在SQL生成时位于表名和字段名两边，null时表示取消包装
+	 * @return this
+	 * @since 4.0.0
+	 */
+	public SqlConnRunner setWrapper(Character wrapperChar) {
+		return setWrapper(new Wrapper(wrapperChar));
+	}
+	
+	/**
+	 * 设置包装器，包装器用于对表名、字段名进行符号包装（例如双引号），防止关键字与这些表名或字段冲突
+	 * @param wrapper 包装器，null表示取消包装
+	 * @return this
+	 * @since 4.0.0
+	 */
+	public SqlConnRunner setWrapper(Wrapper wrapper) {
+		this.dialect.setWrapper(wrapper);
+		return this;
 	}
 	//---------------------------------------------------------------------------- Getters and Setters end
 	

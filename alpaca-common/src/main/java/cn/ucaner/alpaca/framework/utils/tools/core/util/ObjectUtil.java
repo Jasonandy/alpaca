@@ -20,6 +20,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.FastByteArrayOutputStream;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
@@ -51,7 +52,8 @@ public class ObjectUtil {
 	 * @return 是否相等
 	 */
 	public static boolean equal(Object obj1, Object obj2) {
-		return (obj1 != null) ? (obj1.equals(obj2)) : (obj2 == null);
+//		return (obj1 != null) ? (obj1.equals(obj2)) : (obj2 == null);
+		return (obj1 == obj2) || (obj1 != null && obj1.equals(obj2));
 	}
 	
 	/**
@@ -185,13 +187,18 @@ public class ObjectUtil {
 	}
 
 	/**
-	 * 检查对象是否为null
+	 * 检查对象是否为null<br>
+	 * 判断标准为：
+	 * <pre>
+	 * 1. == null
+	 * 2. equals(null)
+	 * </pre>
 	 * 
 	 * @param obj 对象
 	 * @return 是否为null
 	 */
 	public static boolean isNull(Object obj) {
-		return null == obj;
+		return null == obj || obj.equals(null);
 	}
 
 	/**
@@ -201,7 +208,7 @@ public class ObjectUtil {
 	 * @return 是否为null
 	 */
 	public static boolean isNotNull(Object obj) {
-		return null != obj;
+		return null != obj && false == obj.equals(null);
 	}
 
 	/**
@@ -429,5 +436,23 @@ public class ObjectUtil {
 	 */
 	public static Class<?> getTypeArgument(Object obj, int index) {
 		return ClassUtil.getTypeArgument(obj.getClass(), index);
+	}
+
+	/**
+	 * 将Object转为String
+	 * 
+	 * @param obj Bean对象
+	 * @return Bean所有字段转为Map后的字符串
+	 * @since 3.2.0
+	 */
+	public static String toString(Object obj) {
+		if(null == obj) {
+			return "null";
+		}
+		if(obj instanceof Map) {
+			return ((Map<?, ?>)obj).toString();
+		}
+		
+		return BeanUtil.beanToMap(obj).toString();
 	}
 }

@@ -22,15 +22,22 @@ package cn.ucaner.alpaca.framework.utils.tools.crypto.asymmetric;
 * @version    V1.0
  */
 public enum AsymmetricAlgorithm {
-	
-	RSA("RSA"), DSA("DSA");
+	RSA("RSA"), DSA("DSA"), EC("EC");
 
 	private String value;
 
+	/**
+	 * 构造
+	 * @param value 算法字符表示，区分大小写
+	 */
 	private AsymmetricAlgorithm(String value) {
 		this.value = value;
 	}
 
+	/**
+	 * 获取算法字符串表示，区分大小写
+	 * @return 算法字符串表示
+	 */
 	public String getValue() {
 		return this.value;
 	}

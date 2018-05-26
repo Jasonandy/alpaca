@@ -9,12 +9,14 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.file.FileReader;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.HexUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ObjectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
@@ -102,6 +104,18 @@ public final class JSONUtil {
 	 */
 	public static JSONArray parseArray(Object arrayOrCollection) {
 		return new JSONArray(arrayOrCollection);
+	}
+
+	/**
+	 * JSON字符串转JSONArray
+	 * 
+	 * @param arrayOrCollection 数组或集合对象
+	 * @param ignoreNullValue 是否忽略空值
+	 * @return JSONArray
+	 * @since 3.2.3
+	 */
+	public static JSONArray parseArray(Object arrayOrCollection, boolean ignoreNullValue) {
+		return new JSONArray(arrayOrCollection, ignoreNullValue);
 	}
 
 	/**
@@ -277,12 +291,12 @@ public final class JSONUtil {
 	 * @return XML字符串
 	 */
 	public static String toXmlStr(JSON json) {
-		return XML.toString(json);
+		return XML.toXml(json);
 	}
 	// -------------------------------------------------------------------- toString end
 
 	// -------------------------------------------------------------------- toBean start
-	
+
 	/**
 	 * JSON字符串转为实体类对象，转换异常将被抛出
 	 * 
@@ -295,7 +309,7 @@ public final class JSONUtil {
 	public static <T> T toBean(String jsonString, Class<T> beanClass) {
 		return toBean(parseObj(jsonString), beanClass, false);
 	}
-	
+
 	/**
 	 * 转为实体类对象，转换异常将被抛出
 	 * 
@@ -321,6 +335,45 @@ public final class JSONUtil {
 		return null == json ? null : json.toBean(beanClass, ignoreError);
 	}
 	// -------------------------------------------------------------------- toBean end
+	
+	/**
+	 * 将JSONArray转换为Bean的List，默认为ArrayList
+	 * 
+	 * @param jsonArray JSONArray
+	 * @param elementType List中元素类型
+	 * @return List
+	 * @since 4.0.7
+	 */
+	public static <T> List<T> toList(JSONArray jsonArray, Class<T> elementType){
+		return null == jsonArray ? null : jsonArray.toList(elementType);
+	}
+
+	/**
+	 * 通过表达式获取JSON中嵌套的对象<br>
+	 * <ol>
+	 * <li>.表达式，可以获取Bean对象中的属性（字段）值或者Map中key对应的值</li>
+	 * <li>[]表达式，可以获取集合等对象中对应index的值</li>
+	 * </ol>
+	 * 
+	 * 表达式栗子：
+	 * 
+	 * <pre>
+	 * persion
+	 * persion.name
+	 * persons[3]
+	 * person.friends[5].name
+	 * </pre>
+	 * 
+	 * @param json {@link JSON}
+	 * @param expression 表达式
+	 * @return 对象
+	 * @see JSON#getByExp(String)
+	 * @deprecated 请使用{@link JSONUtil#getByPath(JSON, String)}
+	 */
+	@Deprecated
+	public static Object getByExp(JSON json, String expression) {
+		return (null == json || StrUtil.isBlank(expression)) ? null : json.getByPath(expression);
+	}
 
 	/**
 	 * 通过表达式获取JSON中嵌套的对象<br>
@@ -343,8 +396,34 @@ public final class JSONUtil {
 	 * @return 对象
 	 * @see JSON#getByExp(String)
 	 */
-	public static Object getByExp(JSON json, String expression) {
-		return (null == json || StrUtil.isBlank(expression)) ? null : json.getByExp(expression);
+	public static Object getByPath(JSON json, String expression) {
+		return (null == json || StrUtil.isBlank(expression)) ? null : json.getByPath(expression);
+	}
+
+	/**
+	 * 设置表达式指定位置（或filed对应）的值<br>
+	 * 若表达式指向一个JSONArray则设置其坐标对应位置的值，若指向JSONObject则put对应key的值<br>
+	 * 注意：如果为JSONArray，则设置值得下标不能大于已有JSONArray的长度<br>
+	 * <ol>
+	 * <li>.表达式，可以获取Bean对象中的属性（字段）值或者Map中key对应的值</li>
+	 * <li>[]表达式，可以获取集合等对象中对应index的值</li>
+	 * </ol>
+	 * 
+	 * 表达式栗子：
+	 * 
+	 * <pre>
+	 * persion
+	 * persion.name
+	 * persons[3]
+	 * person.friends[5].name
+	 * </pre>
+	 * 
+	 * @param json JSON，可以为JSONObject或JSONArray
+	 * @param expression 表达式
+	 * @param value 值
+	 */
+	public static void putByPath(JSON json, String expression, Object value) {
+		json.putByPath(expression, value);
 	}
 
 	/**
@@ -352,18 +431,30 @@ public final class JSONUtil {
 	 * 为了能在HTML中较好的显示，会将&lt;/转义为&lt;\/<br>
 	 * JSON字符串中不能包含控制字符和未经转义的引号和反斜杠
 	 *
-	 * @param string A String
-	 * @return A String correctly formatted for insertion in a JSON text.
+	 * @param string 字符串
+	 * @return 适合在JSON中显示的字符串
 	 */
 	public static String quote(String string) {
+		return quote(string, true);
+	}
+
+	/**
+	 * 对所有双引号做转义处理（使用双反斜杠做转义）<br>
+	 * 为了能在HTML中较好的显示，会将&lt;/转义为&lt;\/<br>
+	 * JSON字符串中不能包含控制字符和未经转义的引号和反斜杠
+	 *
+	 * @param string 字符串
+	 * @param isWrap 是否使用双引号包装字符串
+	 * @return 适合在JSON中显示的字符串
+	 * @since 3.3.1
+	 */
+	public static String quote(String string, boolean isWrap) {
 		StringWriter sw = new StringWriter();
-		synchronized (sw.getBuffer()) {
-			try {
-				return quote(string, sw).toString();
-			} catch (IOException ignored) {
-				// will never happen - we are writing to a string writer
-				return "";
-			}
+		try {
+			return quote(string, sw, isWrap).toString();
+		} catch (IOException ignored) {
+			// will never happen - we are writing to a string writer
+			return StrUtil.EMPTY;
 		}
 	}
 
@@ -372,31 +463,48 @@ public final class JSONUtil {
 	 * 为了能在HTML中较好的显示，会将&lt;/转义为&lt;\/<br>
 	 * JSON字符串中不能包含控制字符和未经转义的引号和反斜杠
 	 * 
-	 * @param string A String
+	 * @param str 字符串
 	 * @param writer Writer
-	 * @return A String correctly formatted for insertion in a JSON text.
+	 * @return Writer
 	 * @throws IOException IO异常
 	 */
-	public static Writer quote(String string, Writer writer) throws IOException {
-		if (StrUtil.isEmpty(string)) {
-			writer.write("\"\"");
+	public static Writer quote(String str, Writer writer) throws IOException {
+		return quote(str, writer, true);
+	}
+
+	/**
+	 * 对所有双引号做转义处理（使用双反斜杠做转义）<br>
+	 * 为了能在HTML中较好的显示，会将&lt;/转义为&lt;\/<br>
+	 * JSON字符串中不能包含控制字符和未经转义的引号和反斜杠
+	 * 
+	 * @param str 字符串
+	 * @param writer Writer
+	 * @param isWrap 是否使用双引号包装字符串
+	 * @return Writer
+	 * @throws IOException IO异常
+	 * @since 3.3.1
+	 */
+	public static Writer quote(String str, Writer writer, boolean isWrap) throws IOException {
+		if (StrUtil.isEmpty(str)) {
+			if (isWrap) {
+				writer.write("\"\"");
+			}
 			return writer;
 		}
 
-		char b; // back char
-		char c = 0; // current char
-		String hhhh;
-		int i;
-		int len = string.length();
-
-		writer.write('"');
-		for (i = 0; i < len; i++) {
+		char b; // 前一个字符
+		char c = 0; // 当前字符
+		int len = str.length();
+		if (isWrap) {
+			writer.write('"');
+		}
+		for (int i = 0; i < len; i++) {
 			b = c;
-			c = string.charAt(i);
+			c = str.charAt(i);
 			switch (c) {
 			case '\\':
 			case '"':
-				writer.write('\\');
+				writer.write("\\");
 				writer.write(c);
 				break;
 			case '/':
@@ -421,18 +529,66 @@ public final class JSONUtil {
 				writer.write("\\r");
 				break;
 			default:
-				if (c < ' ' || (c >= '\u0080' && c < '\u00a0') || (c >= '\u2000' && c < '\u2100')) {
-					writer.write("\\u");
-					hhhh = Integer.toHexString(c);
-					writer.write("0000", 0, 4 - hhhh.length());
-					writer.write(hhhh);
+				if (c < StrUtil.C_SPACE || (c >= '\u0080' && c < '\u00a0') || (c >= '\u2000' && c < '\u2100')) {
+					writer.write(HexUtil.toUnicodeHex(c));
 				} else {
 					writer.write(c);
 				}
 			}
 		}
-		writer.write('"');
+		if (isWrap) {
+			writer.write('"');
+		}
 		return writer;
+	}
+
+	/**
+	 * 转义显示不可见字符
+	 * 
+	 * @param str 字符串
+	 * @return 转义后的字符串
+	 */
+	public static String escape(String str) {
+		if (StrUtil.isEmpty(str)) {
+			return str;
+		}
+
+		final int len = str.length();
+		final StringBuilder builder = new StringBuilder(len);
+		char c;
+		for (int i = 0; i < len; i++) {
+			c = str.charAt(i);
+			switch (c) {
+			case '\b':
+				builder.append("\\b");
+				break;
+			case '\t':
+				builder.append("\\t");
+				break;
+			case '\n':
+				builder.append("\\n");
+				break;
+			case '\f':
+				builder.append("\\f");
+				break;
+			case '\r':
+				builder.append("\\r");
+				break;
+			default:
+				//无法显示字符转为Unicode符：https://en.wikibooks.org/wiki/Unicode/Character_reference/0000-0FFF
+				if (c < StrUtil.C_SPACE || //
+						(c >= '\u0080' && c <= '\u00a0') || //
+						(c >= '\u2000' && c <= '\u2010') ||//
+						(c >= '\u2028' && c <= '\u202F') ||//
+						(c >= '\u2066' && c <= '\u206F')//
+				) {
+					builder.append(HexUtil.toUnicodeHex(c));
+				} else {
+					builder.append(c);
+				}
+			}
+		}
+		return builder.toString();
 	}
 
 	/**
@@ -447,54 +603,120 @@ public final class JSONUtil {
 	 * <li>其它 =》 尝试包装为JSONObject，否则返回<code>null</code></li>
 	 * </ul>
 	 * 
-	 * @param object The object to wrap
-	 * @return The wrapped value
+	 * @param object 被包装的对象
+	 * @param ignoreNullValue 是否忽略{@code null} 值
+	 * @return 包装后的值
 	 */
-	public static Object wrap(Object object) {
+	public static Object wrap(Object object, boolean ignoreNullValue) {
+		if (object == null) {
+			return JSONNull.NULL;
+		}
+		if (object instanceof JSON //
+				|| JSONNull.NULL.equals(object) //
+				|| object instanceof JSONString //
+				|| object instanceof CharSequence //
+				|| object instanceof Number //
+				|| ObjectUtil.isBasicType(object) //
+		) {
+			return object;
+		}
+
 		try {
-			if (object == null) {
-				return JSONNull.NULL;
+			// JSONArray
+			if (object instanceof Iterable || ArrayUtil.isArray(object)) {
+				return new JSONArray(object, ignoreNullValue);
 			}
-			if (object instanceof JSON || JSONNull.NULL.equals(object) || object instanceof JSONString || object instanceof CharSequence || object instanceof Number
-					|| ObjectUtil.isBasicType(object)) {
-				return object;
+			// JSONObject
+			if (object instanceof Map) {
+				return new JSONObject(object, ignoreNullValue);
 			}
 
-			if (object instanceof Collection) {
-				Collection<?> coll = (Collection<?>) object;
-				return new JSONArray(coll);
-			}
-			if (ArrayUtil.isArray(object)) {
-				return new JSONArray(object);
-			}
-			if (object instanceof Map) {
-				Map<?, ?> map = (Map<?, ?>) object;
-				return new JSONObject(map);
-			}
+			// 日期类型特殊处理
 			if (object instanceof Date) {
 				return ((Date) object).getTime();
 			}
 			if (object instanceof Calendar) {
 				return ((Calendar) object).getTimeInMillis();
 			}
-			Package objectPackage = object.getClass().getPackage();
-			String objectPackageName = objectPackage != null ? objectPackage.getName() : "";
-			if (objectPackageName.startsWith("java.") || objectPackageName.startsWith("javax.") || object.getClass().getClassLoader() == null) {
+			// 枚举类保存其字符串形式（4.0.2新增）
+			if (object instanceof Enum) {
 				return object.toString();
 			}
-			return new JSONObject(object);
+
+			// Java内部类不做转换
+			final Class<?> objectClass = object.getClass();
+			final Package objectPackage = objectClass.getPackage();
+			final String objectPackageName = objectPackage != null ? objectPackage.getName() : "";
+			if (objectPackageName.startsWith("java.") || objectPackageName.startsWith("javax.") || objectClass.getClassLoader() == null) {
+				return object.toString();
+			}
+
+			// 默认按照JSONObject对待
+			return new JSONObject(object, ignoreNullValue);
 		} catch (Exception exception) {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * 格式化JSON字符串，此方法并不严格检查JSON的格式正确与否
+	 * 
 	 * @param jsonStr JSON字符串
 	 * @return 格式化后的字符串
 	 * @since 3.1.2
 	 */
 	public static String formatJsonStr(String jsonStr) {
 		return JSONStrFormater.format(jsonStr);
+	}
+
+	/**
+	 * 是否为JSON字符串，首尾都为大括号或中括号判定为JSON字符串
+	 * 
+	 * @param str 字符串
+	 * @return 是否为JSON字符串
+	 * @since 3.3.0
+	 */
+	public static boolean isJson(String str) {
+		return isJsonObj(str) || isJsonArray(str);
+	}
+
+	/**
+	 * 是否为JSONObject字符串，首尾都为大括号或中括号判定为JSON字符串
+	 * 
+	 * @param str 字符串
+	 * @return 是否为JSON字符串
+	 * @since 3.3.0
+	 */
+	public static boolean isJsonObj(String str) {
+		if (StrUtil.isBlank(str)) {
+			return false;
+		}
+		return StrUtil.isWrap(str.trim(), '{', '}');
+	}
+
+	/**
+	 * 是否为JSONObject字符串，首尾都为大括号或中括号判定为JSON字符串
+	 * 
+	 * @param str 字符串
+	 * @return 是否为JSON字符串
+	 * @since 3.3.0
+	 */
+	public static boolean isJsonArray(String str) {
+		if (StrUtil.isBlank(str)) {
+			return false;
+		}
+		return StrUtil.isWrap(str.trim(), '[', ']');
+	}
+	
+	/**
+	 * XML转JSONObject<br>
+	 * 转换过程中一些信息可能会丢失，JSON中无法区分节点和属性，相同的节点将被处理为JSONArray。
+	 * 
+	 * @param xml XML字符串
+	 * @return JSONObject
+	 * @since 4.0.8
+	 */
+	public static JSONObject xmlToJson(String xml) {
+		return XML.toJSONObject(xml);
 	}
 }

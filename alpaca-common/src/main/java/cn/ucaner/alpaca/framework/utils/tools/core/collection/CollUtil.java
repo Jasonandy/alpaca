@@ -10,7 +10,7 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.core.collection;
 
-import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -33,22 +33,28 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingDeque;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.bean.BeanUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.comparator.PinyinComparator;
+import cn.ucaner.alpaca.framework.utils.tools.core.comparator.PropertyComparator;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.ConverterRegistry;
 import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
-import cn.ucaner.alpaca.framework.utils.tools.core.lang.BoundedPriorityQueue;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Editor;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Filter;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Matcher;
+import cn.ucaner.alpaca.framework.utils.tools.core.map.MapUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.MapUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ObjectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.PageUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.TypeUtil;
 
 /**
 * @Package：cn.ucaner.tools.core.collection   
@@ -176,7 +182,9 @@ public class CollUtil {
 	 * 两个集合的差集<br>
 	 * 针对一个集合中存在多个相同元素的情况，计算两个集合中此元素的个数，保留两个集合中此元素个数差的个数<br>
 	 * 例如：集合1：[a, b, c, c, c]，集合2：[a, b, c, c]<br>
-	 * 结果：[c]，此结果中只保留了一个
+	 * 结果：[c]，此结果中只保留了一个<br>
+	 * 任意一个集合为空，返回另一个集合<br>
+	 * 两个集合无交集则返回两个集合的组合
 	 * 
 	 * @param <T> 集合元素类型
 	 * @param coll1 集合1
@@ -184,21 +192,26 @@ public class CollUtil {
 	 * @return 差集的集合，返回 {@link ArrayList}
 	 */
 	public static <T> Collection<T> disjunction(final Collection<T> coll1, final Collection<T> coll2) {
-		final ArrayList<T> list = new ArrayList<>();
-		if (isNotEmpty(coll1) && isNotEmpty(coll2)) {
-			final Map<T, Integer> map1 = countMap(coll1);
-			final Map<T, Integer> map2 = countMap(coll2);
-			final Set<T> elts = newHashSet(coll2);
-			elts.addAll(coll1);
-			int m;
-			for (T t : elts) {
-				m = Math.abs(Convert.toInt(map1.get(t), 0) - Convert.toInt(map2.get(t), 0));
-				for (int i = 0; i < m; i++) {
-					list.add(t);
-				}
+		if (isEmpty(coll1)) {
+			return coll2;
+		}
+		if (isEmpty(coll2)) {
+			return coll1;
+		}
+
+		final ArrayList<T> result = new ArrayList<>();
+		final Map<T, Integer> map1 = countMap(coll1);
+		final Map<T, Integer> map2 = countMap(coll2);
+		final Set<T> elts = newHashSet(coll2);
+		elts.addAll(coll1);
+		int m;
+		for (T t : elts) {
+			m = Math.abs(Convert.toInt(map1.get(t), 0) - Convert.toInt(map2.get(t), 0));
+			for (int i = 0; i < m; i++) {
+				result.add(t);
 			}
 		}
-		return list;
+		return result;
 	}
 
 	/**
@@ -490,7 +503,20 @@ public class CollUtil {
 		}
 		return arrayList;
 	}
-
+	
+	/**
+	 * 数组转为ArrayList
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param values 数组
+	 * @return ArrayList对象
+	 * @since 4.0.11
+	 */
+	@SafeVarargs
+	public static <T> ArrayList<T> toList(T... values) {
+		return newArrayList(values);
+	}
+	
 	/**
 	 * 新建一个ArrayList
 	 * 
@@ -570,6 +596,25 @@ public class CollUtil {
 	}
 
 	/**
+	 * 新建{@link BlockingQueue}<br>
+	 * 在队列为空时，获取元素的线程会等待队列变为非空。当队列满时，存储元素的线程会等待队列可用。
+	 * 
+	 * @param capacity 容量
+	 * @param isLinked 是否为链表形式
+	 * @return {@link BlockingQueue}
+	 * @since 3.3.0
+	 */
+	public static <T> BlockingQueue<T> newBlockingQueue(int capacity, boolean isLinked) {
+		BlockingQueue<T> queue;
+		if (isLinked) {
+			queue = new LinkedBlockingDeque<>(capacity);
+		} else {
+			queue = new ArrayBlockingQueue<>(capacity);
+		}
+		return queue;
+	}
+
+	/**
 	 * 创建新的集合对象
 	 * 
 	 * @param <T> 集合类型
@@ -646,41 +691,16 @@ public class CollUtil {
 	}
 
 	/**
-	 * 截取数组的部分
+	 * 截取集合的部分
 	 * 
 	 * @param <T> 集合元素类型
 	 * @param list 被截取的数组
 	 * @param start 开始位置（包含）
 	 * @param end 结束位置（不包含）
-	 * @return 截取后的数组，当开始位置超过最大时，返回null
+	 * @return 截取后的数组，当开始位置超过最大时，返回空的List
 	 */
 	public static <T> List<T> sub(List<T> list, int start, int end) {
-		if (list == null || list.isEmpty()) {
-			return null;
-		}
-
-		if (start < 0) {
-			start = 0;
-		}
-		if (end < 0) {
-			end = 0;
-		}
-
-		if (start > end) {
-			int tmp = start;
-			start = end;
-			end = tmp;
-		}
-
-		final int size = list.size();
-		if (end > size) {
-			if (start >= size) {
-				return null;
-			}
-			end = size;
-		}
-
-		return list.subList(start, end);
+		return sub(list, start, end, 1);
 	}
 
 	/**
@@ -690,14 +710,78 @@ public class CollUtil {
 	 * @param list 被截取的数组
 	 * @param start 开始位置（包含）
 	 * @param end 结束位置（不包含）
-	 * @return 截取后的数组，当开始位置超过最大时，返回null
+	 * @param step 步进
+	 * @return 截取后的数组，当开始位置超过最大时，返回空的List
+	 * @since 4.0.6
 	 */
-	public static <T> List<T> sub(Collection<T> list, int start, int end) {
+	public static <T> List<T> sub(List<T> list, int start, int end, int step) {
 		if (list == null || list.isEmpty()) {
 			return null;
 		}
 
-		return sub(new ArrayList<T>(list), start, end);
+		final int size = list.size();
+		if (start < 0) {
+			start += size;
+		}
+		if (end < 0) {
+			end += size;
+		}
+		if (start == size) {
+			return new ArrayList<>(0);
+		}
+		if (start > end) {
+			int tmp = start;
+			start = end;
+			end = tmp;
+		}
+		if (end > size) {
+			if (start >= size) {
+				return new ArrayList<>(0);
+			}
+			end = size;
+		}
+
+		if (step <= 1) {
+			return list.subList(start, end);
+		}
+
+		final List<T> result = new ArrayList<>();
+		for (int i = start; i < end; i += step) {
+			result.add(list.get(i));
+		}
+		return result;
+	}
+
+	/**
+	 * 截取集合的部分
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param collection 被截取的数组
+	 * @param start 开始位置（包含）
+	 * @param end 结束位置（不包含）
+	 * @return 截取后的数组，当开始位置超过最大时，返回null
+	 */
+	public static <T> List<T> sub(Collection<T> collection, int start, int end) {
+		return sub(collection, start, end, 1);
+	}
+
+	/**
+	 * 截取集合的部分
+	 * 
+	 * @param <T> 集合元素类型
+	 * @param list 被截取的数组
+	 * @param start 开始位置（包含）
+	 * @param end 结束位置（不包含）
+	 * @param step 步进
+	 * @return 截取后的数组，当开始位置超过最大时，返回空集合
+	 * @since 4.0.6
+	 */
+	public static <T> List<T> sub(Collection<T> list, int start, int end, int step) {
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+
+		return sub(new ArrayList<T>(list), start, end, step);
 	}
 
 	/**
@@ -739,13 +823,18 @@ public class CollUtil {
 	 */
 	public static <T> Collection<T> filter(Collection<T> collection, Editor<T> editor) {
 		Collection<T> collection2 = ObjectUtil.clone(collection);
-		collection2.clear();
+		try {
+			collection2.clear();
+		} catch (UnsupportedOperationException e) {
+			// 克隆后的对象不支持清空，说明为不可变集合对象，使用默认的ArrayList保存结果
+			collection2 = new ArrayList<>();
+		}
 
 		T modified;
 		for (T t : collection) {
 			modified = editor.edit(t);
 			if (null != modified) {
-				collection2.add(t);
+				collection2.add(modified);
 			}
 		}
 		return collection2;
@@ -767,7 +856,12 @@ public class CollUtil {
 	 */
 	public static <T> Collection<T> filter(Collection<T> collection, Filter<T> filter) {
 		Collection<T> collection2 = ObjectUtil.clone(collection);
-		collection2.clear();
+		try {
+			collection2.clear();
+		} catch (UnsupportedOperationException e) {
+			// 克隆后的对象不支持清空，说明为不可变集合对象，使用默认的ArrayList保存结果
+			collection2 = new ArrayList<>();
+		}
 
 		for (T t : collection) {
 			if (filter.accept(t)) {
@@ -775,6 +869,55 @@ public class CollUtil {
 			}
 		}
 		return collection2;
+	}
+
+	/**
+	 * 去除{@code null} 元素
+	 * 
+	 * @param collection 集合
+	 * @return 处理后的集合
+	 * @since 3.2.2
+	 */
+	public static <T> Collection<T> removeNull(Collection<T> collection) {
+		return filter(collection, new Editor<T>() {
+			@Override
+			public T edit(T t) {
+				// 返回null便不加入集合
+				return t;
+			}
+		});
+	}
+
+	/**
+	 * 去除{@code null}或者"" 元素
+	 * 
+	 * @param collection 集合
+	 * @return 处理后的集合
+	 * @since 3.2.2
+	 */
+	public static <T extends CharSequence> Collection<T> removeEmpty(Collection<T> collection) {
+		return filter(collection, new Filter<T>() {
+			@Override
+			public boolean accept(T t) {
+				return false == StrUtil.isEmpty(t);
+			}
+		});
+	}
+
+	/**
+	 * 去除{@code null}或者""或者空白字符串 元素
+	 * 
+	 * @param collection 集合
+	 * @return 处理后的集合
+	 * @since 3.2.2
+	 */
+	public static <T extends CharSequence> Collection<T> removeBlank(Collection<T> collection) {
+		return filter(collection, new Filter<T>() {
+			@Override
+			public boolean accept(T t) {
+				return false == StrUtil.isBlank(t);
+			}
+		});
 	}
 
 	/**
@@ -803,7 +946,7 @@ public class CollUtil {
 	 * @since 3.1.0
 	 */
 	public static List<Object> getFieldValues(Iterable<?> collection, final String fieldName) {
-		return extract(collection, new Editor<Object>(){
+		return extract(collection, new Editor<Object>() {
 			@Override
 			public Object edit(Object bean) {
 				if (bean instanceof Map) {
@@ -847,7 +990,7 @@ public class CollUtil {
 	 * @since 3.1.0
 	 */
 	public static <T> T findOneByField(Iterable<T> collection, final String fieldName, final Object fieldValue) {
-		return findOne(collection, new Filter<T>(){
+		return findOne(collection, new Filter<T>() {
 			@Override
 			public boolean accept(T t) {
 				if (t instanceof Map) {
@@ -855,6 +998,7 @@ public class CollUtil {
 					final Object value = map.get(fieldName);
 					return ObjectUtil.equal(value, fieldValue);
 				}
+
 				// 普通Bean
 				final Object value = ReflectUtil.getFieldValue(t, fieldName);
 				return ObjectUtil.equal(value, fieldValue);
@@ -1301,7 +1445,7 @@ public class CollUtil {
 	 * @return 被加入集合
 	 */
 	public static <T> Collection<T> addAll(Collection<T> collection, Object value) {
-		return addAll(collection, value, ClassUtil.getTypeArgument(collection.getClass()));
+		return addAll(collection, value, TypeUtil.getTypeArgument(collection.getClass()));
 	}
 
 	/**
@@ -1310,44 +1454,46 @@ public class CollUtil {
 	 * 
 	 * @param <T> 元素类型
 	 * @param collection 被加入的集合
-	 * @param value 对象，可能为Iterator、Iterable、Enumeration、Array
+	 * @param value 对象，可能为Iterator、Iterable、Enumeration、Array，或者与集合元素类型一致
 	 * @param elementType 元素类型，为空时，使用Object类型来接纳所有类型
 	 * @return 被加入集合
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static <T> Collection<T> addAll(Collection<T> collection, Object value, Class<?> elementType) {
+	public static <T> Collection<T> addAll(Collection<T> collection, Object value, Type elementType) {
 		if (null == collection || null == value) {
 			return collection;
 		}
-		if (null == elementType) {// 元素类型为空时，使用Object类型来接纳所有类型
+		if (null == elementType) {
+			// 元素类型为空时，使用Object类型来接纳所有类型
 			elementType = Object.class;
+		} else {
+			final Class<?> elementRowType = TypeUtil.getClass(elementType);
+			if (elementRowType.isInstance(value) && false == Iterable.class.isAssignableFrom(elementRowType)) {
+				// 其它类型按照单一元素处理
+				collection.add((T) value);
+				return collection;
+			}
+		}
+
+		Iterator iter;
+		if (value instanceof Iterator) {
+			iter = (Iterator) value;
+		} else if (value instanceof Iterable) {
+			iter = ((Iterable) value).iterator();
+		} else if (value instanceof Enumeration) {
+			iter = new EnumerationIterator<>((Enumeration) value);
+		} else if (ArrayUtil.isArray(value)) {
+			iter = new ArrayIterator<>(value);
+		} else {
+			throw new UtilException("Unsupport value type [] !", value.getClass());
 		}
 
 		final ConverterRegistry convert = ConverterRegistry.getInstance();
-		if (elementType.isInstance(value)) {
-			collection.add((T) value);
-		} else if (value instanceof Iterator) {
-			final Iterator iter = (Iterator) value;
-			while (iter.hasNext()) {
+		while (iter.hasNext()) {
+			try {
 				collection.add((T) convert.convert(elementType, iter.next()));
-			}
-			addAll(collection, (Iterator<T>) value);
-		} else if (value instanceof Iterable) {
-			final Iterator iter = ((Iterable) value).iterator();
-			while (iter.hasNext()) {
-				collection.add((T) convert.convert(elementType, iter.next()));
-			}
-		} else if (value instanceof Enumeration) {
-			final Enumeration enumeration = ((Enumeration) value);
-			while (enumeration.hasMoreElements()) {
-				collection.add((T) convert.convert(elementType, enumeration.nextElement()));
-			}
-		} else if (ArrayUtil.isArray(value)) {
-			final int length = Array.getLength(value);
-			Object item;
-			for (int i = 0; i < length; i++) {
-				item = Array.get(value, i);
-				collection.add((T) convert.convert(elementType, item));
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		return collection;
@@ -1432,6 +1578,61 @@ public class CollUtil {
 			}
 		}
 		return list;
+	}
+
+	/**
+	 * 获取集合中指定下标的元素值，下标可以为负数，例如-1表示最后一个元素
+	 * 
+	 * @param <T> 元素类型
+	 * @param collection 集合
+	 * @param index 下标，支持负数
+	 * @return 元素值
+	 * @since 4.0.6
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T get(Collection<T> collection, int index) {
+		if (index < 0) {
+			index += collection.size();
+		}
+		if (collection instanceof List) {
+			final List<T> list = ((List<T>) collection);
+			return list.get(index);
+		} else {
+			return (T) ((Collection<T>) collection).toArray()[index];
+		}
+	}
+	
+	/**
+	 * 获取集合中指定多个下标的元素值，下标可以为负数，例如-1表示最后一个元素
+	 * 
+	 * @param <T> 元素类型
+	 * @param collection 集合
+	 * @param indexes 下标，支持负数
+	 * @return 元素值列表
+	 * @since 4.0.6
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> getAny(Collection<T> collection, int... indexes) {
+		final int size = collection.size();
+		final ArrayList<T> result = new ArrayList<>();
+		if (collection instanceof List) {
+			final List<T> list = ((List<T>) collection);
+			for (int index : indexes) {
+				if(index < 0) {
+					index += size;
+				}
+				result.add(list.get(index));
+			}
+		} else {
+			Object[] array = ((Collection<T>) collection).toArray();
+			for (int index : indexes) {
+				if(index < 0) {
+					index += size;
+				}
+				result.add((T)array[index]);
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -1632,6 +1833,54 @@ public class CollUtil {
 		Collections.sort(list, c);
 		return list;
 	}
+	
+	/**
+	 * 根据Bean的属性排序
+	 * 
+	 * @param <T> 元素类型
+	 * @param collection 集合，会被转换为List
+	 * @param property 属性名
+	 * @return 排序后的List
+	 * @since 4.0.6
+	 */
+	public static <T> List<T> sortByProperty(Collection<T> collection, String property){
+		return sort(collection, new PropertyComparator<>(property));
+	}
+	
+	/**
+	 * 根据Bean的属性排序
+	 * 
+	 * @param <T> 元素类型
+	 * @param list List
+	 * @param property 属性名
+	 * @return 排序后的List
+	 * @since 4.0.6
+	 */
+	public static <T> List<T> sortByProperty(List<T> list, String property){
+		return sort(list, new PropertyComparator<>(property));
+	}
+	
+	/**
+	 * 根据汉字的拼音顺序排序
+	 * 
+	 * @param collection 集合，会被转换为List
+	 * @return 排序后的List
+	 * @since 4.0.8
+	 */
+	public static <T> List<String> sortByPinyin(Collection<String> collection){
+		return sort(collection, new PinyinComparator());
+	}
+	
+	/**
+	 * 根据汉字的拼音顺序排序
+	 * 
+	 * @param list List
+	 * @return 排序后的List
+	 * @since 4.0.8
+	 */
+	public static <T> List<String> sortByPinyin(List<String> list){
+		return sort(list, new PinyinComparator());
+	}
 
 	/**
 	 * 排序Map
@@ -1694,7 +1943,7 @@ public class CollUtil {
 	 */
 	public static <K, V> List<Entry<K, V>> sortEntryToList(Collection<Entry<K, V>> collection) {
 		List<Entry<K, V>> list = new LinkedList<>(collection);
-		Collections.sort(list, new Comparator<Entry<K, V>>(){
+		Collections.sort(list, new Comparator<Entry<K, V>>() {
 
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
@@ -1761,6 +2010,103 @@ public class CollUtil {
 	}
 
 	/**
+	 * 分组，按照{@link Hash}接口定义的hash算法，集合中的元素放入hash值对应的子列表中
+	 * 
+	 * @param collection 被分组的集合
+	 * @param hash Hash值算法，决定元素放在第几个分组的规则
+	 * @return 分组后的集合
+	 */
+	public static <T> List<List<T>> group(Collection<T> collection, Hash<T> hash) {
+		final List<List<T>> result = new ArrayList<>();
+		if (isEmpty(collection)) {
+			return result;
+		}
+		if (null == hash) {
+			// 默认hash算法，按照元素的hashCode分组
+			hash = new Hash<T>() {
+				@Override
+				public int hash(T t) {
+					return null == t ? 0 : t.hashCode();
+				}
+			};
+		}
+
+		int index;
+		List<T> subList;
+		for (T t : collection) {
+			index = hash.hash(t);
+			if (result.size() - 1 < index) {
+				while (result.size() - 1 < index) {
+					result.add(null);
+				}
+				result.set(index, newArrayList(t));
+			} else {
+				subList = result.get(index);
+				if (null == subList) {
+					result.set(index, newArrayList(t));
+				} else {
+					subList.add(t);
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 根据元素的指定字段名分组，非Bean都放在第一个分组中
+	 * 
+	 * @param collection 集合
+	 * @param fieldName 元素Bean中的字段名，非Bean都放在第一个分组中
+	 * @return 分组列表
+	 */
+	public static <T> List<List<T>> groupByField(Collection<T> collection, final String fieldName) {
+		return group(collection, new Hash<T>() {
+			private List<Object> fieldNameList = new ArrayList<>();
+
+			@Override
+			public int hash(T t) {
+				if (null == t || false == BeanUtil.isBean(t.getClass())) {
+					// 非Bean放在同一子分组中
+					return 0;
+				}
+				final Object value = ReflectUtil.getFieldValue(t, fieldName);
+				int hash = fieldNameList.indexOf(value);
+				if (hash < 0) {
+					fieldNameList.add(value);
+					return fieldNameList.size() - 1;
+				} else {
+					return hash;
+				}
+			}
+		});
+	}
+
+	/**
+	 * 反序给定List，会在原List基础上直接修改
+	 * 
+	 * @param list 被反转的List
+	 * @return 反转后的List
+	 * @since 4.0.6
+	 */
+	public static <T> List<T> reverse(List<T> list) {
+		Collections.reverse(list);
+		return list;
+	}
+
+	/**
+	 * 反序给定List，会创建一个新的List，原List数据不变
+	 * 
+	 * @param list 被反转的List
+	 * @return 反转后的List
+	 * @since 4.0.6
+	 */
+	public static <T> List<T> reverseNew(List<T> list) {
+		final List<T> list2 = ObjectUtil.clone(list);
+		return reverse(list2);
+	}
+
+	// ---------------------------------------------------------------------------------------------- Interface start
+	/**
 	 * 针对一个参数做相应的操作
 	 * 
 	 * @author Looly
@@ -1795,4 +2141,23 @@ public class CollUtil {
 		 */
 		void accept(K key, V value, int index);
 	}
+
+	/**
+	 * Hash计算接口
+	 * 
+	 * @author looly
+	 *
+	 * @param <T> 被计算hash的对象类型
+	 * @since 3.2.2
+	 */
+	public static interface Hash<T> {
+		/**
+		 * 计算Hash值
+		 * 
+		 * @param t 对象
+		 * @return hash
+		 */
+		int hash(T t);
+	}
+	// ---------------------------------------------------------------------------------------------- Interface end
 }

@@ -22,7 +22,7 @@ import java.security.spec.RSAPublicKeySpec;
 
 import javax.crypto.Cipher;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.lang.BCD;
+import cn.ucaner.alpaca.framework.utils.tools.core.codec.BCD;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.CharsetUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.crypto.CryptoException;

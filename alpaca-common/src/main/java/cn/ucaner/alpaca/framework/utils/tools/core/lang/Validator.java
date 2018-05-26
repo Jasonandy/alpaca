@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.DateUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.ValidateException;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.NumberUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ObjectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ReUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
@@ -33,8 +34,9 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 * @version    V1.0
  */
 public final class Validator {
-	
-	private Validator() {}
+
+	private Validator() {
+	}
 
 	/** 英文字母 、数字和下划线 */
 	public final static Pattern GENERAL = PatternPool.GENERAL;
@@ -326,7 +328,97 @@ public final class Validator {
 	public static void validateGeneral(String value, int min, String errorMsg) throws ValidateException {
 		validateGeneral(value, min, 0, errorMsg);
 	}
+
+	/**
+	 * 判断字符串是否全部为字母组成，包括大写和小写字母和汉字
+	 * 
+	 * @param value 值
+	 * @return 是否全部为字母组成，包括大写和小写字母和汉字
+	 * @since 3.3.0
+	 */
+	public static boolean isLetter(String value) {
+		return StrUtil.isAllCharMatch(value, new cn.ucaner.alpaca.framework.utils.tools.core.lang.Matcher<Character>() {
+			@Override
+			public boolean match(Character t) {
+				return Character.isLetter(t);
+			}
+		});
+	}
 	
+	/**
+	 * 验证是否全部为字母组成，包括大写和小写字母和汉字
+	 * 
+	 * @param value 表单值
+	 * @param errorMsg 验证错误的信息
+	 * @throws ValidateException 验证异常
+	 * @since 3.3.0
+	 */
+	public static void validateLetter(String value, String errorMsg) throws ValidateException {
+		if (false == isLetter(value)) {
+			throw new ValidateException(errorMsg);
+		}
+	}
+	
+	/**
+	 * 判断字符串是否全部为大写字母
+	 * 
+	 * @param value 值
+	 * @return 是否全部为大写字母
+	 * @since 3.3.0
+	 */
+	public static boolean isUpperCase(String value) {
+		return StrUtil.isAllCharMatch(value, new cn.ucaner.alpaca.framework.utils.tools.core.lang.Matcher<Character>() {
+			@Override
+			public boolean match(Character t) {
+				return Character.isUpperCase(t);
+			}
+		});
+	}
+	
+	/**
+	 * 验证字符串是否全部为大写字母
+	 * 
+	 * @param value 表单值
+	 * @param errorMsg 验证错误的信息
+	 * @throws ValidateException 验证异常
+	 * @since 3.3.0
+	 */
+	public static void validateUpperCase(String value, String errorMsg) throws ValidateException {
+		if (false == isUpperCase(value)) {
+			throw new ValidateException(errorMsg);
+		}
+	}
+	
+	/**
+	 * 判断字符串是否全部为小写字母
+	 * 
+	 * @param value 值
+	 * @return 是否全部为小写字母
+	 * @since 3.3.0
+	 */
+	public static boolean isLowerCase(String value) {
+		return StrUtil.isAllCharMatch(value, new cn.ucaner.alpaca.framework.utils.tools.core.lang.Matcher<Character>() {
+			@Override
+			public boolean match(Character t) {
+				return Character.isLowerCase(t);
+			}
+		});
+	}
+	
+	/**
+	 * 验证字符串是否全部为小写字母
+	 * 
+	 * @param value 表单值
+	 * @param errorMsg 验证错误的信息
+	 * @throws ValidateException 验证异常
+	 * @since 3.3.0
+	 */
+	public static void validateLowerCase(String value, String errorMsg) throws ValidateException {
+		if (false == isLowerCase(value)) {
+			throw new ValidateException(errorMsg);
+		}
+	}
+
 	/**
 	 * 验证该字符串是否是数字
 	 * 
@@ -334,12 +426,9 @@ public final class Validator {
 	 * @return 是否是数字
 	 */
 	public static boolean isNumber(String value) {
-		if (StrUtil.isBlank(value)) {
-			return false;
-		}
-		return isMactchRegex(NUMBERS, value);
+		return NumberUtil.isNumber(value);
 	}
-	
+
 	/**
 	 * 验证是否为数字
 	 * 
@@ -347,8 +436,8 @@ public final class Validator {
 	 * @param errorMsg 验证错误的信息
 	 * @throws ValidateException 验证异常
 	 */
-	public static void validateNumbers(String value, String errorMsg) throws ValidateException {
-		if(false == isNumber(value)){
+	public static void validateNumber(String value, String errorMsg) throws ValidateException {
+		if (false == isNumber(value)) {
 			throw new ValidateException(errorMsg);
 		}
 	}
@@ -588,7 +677,7 @@ public final class Validator {
 	 * @since 3.0.6
 	 */
 	public static void validatePlateNumber(String value, String errorMsg) throws ValidateException {
-		if(false == isPlateNumber(value)){
+		if (false == isPlateNumber(value)) {
 			throw new ValidateException(errorMsg);
 		}
 	}
@@ -616,7 +705,7 @@ public final class Validator {
 	 * @throws ValidateException 验证异常
 	 */
 	public static void validateUrl(String value, String errorMsg) throws ValidateException {
-		if(false == isUrl(value)){
+		if (false == isUrl(value)) {
 			throw new ValidateException(errorMsg);
 		}
 	}

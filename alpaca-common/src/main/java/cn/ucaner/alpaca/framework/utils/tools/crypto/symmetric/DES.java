@@ -10,17 +10,20 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.crypto.symmetric;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.crypto.Mode;
 import cn.ucaner.alpaca.framework.utils.tools.crypto.Padding;
+import cn.ucaner.alpaca.framework.utils.tools.crypto.SecureUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.crypto.symmetric   
 * @ClassName：DES   
 * @Description：   <p> DES加密算法实现 </p>
 *  DES全称为Data Encryption Standard，即数据加密标准，是一种使用密钥加密的块算法
+*  Java中默认实现为：DES/CBC/PKCS5Padding
 * @Author： -    
 * @CreatTime：2018年5月25日 上午11:30:31   
 * @Modify By：   
@@ -28,8 +31,9 @@ import cn.ucaner.alpaca.framework.utils.tools.crypto.Padding;
 * @Modify marker：   
 * @version    V1.0
  */
-public class DES extends SymmetricCrypto{
-	
+public class DES extends SymmetricCrypto {
+
+	// ------------------------------------------------------------------------- Constrctor start
 	/**
 	 * 构造，默认DES/ECB/PKCS5Padding，使用随机密钥
 	 */
@@ -38,7 +42,8 @@ public class DES extends SymmetricCrypto{
 	}
 	
 	/**
-	 * 构造，使用默认的DES/ECB/PKCS5Padding
+	 * 构造，使用默认的DES/CBC/PKCS5Padding
+	 * 
 	 * @param key 密钥
 	 */
 	public DES(byte[] key) {
@@ -58,38 +63,126 @@ public class DES extends SymmetricCrypto{
 	 * 构造
 	 * @param mode 模式{@link Mode}
 	 * @param padding {@link Padding}补码方式
-	 * @param key 密钥，支持三种密钥长度：128、192、256位
+	 * @param key 密钥，长度：8的倍数
 	 */
 	public DES(Mode mode, Padding padding, byte[] key) {
-		this(mode.name(), padding.name(), key);
+		this(mode, padding, key, null);
 	}
-	
+
 	/**
 	 * 构造
+	 * 
+	 * @param mode 模式{@link Mode}
+	 * @param padding {@link Padding}补码方式
+	 * @param key 密钥，长度：8的倍数
+	 * @param iv 偏移向量，加盐
+	 * @since 3.3.0
+	 */
+	public DES(Mode mode, Padding padding, byte[] key, byte[] iv) {
+		this(mode.name(), padding.name(), key, iv);
+	}
+
+	/**
+	 * 构造
+	 * 
+	 * @param mode 模式{@link Mode}
+	 * @param padding {@link Padding}补码方式
+	 * @param key 密钥，长度：8的倍数
+	 * @since 3.3.0
+	 */
+	public DES(Mode mode, Padding padding, SecretKey key) {
+		this(mode, padding, key, null);
+	}
+
+	/**
+	 * 构造
+	 * 
+	 * @param mode 模式{@link Mode}
+	 * @param padding {@link Padding}补码方式
+	 * @param key 密钥，长度：8的倍数
+	 * @param iv 偏移向量，加盐
+	 * @since 3.3.0
+	 */
+	public DES(Mode mode, Padding padding, SecretKey key, IvParameterSpec iv) {
+		this(mode.name(), padding.name(), key, iv);
+	}
+
+	/**
+	 * 构造
+	 * 
 	 * @param mode 模式
 	 * @param padding 补码方式
 	 */
 	public DES(String mode, String padding) {
-		this(mode, padding, null);
+		this(mode, padding, (byte[]) null);
 	}
 
 	/**
 	 * 构造
 	 * @param mode 模式
 	 * @param padding 补码方式
-	 * @param key 密钥，支持三种密钥长度：128、192、256位
+	 * @param key 密钥，长度：8的倍数
 	 */
 	public DES(String mode, String padding, byte[] key) {
-		super(StrUtil.format("DES/{}/{}", mode, padding), key);
+		this(mode, padding, SecureUtil.generateKey("DES", key), null);
 	}
-	
+
+	/**
+	 * 构造
+	 * 
+	 * @param mode 模式
+	 * @param padding 补码方式
+	 * @param key 密钥，长度：8的倍数
+	 * @param iv 加盐
+	 */
+	public DES(String mode, String padding, byte[] key, byte[] iv) {
+		this(mode, padding, SecureUtil.generateKey("DES", key), null == iv ? null : new IvParameterSpec(iv));
+	}
+
+	/**
+	 * 构造
+	 * 
+	 * @param mode 模式
+	 * @param padding 补码方式
+	 * @param key 密钥，长度：8的倍数
+	 */
+	public DES(String mode, String padding, SecretKey key) {
+		this(mode, padding, key, null);
+	}
+
+	/**
+	 * 构造
+	 * 
+	 * @param mode 模式
+	 * @param padding 补码方式
+	 * @param key 密钥，长度：8的倍数
+	 * @param iv 加盐
+	 */
+	public DES(String mode, String padding, SecretKey key, IvParameterSpec iv) {
+		super(StrUtil.format("DES/{}/{}", mode, padding), key, iv);
+	}
+	// ------------------------------------------------------------------------- Constrctor end
+
 	/**
 	 * 设置偏移向量
+	 * 
 	 * @param iv {@link IvParameterSpec}偏移向量
 	 * @return 自身
 	 */
-	public DES setIv(IvParameterSpec iv){
+	public DES setIv(IvParameterSpec iv) {
 		super.setParams(iv);
+		return this;
+	}
+
+	/**
+	 * 设置偏移向量
+	 * 
+	 * @param iv 偏移向量，加盐
+	 * @return 自身
+	 * @since 3.3.0
+	 */
+	public DES setIv(byte[] iv) {
+		setIv(new IvParameterSpec(iv));
 		return this;
 	}
 

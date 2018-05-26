@@ -29,6 +29,7 @@ import cn.ucaner.alpaca.framework.utils.tools.log.level.Level;
 * @version    V1.0
  */
 public class ConsoleLog extends AbstractLog {
+	
 	private static final long serialVersionUID = -6843151523380063975L;
 
 	private static String logFormat = "[{date}] [{level}] {name}: {msg}";
@@ -37,10 +38,20 @@ public class ConsoleLog extends AbstractLog {
 	private String name;
 	
 	//------------------------------------------------------------------------- Constructor
+	/**
+	 * 构造
+	 * 
+	 * @param clazz 类
+	 */
 	public ConsoleLog(Class<?> clazz) {
 		this.name = clazz.getName();
 	}
 	
+	/**
+	 * 构造
+	 * 
+	 * @param name 类名
+	 */
 	public ConsoleLog(String name) {
 		this.name = name;
 	}

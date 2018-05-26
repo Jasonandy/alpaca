@@ -11,11 +11,13 @@
 package cn.ucaner.alpaca.framework.utils.tools.core.io;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+
+import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.io   
@@ -29,15 +31,17 @@ import java.util.concurrent.ConcurrentHashMap;
 * @version    V1.0
  */
 public final class FileTypeUtil {
-	
-	private FileTypeUtil(){};
+
+	private FileTypeUtil() {
+	};
 
 	private static final Map<String, String> fileTypeMap;
 
 	static {
 		fileTypeMap = new ConcurrentHashMap<>();
-		
-		fileTypeMap.put("ffd8ffe000104a464946", "jpg"); // JPEG (jpg)
+
+//		fileTypeMap.put("ffd8ffe000104a464946", "jpg"); // JPEG (jpg)
+		fileTypeMap.put("ffd8ffe", "jpg"); // JPEG (jpg)
 		fileTypeMap.put("89504e470d0a1a0a0000", "png"); // PNG (png)
 		fileTypeMap.put("47494638396126026f01", "gif"); // GIF (gif)
 		fileTypeMap.put("49492a00227105008037", "tif"); // TIFF (tif)
@@ -56,7 +60,7 @@ public final class FileTypeUtil {
 		fileTypeMap.put("d0cf11e0a1b11ae10000", "vsd"); // Visio 绘图
 		fileTypeMap.put("5374616E64617264204A", "mdb"); // MS Access (mdb)
 		fileTypeMap.put("252150532D41646F6265", "ps");
-		fileTypeMap.put("255044462d312e350d0a", "pdf"); // Adobe Acrobat (pdf)
+		fileTypeMap.put("255044462d312e330d", "pdf"); // Adobe Acrobat (pdf)
 		fileTypeMap.put("2e524d46000000120001", "rmvb"); // rmvb/rm相同
 		fileTypeMap.put("464c5601050000000900", "flv"); // flv与f4v相同
 		fileTypeMap.put("00000020667479706d70", "mp4");
@@ -66,12 +70,14 @@ public final class FileTypeUtil {
 		fileTypeMap.put("52494646e27807005741", "wav"); // Wave (wav)
 		fileTypeMap.put("52494646d07d60074156", "avi");
 		fileTypeMap.put("4d546864000000060001", "mid"); // MIDI (mid)
-//		fileTypeMap.put("504b0304140000000800", "zip");
-		fileTypeMap.put("504B0304", "zip");
-		fileTypeMap.put("526172211a0700cf9073", "rar");//WinRAR
+		fileTypeMap.put("526172211a0700cf9073", "rar");// WinRAR
 		fileTypeMap.put("235468697320636f6e66", "ini");
-		fileTypeMap.put("504b03040a0000000000", "jar");
+		fileTypeMap.put("504B03040a0000000000", "jar");
 		fileTypeMap.put("504B0304140008000800", "jar");
+		fileTypeMap.put("504B0304140006000800", "docx");// docx文件
+		fileTypeMap.put("504B0304140006000800", "xlsx");// docx文件
+		fileTypeMap.put("D0CF11E0A1B11AE10", "xls");// xls文件
+		fileTypeMap.put("504B0304", "zip");
 		fileTypeMap.put("4d5a9000030000000400", "exe");// 可执行文件
 		fileTypeMap.put("3c25402070616765206c", "jsp");// jsp文件
 		fileTypeMap.put("4d616e69666573742d56", "mf");// MF文件
@@ -84,7 +90,6 @@ public final class FileTypeUtil {
 		fileTypeMap.put("cafebabe0000002e0041", "class");// bat文件
 		fileTypeMap.put("49545346030000006000", "chm");// bat文件
 		fileTypeMap.put("04000000010000001300", "mxp");// bat文件
-		fileTypeMap.put("504b0304140006000800", "docx");// docx文件
 		fileTypeMap.put("d0cf11e0a1b11ae10000", "wps");// WPS文字wps、表格et、演示dps都是一样的
 		fileTypeMap.put("6431303a637265617465", "torrent");
 		fileTypeMap.put("6D6F6F76", "mov"); // Quicktime (mov)
@@ -105,7 +110,7 @@ public final class FileTypeUtil {
 	 * @return 之前已经存在的文件扩展名
 	 */
 	public static String putFileType(String fileStreamHexHead, String extName) {
-		return fileTypeMap.put(fileStreamHexHead.toUpperCase(), extName);
+		return fileTypeMap.put(fileStreamHexHead.toLowerCase(), extName);
 	}
 
 	/**
@@ -115,7 +120,7 @@ public final class FileTypeUtil {
 	 * @return 移除的文件扩展名
 	 */
 	public static String removeFileType(String fileStreamHexHead) {
-		return fileTypeMap.remove(fileStreamHexHead);
+		return fileTypeMap.remove(fileStreamHexHead.toLowerCase());
 	}
 
 	/**
@@ -126,7 +131,7 @@ public final class FileTypeUtil {
 	 */
 	public static String getType(String fileStreamHexHead) {
 		for (Entry<String, String> fileTypeEntry : fileTypeMap.entrySet()) {
-			if (fileStreamHexHead.toLowerCase().startsWith(fileTypeEntry.getKey().toLowerCase())) {
+			if(StrUtil.startWithIgnoreCase(fileStreamHexHead, fileTypeEntry.getKey())) {
 				return fileTypeEntry.getValue();
 			}
 		}
@@ -148,10 +153,16 @@ public final class FileTypeUtil {
 	 * 根据文件流的头部信息获得文件类型
 	 * @param file 文件 {@link File}
 	 * @return 类型，文件的扩展名，未找到为<code>null</code>
-	 * @throws IOException 读取文件引起的异常
+	 * @throws IORuntimeException 读取文件引起的异常
 	 */
 	public static String getType(File file) throws IORuntimeException {
-		return getType(IoUtil.toStream(file));
+		FileInputStream in = null;
+		try {
+			in = IoUtil.toStream(file);
+			return getType(in);
+		} finally {
+			IoUtil.close(in);
+		}
 	}
 
 	/**
@@ -159,7 +170,7 @@ public final class FileTypeUtil {
 	 * 
 	 * @param path 路径，绝对路径或相对ClassPath的路径
 	 * @return 类型
-	 * @throws IOException 读取文件引起的异常
+	 * @throws IORuntimeException 读取文件引起的异常
 	 */
 	public static String getTypeByPath(String path) throws IORuntimeException {
 		return getType(FileUtil.file(path));

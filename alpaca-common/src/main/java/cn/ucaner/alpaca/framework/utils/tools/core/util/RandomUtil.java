@@ -10,6 +10,8 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.core.util;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -20,7 +22,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.date.DateTime;
+import cn.ucaner.alpaca.framework.utils.tools.core.date.DateUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.exceptions.UtilException;
+import cn.ucaner.alpaca.framework.utils.tools.core.lang.WeightRandom;
+import cn.ucaner.alpaca.framework.utils.tools.core.lang.WeightRandom.WeightObj;
 
 /**
 * @Package：cn.ucaner.tools.core.util   
@@ -70,16 +76,16 @@ public class RandomUtil {
 	/**
 	 * 获得指定范围内的随机数
 	 * 
-	 * @param min 最小数
-	 * @param max 最大数
+	 * @param min 最小数（包含）
+	 * @param max 最大数（不包含）
 	 * @return 随机数
 	 */
 	public static int randomInt(int min, int max) {
-		return getRandom().nextInt(max - min) + min;
+		return getRandom().nextInt(min, max);
 	}
 
 	/**
-	 * 获得随机数
+	 * 获得随机数[0, 1)
 	 * 
 	 * @return 随机数
 	 */
@@ -95,6 +101,143 @@ public class RandomUtil {
 	 */
 	public static int randomInt(int limit) {
 		return getRandom().nextInt(limit);
+	}
+
+	/**
+	 * 获得指定范围内的随机数
+	 * 
+	 * @param min 最小数（包含）
+	 * @param max 最大数（不包含）
+	 * @return 随机数
+	 * @since 3.3.0
+	 */
+	public static long randomLong(long min, long max) {
+		return getRandom().nextLong(min, max);
+	}
+
+	/**
+	 * 获得随机数
+	 * 
+	 * @return 随机数
+	 * @since 3.3.0
+	 */
+	public static long randomLong() {
+		return getRandom().nextLong();
+	}
+
+	/**
+	 * 获得指定范围内的随机数 [0,limit)
+	 * 
+	 * @param limit 限制随机数的范围，不包括这个数
+	 * @return 随机数
+	 */
+	public static long randomLong(long limit) {
+		return getRandom().nextLong(limit);
+	}
+
+	/**
+	 * 获得指定范围内的随机数
+	 * 
+	 * @param min 最小数（包含）
+	 * @param max 最大数（不包含）
+	 * @return 随机数
+	 * @since 3.3.0
+	 */
+	public static double randomDouble(double min, double max) {
+		return getRandom().nextDouble(min, max);
+	}
+
+	/**
+	 * 获得指定范围内的随机数
+	 * 
+	 * @param min 最小数（包含）
+	 * @param max 最大数（不包含）
+	 * @param scale 保留小数位数
+	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
+	 * @return 随机数
+	 * @since 4.0.8
+	 */
+	public static double randomDouble(double min, double max, int scale, RoundingMode roundingMode) {
+		return NumberUtil.round(randomDouble(min, max), scale, roundingMode).doubleValue();
+	}
+
+	/**
+	 * 获得随机数[0, 1)
+	 * 
+	 * @return 随机数
+	 * @since 3.3.0
+	 */
+	public static double randomDouble() {
+		return getRandom().nextDouble();
+	}
+
+	/**
+	 * 获得指定范围内的随机数
+	 * 
+	 * @param scale 保留小数位数
+	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
+	 * @return 随机数
+	 * @since 4.0.8
+	 */
+	public static double randomDouble(int scale, RoundingMode roundingMode) {
+		return NumberUtil.round(randomDouble(), scale, roundingMode).doubleValue();
+	}
+
+	/**
+	 * 获得指定范围内的随机数 [0,limit)
+	 * 
+	 * @param limit 限制随机数的范围，不包括这个数
+	 * @return 随机数
+	 * @since 3.3.0
+	 */
+	public static double randomDouble(double limit) {
+		return getRandom().nextDouble(limit);
+	}
+
+	/**
+	 * 获得指定范围内的随机数
+	 * 
+	 * @param limit 限制随机数的范围，不包括这个数
+	 * @param scale 保留小数位数
+	 * @param roundingMode 保留小数的模式 {@link RoundingMode}
+	 * @return 随机数
+	 * @since 4.0.8
+	 */
+	public static double randomDouble(double limit, int scale, RoundingMode roundingMode) {
+		return NumberUtil.round(randomDouble(limit), scale, roundingMode).doubleValue();
+	}
+	
+	/**
+	 * 获得指定范围内的随机数[0, 1)
+	 * 
+	 * @return 随机数
+	 * @since 4.0.9
+	 */
+	public static BigDecimal randomBigDecimal() {
+		return NumberUtil.toBigDecimal(getRandom().nextDouble());
+	}
+	
+	/**
+	 * 获得指定范围内的随机数 [0,limit)
+	 * 
+	 * @param limit 最大数（不包含）
+	 * @return 随机数
+	 * @since 4.0.9
+	 */
+	public static BigDecimal randomBigDecimal(BigDecimal limit) {
+		return NumberUtil.toBigDecimal(getRandom().nextDouble(limit.doubleValue()));
+	}
+	
+	/**
+	 * 获得指定范围内的随机数
+	 * 
+	 * @param min 最小数（包含）
+	 * @param max 最大数（不包含）
+	 * @return 随机数
+	 * @since 4.0.9
+	 */
+	public static BigDecimal randomBigDecimal(BigDecimal min, BigDecimal max) {
+		return NumberUtil.toBigDecimal(getRandom().nextDouble(min.doubleValue(), max.doubleValue()));
 	}
 
 	/**
@@ -133,6 +276,31 @@ public class RandomUtil {
 	}
 
 	/**
+	 * 随机获得数组中的元素
+	 * 
+	 * @param <T> 元素类型
+	 * @param array 列表
+	 * @return 随机元素
+	 * @since 3.3.0
+	 */
+	public static <T> T randomEle(T[] array) {
+		return randomEle(array, array.length);
+	}
+
+	/**
+	 * 随机获得数组中的元素
+	 * 
+	 * @param <T> 元素类型
+	 * @param array 列表
+	 * @param limit 限制列表的前N项
+	 * @return 随机元素
+	 * @since 3.3.0
+	 */
+	public static <T> T randomEle(T[] array, int limit) {
+		return array[randomInt(limit)];
+	}
+
+	/**
 	 * 随机获得列表中的一定量元素
 	 * 
 	 * @param <T> 元素类型
@@ -143,13 +311,13 @@ public class RandomUtil {
 	public static <T> List<T> randomEles(List<T> list, int count) {
 		final List<T> result = new ArrayList<T>(count);
 		int limit = list.size();
-		while (--count > 0) {
+		while (result.size() < count) {
 			result.add(randomEle(list, limit));
 		}
 
 		return result;
 	}
-	
+
 	/**
 	 * 随机获得列表中的一定量的不重复元素，返回Set
 	 * 
@@ -161,10 +329,10 @@ public class RandomUtil {
 	 */
 	public static <T> Set<T> randomEleSet(Collection<T> collection, int count) {
 		ArrayList<T> source = new ArrayList<>(new HashSet<>(collection));
-		if(count > source.size()){
+		if (count > source.size()) {
 			throw new IllegalArgumentException("Count is larger than collection distinct size !");
 		}
-		
+
 		final HashSet<T> result = new HashSet<T>(count);
 		int limit = collection.size();
 		while (result.size() < count) {
@@ -244,9 +412,54 @@ public class RandomUtil {
 	}
 
 	/**
+	 * 带有权重的随机生成器
+	 * 
+	 * @param weightObjs 带有权重的对象列表
+	 * @return {@link WeightRandom}
+	 * @since 4.0.3
+	 */
+	public static <T> WeightRandom<T> weightRandom(WeightObj<T>[] weightObjs) {
+		return new WeightRandom<>(weightObjs);
+	}
+
+	/**
+	 * 带有权重的随机生成器
+	 * 
+	 * @param weightObjs 带有权重的对象列表
+	 * @return {@link WeightRandom}
+	 * @since 4.0.3
+	 */
+	public static <T> WeightRandom<T> weightRandom(Iterable<WeightObj<T>> weightObjs) {
+		return new WeightRandom<>(weightObjs);
+	}
+
+	// ------------------------------------------------------------------- UUID
+	/**
 	 * @return 随机UUID
 	 */
 	public static String randomUUID() {
 		return UUID.randomUUID().toString();
+	}
+
+	/**
+	 * 简化的UUID，去掉了横线
+	 * 
+	 * @return 简化的UUID，去掉了横线
+	 * @since 3.2.2
+	 */
+	public static String simpleUUID() {
+		return randomUUID().replace("-", "");
+	}
+
+	/**
+	 * 以当天为基准，随机产生一个日期
+	 * 
+	 * @param min 偏移最小天，可以为负数表示过去的时间
+	 * @param max 偏移最大天，可以为负数表示过去的时间
+	 * @return 随机日期（随机天，其它时间不变）
+	 * @since 4.0.8
+	 */
+	public static DateTime randomDay(int min, int max) {
+		return DateUtil.offsetDay(DateUtil.date(), randomInt(min, max));
 	}
 }

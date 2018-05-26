@@ -20,11 +20,12 @@ import javax.sql.DataSource;
 
 import com.alibaba.druid.pool.DruidDataSource;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.io.IoUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
+import cn.ucaner.alpaca.framework.utils.tools.db.DbUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.DSFactory;
 import cn.ucaner.alpaca.framework.utils.tools.setting.Setting;
 
@@ -107,7 +108,13 @@ public class DruidDSFactory extends DSFactory {
 		if(CollectionUtil.isEmpty(config)){
 			throw new DbRuntimeException("No Druid config for group: [{}]", group);
 		}
-		
+
+		// 初始化SQL显示
+		final boolean isShowSql = Convert.toBool(config.remove("showSql"), false);
+		final boolean isFormatSql = Convert.toBool(config.remove("formatSql"), false);
+		final boolean isShowParams = Convert.toBool(config.remove("showParams"), false);
+		DbUtil.setShowSqlGlobal(isShowSql, isFormatSql, isShowParams);
+
 		final DruidDataSource ds = new DruidDataSource();
 		
 		//基本信息
@@ -127,8 +134,8 @@ public class DruidDSFactory extends DSFactory {
 		//规范化属性名
 		Properties config2 = new Properties();
 		String keyStr;
-		for (Entry<Object, Object> entry : config.entrySet()) {
-			keyStr = StrUtil.addPrefixIfNot(Convert.toStr(entry.getKey()), "druid.");
+		for (Entry<String, String> entry : config.entrySet()) {
+			keyStr = StrUtil.addPrefixIfNot(entry.getKey(), "druid.");
 			config2.put(keyStr, entry.getValue());
 		}
 		

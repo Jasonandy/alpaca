@@ -34,7 +34,7 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.URLUtil;
 * @Modify marker：   
 * @version    V1.0
  */
-public class UrlResource {
+public class UrlResource implements Resource{
 	protected URL url;
 	
 	//-------------------------------------------------------------------------------------- Constructor start
@@ -49,33 +49,25 @@ public class UrlResource {
 	/**
 	 * 构造
 	 * @param file 文件路径
+	 * @deprecated Please use {@link FileResource}
 	 */
+	@Deprecated
 	public UrlResource(File file) {
 		this.url = URLUtil.getURL(file);
 	}
 	//-------------------------------------------------------------------------------------- Constructor end
 	
-	/**
-	 * 获得解析后的{@link URL}
-	 * @return 解析后的{@link URL}
-	 */
-	public final URL getUrl(){
+	@Override
+	public URL getUrl(){
 		return this.url;
 	}
 	
-	/**
-	 * 获得 {@link InputStream}
-	 * @return {@link InputStream}
-	 */
+	@Override
 	public InputStream getStream(){
 		if(null == this.url){
-			throw new IORuntimeException("Resource [{}] not exist!", this.url);
+			throw new NoResourceException("Resource [{}] not exist!", this.url);
 		}
-		try {
-			return this.url.openStream();
-		} catch (IOException e) {
-			throw new IORuntimeException(e);
-		}
+		return URLUtil.getStream(url);
 	}
 	
 	/**
@@ -85,19 +77,11 @@ public class UrlResource {
 	 * @since 3.0.1
 	 */
 	public BufferedReader getReader(Charset charset){
-		return IoUtil.getReader(getStream(), charset);
+		return URLUtil.getReader(this.url, charset);
 	}
 	
 	//------------------------------------------------------------------------------- read
-	/**
-	 * 读取资源内容，读取完毕后会关闭流<br>
-	 * 关闭流并不影响下一次读取
-	 * 
-	 * @param charset 编码
-	 * @return 读取资源内容
-	 * @throws IORuntimeException 包装{@link IOException}
-	 * @since 3.0.8
-	 */
+	@Override
 	public String readStr(Charset charset) throws IORuntimeException{
 		BufferedReader reader = null;
 		try {
@@ -108,26 +92,12 @@ public class UrlResource {
 		}
 	}
 	
-	/**
-	 * 读取资源内容，读取完毕后会关闭流<br>
-	 * 关闭流并不影响下一次读取
-	 * 
-	 * @return 读取资源内容
-	 * @throws IORuntimeException 包装{@link IOException}
-	 * @since 3.0.8
-	 */
+	@Override
 	public String readUtf8Str() throws IORuntimeException{
 		return readStr(CharsetUtil.CHARSET_UTF_8);
 	}
 	
-	/**
-	 * 读取资源内容，读取完毕后会关闭流<br>
-	 * 关闭流并不影响下一次读取
-	 * 
-	 * @return 读取资源内容
-	 * @throws IORuntimeException 包装{@link IOException}
-	 * @since 3.0.8
-	 */
+	@Override
 	public byte[] readBytes() throws IORuntimeException{
 		InputStream in = null;
 		try {

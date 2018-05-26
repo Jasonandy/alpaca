@@ -1,13 +1,3 @@
-/**
- * <html>
- * <body>
- *  <P> Copyright 1994 JsonInternational</p>
- *  <p> All rights reserved.</p>
- *  <p> Created on 19941115</p>
- *  <p> Created by Jason</p>
- *  </body>
- * </html>
- */
 package cn.ucaner.alpaca.framework.utils.tools.extra.mail;
 
 import javax.mail.Authenticator;
@@ -16,9 +6,9 @@ import javax.mail.PasswordAuthentication;
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.extra.mail   
 * @ClassName：UserPassAuthenticator   
-* @Description：   <p> 用户名密码验证器 </p>
+* @Description：   <p> 用户名密码验证器</p>
 * @Author： -    
-* @CreatTime：2018年5月25日 上午10:22:16   
+* @CreatTime：2018年5月25日 下午10:32:03   
 * @Modify By：   
 * @ModifyTime：  2018年5月25日
 * @Modify marker：   

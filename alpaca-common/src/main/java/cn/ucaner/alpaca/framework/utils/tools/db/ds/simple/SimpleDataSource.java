@@ -15,10 +15,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.dialect.DriverUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.DSFactory;
 import cn.ucaner.alpaca.framework.utils.tools.setting.Setting;
 
@@ -96,11 +98,18 @@ public class SimpleDataSource extends AbstractDataSource {
 			throw new DbRuntimeException("No C3P0 config for group: [{}]", group);
 		}
 
-		init(
-				config.getAndRemoveStr(DSFactory.KEY_ALIAS_URL),
-				config.getAndRemoveStr(DSFactory.KEY_ALIAS_USER),
-				config.getAndRemoveStr(DSFactory.KEY_ALIAS_PASSWORD),
-				config.getAndRemoveStr(DSFactory.KEY_ALIAS_DRIVER));
+		// 初始化SQL显示
+		final boolean isShowSql = Convert.toBool(config.remove("showSql"), false);
+		final boolean isFormatSql = Convert.toBool(config.remove("formatSql"), false);
+		final boolean isShowParams = Convert.toBool(config.remove("showParams"), false);
+		DbUtil.setShowSqlGlobal(isShowSql, isFormatSql, isShowParams);
+
+		init(//
+				config.getAndRemoveStr(DSFactory.KEY_ALIAS_URL), //
+				config.getAndRemoveStr(DSFactory.KEY_ALIAS_USER), //
+				config.getAndRemoveStr(DSFactory.KEY_ALIAS_PASSWORD), //
+				config.getAndRemoveStr(DSFactory.KEY_ALIAS_DRIVER)//
+		);
 	}
 
 	/**
@@ -149,7 +158,7 @@ public class SimpleDataSource extends AbstractDataSource {
 	 * @since 3.1.2
 	 */
 	public void init(String url, String user, String pass, String driver) {
-		this.driver = StrUtil.isBlank(driver) ? DbUtil.identifyDriver(url) : driver;
+		this.driver = StrUtil.isBlank(driver) ? DriverUtil.identifyDriver(url) : driver;
 		try {
 			Class.forName(this.driver);
 		} catch (ClassNotFoundException e) {

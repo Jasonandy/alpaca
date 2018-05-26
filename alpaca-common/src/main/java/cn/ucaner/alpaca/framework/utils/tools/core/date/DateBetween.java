@@ -20,7 +20,34 @@ public class DateBetween {
 	private Date begin;
 	/** 结束日期 */
 	private Date end;
-	
+
+	/**
+	 * 创建<br>
+	 * 在前的日期做为起始时间，在后的做为结束时间，间隔只保留绝对值正数
+	 * 
+	 * @param begin 起始时间
+	 * @param end 结束时间
+	 * @return {@link DateBetween}
+	 * @since 3.2.3
+	 */
+	public static DateBetween create(Date begin, Date end) {
+		return new DateBetween(begin, end);
+	}
+
+	/**
+	 * 创建<br>
+	 * 在前的日期做为起始时间，在后的做为结束时间，间隔只保留绝对值正数
+	 * 
+	 * @param begin 起始时间
+	 * @param end 结束时间
+	 * @param isAbs 日期间隔是否只保留绝对值正数
+	 * @return {@link DateBetween}
+	 * @since 3.2.3
+	 */
+	public static DateBetween create(Date begin, Date end, boolean isAbs) {
+		return new DateBetween(begin, end, isAbs);
+	}
+
 	/**
 	 * 构造<br>
 	 * 在前的日期做为起始时间，在后的做为结束时间，间隔只保留绝对值正数
@@ -42,11 +69,11 @@ public class DateBetween {
 	 * @since 3.1.1
 	 */
 	public DateBetween(Date begin, Date end, boolean isAbs) {
-		if(isAbs && begin.after(end)){
-			//间隔只为正数的情况下，如果开始日期晚于结束日期，置换之
+		if (isAbs && begin.after(end)) {
+			// 间隔只为正数的情况下，如果开始日期晚于结束日期，置换之
 			this.begin = end;
 			this.end = begin;
-		}else{
+		} else {
 			this.begin = begin;
 			this.end = end;
 		}
@@ -80,9 +107,13 @@ public class DateBetween {
 		final int betweenMonthOfYear = endCal.get(Calendar.MONTH) - beginCal.get(Calendar.MONTH);
 
 		int result = betweenYear * 12 + betweenMonthOfYear;
-		if (isReset && beginCal.get(Calendar.DAY_OF_MONTH) > endCal.get(Calendar.DAY_OF_MONTH)) {
-			// 在非重置情况下，如果起始日期的天小于结束日期的天，月数要少算1（不足1个月）
-			return result - 1;
+		if (false == isReset) {
+			endCal.set(Calendar.YEAR, beginCal.get(Calendar.YEAR));
+			endCal.set(Calendar.MONTH, beginCal.get(Calendar.MONTH));
+			long between = endCal.getTimeInMillis() - beginCal.getTimeInMillis();
+			if (between < 0) {
+				return result - 1;
+			}
 		}
 		return result;
 	}
@@ -92,7 +123,7 @@ public class DateBetween {
 	 * 在非重置情况下，如果起始日期的月小于结束日期的月，年数要少算1（不足1年）
 	 * 
 	 * @param isReset 是否重置时间为起始时间（重置月天时分秒）
-	 * @return 相差月数
+	 * @return 相差年数
 	 * @since 3.0.8
 	 */
 	public long betweenYear(boolean isReset) {
@@ -100,9 +131,12 @@ public class DateBetween {
 		final Calendar endCal = DateUtil.calendar(end);
 
 		int result = endCal.get(Calendar.YEAR) - beginCal.get(Calendar.YEAR);
-		if (isReset && beginCal.get(Calendar.MONTH) > endCal.get(Calendar.MONTH)) {
-			// 在非重置情况下，如果起始日期的月小于结束日期的月，年数要少算1（不足1年）
-			return result - 1;
+		if (false == isReset) {
+			endCal.set(Calendar.YEAR, beginCal.get(Calendar.YEAR));
+			long between = endCal.getTimeInMillis() - beginCal.getTimeInMillis();
+			if (between < 0) {
+				return result - 1;
+			}
 		}
 		return result;
 	}

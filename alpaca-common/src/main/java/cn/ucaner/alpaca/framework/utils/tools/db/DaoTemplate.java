@@ -16,7 +16,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.DSFactory;
 import cn.ucaner.alpaca.framework.utils.tools.db.handler.EntityHandler;

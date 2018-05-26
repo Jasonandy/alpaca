@@ -17,10 +17,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.convert.Convert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.db.DbUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.dialect.DriverUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.DSFactory;
 import cn.ucaner.alpaca.framework.utils.tools.db.ds.simple.SimpleDataSource;
 import cn.ucaner.alpaca.framework.utils.tools.setting.Setting;
@@ -105,12 +108,18 @@ public class TomcatDSFactory extends DSFactory {
 		if (group == null) {
 			group = StrUtil.EMPTY;
 		}
-		
-		Setting config = setting.getSetting(group);
-		if(null == config || config.isEmpty()){
+
+		final Setting config = setting.getSetting(group);
+		if (CollUtil.isEmpty(config)) {
 			throw new DbRuntimeException("No Tomcat jdbc pool config for group: [{}]", group);
 		}
-		
+
+		// 初始化SQL显示
+		final boolean isShowSql = Convert.toBool(config.remove("showSql"), false);
+		final boolean isFormatSql = Convert.toBool(config.remove("formatSql"), false);
+		final boolean isShowParams = Convert.toBool(config.remove("showParams"), false);
+		DbUtil.setShowSqlGlobal(isShowSql, isFormatSql, isShowParams);
+
 		final PoolProperties poolProps = new PoolProperties();
 		
 		//基本信息
@@ -120,8 +129,8 @@ public class TomcatDSFactory extends DSFactory {
 		final String driver = getAndRemoveProperty(config, "driver", "driverClassName");
 		if(StrUtil.isNotBlank(driver)){
 			poolProps.setDriverClassName(driver);
-		}else{
-			poolProps.setDriverClassName(DbUtil.identifyDriver(poolProps.getUrl()));
+		} else {
+			poolProps.setDriverClassName(DriverUtil.identifyDriver(poolProps.getUrl()));
 		}
 		
 		//扩展属性

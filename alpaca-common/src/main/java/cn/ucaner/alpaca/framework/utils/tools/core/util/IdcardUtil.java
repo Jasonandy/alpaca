@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.date.DatePattern;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.DateTime;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.DateUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Validator;
@@ -138,6 +139,10 @@ public class IdcardUtil {
 			Date birthDate = DateUtil.parse(birthday, "yyMMdd");
 			// 获取出生年(完全表现形式,如：2010)
 			int sYear = DateUtil.year(birthDate);
+			if(sYear > 2000) {
+				//2000年之后不存在15位身份证号，此处用于修复此问题的判断
+				sYear -= 100;
+			}
 			idCard18 = StrUtil.builder().append(idCard.substring(0, 6)).append(sYear).append(idCard.substring(8));
 			// 获取校验位
 			char sVal = getCheckCode18(idCard18.toString());
@@ -352,6 +357,17 @@ public class IdcardUtil {
 		}
 		return (sum % 11 == 0) ? true : false;
 	}
+	
+	/**
+	 * 根据身份编号获取生日<br>
+	 * 
+	 * @param idCard 身份编号
+	 * @return 生日(yyyyMMdd)
+	 * @see #getBirth(String)
+	 */
+	public static String getBirthByIdCard(String idCard) {
+		return getBirth(idCard);
+	}
 
 	/**
 	 * 根据身份编号获取生日
@@ -359,14 +375,25 @@ public class IdcardUtil {
 	 * @param idCard 身份编号
 	 * @return 生日(yyyyMMdd)
 	 */
-	public static String getBirthByIdCard(String idCard) {
-		Integer len = idCard.length();
+	public static String getBirth(String idCard) {
+		final Integer len = idCard.length();
 		if (len < CHINA_ID_MIN_LENGTH) {
 			return null;
 		} else if (len == CHINA_ID_MIN_LENGTH) {
 			idCard = convert15To18(idCard);
 		}
 		return idCard.substring(6, 14);
+	}
+	
+	/**
+	 * 从身份证号码中获取生日日期
+	 * 
+	 * @param idCard 身份证号码
+	 * @return 日期
+	 */
+	public static DateTime getBirthDate(String idCard) {
+		final String birthByIdCard = getBirthByIdCard(idCard);
+		return null == birthByIdCard ? null : DateUtil.parse(birthByIdCard, DatePattern.PURE_DATE_FORMAT);
 	}
 
 	/**
@@ -472,6 +499,19 @@ public class IdcardUtil {
 			return cityCodes.get(sProvinNum);
 		}
 		return null;
+	}
+	
+	/**
+	 * 隐藏指定位置的几个身份证号数字为“*”
+	 * 
+	 * @param idCard 身份证号
+	 * @param startInclude 开始位置（包含）
+	 * @param endExclude 结束位置（不包含）
+	 * @return 隐藏后的身份证号码
+	 * @since 3.2.2
+	 */
+	public static String hide(String idCard, int startInclude, int endExclude) {
+		return StrUtil.replace(idCard, startInclude, endExclude, '*');
 	}
 
 	// ----------------------------------------------------------------------------------- Private method start

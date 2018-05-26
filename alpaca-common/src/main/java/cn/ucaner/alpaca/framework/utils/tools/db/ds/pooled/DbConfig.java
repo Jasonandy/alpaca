@@ -11,7 +11,7 @@
 package cn.ucaner.alpaca.framework.utils.tools.db.ds.pooled;
 
 import cn.ucaner.alpaca.framework.utils.tools.db.DbRuntimeException;
-import cn.ucaner.alpaca.framework.utils.tools.db.DbUtil;
+import cn.ucaner.alpaca.framework.utils.tools.db.dialect.DriverUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.db.ds.pooled   
@@ -63,7 +63,7 @@ public class DbConfig {
 		this.url = url;
 		this.user = user;
 		this.pass = pass;
-		this.driver = DbUtil.identifyDriver(url);
+		this.driver = DriverUtil.identifyDriver(url);
 		try {
 			Class.forName(this.driver);
 		} catch (ClassNotFoundException e) {

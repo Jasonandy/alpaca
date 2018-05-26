@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 /**
@@ -56,11 +56,11 @@ public enum GlobalHeaders{
 			this.headers.clear();
 		}
 		
-		header(Header.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", true);
+		header(Header.ACCEPT, "text/html,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8", true);
 		header(Header.ACCEPT_ENCODING, "gzip", true);
 		header(Header.ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8", true);
 		header(Header.CONTENT_TYPE, "application/x-www-form-urlencoded", true);
-		header(Header.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36 Hutool", true);
+		header(Header.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.162 Safari/537.36 Hutool", true);
 		return this;
 	}
 

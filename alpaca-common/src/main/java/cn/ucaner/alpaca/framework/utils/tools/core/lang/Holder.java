@@ -10,7 +10,7 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.core.lang;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.mutable.MutableObj;
+import cn.ucaner.alpaca.framework.utils.tools.core.lang.mutable.MutableObj;
 
 /**
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.lang   

@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.format.DateParser;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.format.DatePrinter;
 import cn.ucaner.alpaca.framework.utils.tools.core.date.format.FastDateFormat;
+import cn.ucaner.alpaca.framework.utils.tools.core.lang.Assert;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ObjectUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
@@ -40,6 +41,9 @@ public class DateTime extends Date {
 	 * @return DateTime
 	 */
 	public static DateTime of(Date date) {
+		if(date instanceof DateTime) {
+			return (DateTime)date;
+		}
 		return new DateTime(date);
 	}
 
@@ -114,12 +118,13 @@ public class DateTime extends Date {
 	 * @param dateStr Date字符串
 	 * @param format 格式
 	 */
-	public DateTime(String dateStr, String format){
+	public DateTime(String dateStr, String format) {
 		this(dateStr, new SimpleDateFormat(format));
 	}
-	
+
 	/**
 	 * 构造
+	 * 
 	 * @see DatePattern
 	 * @param dateStr Date字符串
 	 * @param dateFormat 格式化器 {@link SimpleDateFormat}
@@ -255,7 +260,7 @@ public class DateTime extends Date {
 	 * @return 第几个季度
 	 */
 	public int season() {
-		return monthStartFromOne() /3 + 1;
+		return monthStartFromOne() / 4 + 1;
 	}
 	
 	/**
@@ -467,7 +472,18 @@ public class DateTime extends Date {
 		cal.setTime(this);
 		return cal;
 	}
-	
+
+	/**
+	 * 转换为 {@link Date}<br>
+	 * 考虑到很多框架（例如Hibernate）的兼容性，提供此方法返回JDK原生的Date对象
+	 * 
+	 * @return {@link Date}
+	 * @since 3.2.2
+	 */
+	public Date toJdkDate() {
+		return new Date(this.getTime());
+	}
+
 	/**
 	 * 转为{@link Timestamp}
 	 * @return {@link Timestamp}
@@ -574,8 +590,7 @@ public class DateTime extends Date {
 	}
 
 	/**
-	 * 设置对象是否可变
-	 * 如果为不可变对象，以下方法将返回新方法：
+	 * 设置对象是否可变 如果为不可变对象，以下方法将返回新方法：
 	 * <ul>
 	 * 	<li>{@link DateTime#offset(DateField, int)}</li>
 	 * 	<li>{@link DateTime#setField(DateField, int)}</li>
@@ -615,9 +630,24 @@ public class DateTime extends Date {
 	}
 
 	// -------------------------------------------------------------------- toString start
+	/**
+	 * 转为"yyyy-MM-dd yyyy-MM-dd HH:mm:ss " 格式字符串
+	 * 
+	 * @return "yyyy-MM-dd yyyy-MM-dd HH:mm:ss " 格式字符串
+	 */
 	@Override
 	public String toString() {
 		return toString(DatePattern.NORM_DATETIME_FORMAT);
+	}
+	
+	/**
+	 * 转为"yyyy-MM-dd " 格式字符串
+	 * 
+	 * @return "yyyy-MM-dd " 格式字符串
+	 * @since 4.0.0
+	 */
+	public String toDateStr() {
+		return toString(DatePattern.NORM_DATE_PATTERN);
 	}
 
 	/**
@@ -681,11 +711,13 @@ public class DateTime extends Date {
 	 * @param parser {@link FastDateFormat}
 	 * @return {@link Date}
 	 */
-	private static Date parse(String dateStr, DateParser parser){
+	private static Date parse(String dateStr, DateParser parser) {
+		Assert.notNull(parser, "Parser or DateFromat must be not null !");
+		Assert.notBlank(dateStr, "Date String must be not blank !");
 		try {
 			return parser.parse(dateStr);
 		} catch (Exception e) {
-			throw new DateException(StrUtil.format("Parse [{}] with format [{}] error!", dateStr, parser.getPattern()), e);
+			throw new DateException("Parse [{}] with format [{}] error!", dateStr, parser.getPattern(), e);
 		}
 	}
 	

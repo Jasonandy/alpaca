@@ -29,8 +29,7 @@ import cn.ucaner.alpaca.framework.utils.tools.core.util.ReflectUtil;
 * @version    V1.0
  */
 public final class Singleton {
-	
-	private static Map<Class<?>, Object> pool = new ConcurrentHashMap<Class<?>, Object>();
+	private static Map<Class<?>, Object> pool = new ConcurrentHashMap<>();
 	
 	private Singleton() {}
 	
@@ -72,6 +71,16 @@ public final class Singleton {
 	public static <T> T get(String className, Object... params) {
 		final Class<T> clazz = ClassUtil.loadClass(className);
 		return get(clazz, params);
+	}
+	
+	/**
+	 * 将已有对象放入单例中，其Class做为键
+	 * 
+	 * @param obj 对象
+	 * @since 4.0.7
+	 */
+	public static void put(Object obj) {
+		pool.put(obj.getClass(), obj);
 	}
 	
 	/**

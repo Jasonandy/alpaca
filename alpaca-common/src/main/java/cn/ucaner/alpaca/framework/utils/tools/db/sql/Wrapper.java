@@ -14,9 +14,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map.Entry;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.collection.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.lang.Editor;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.CollectionUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.Entity;
 
@@ -98,16 +98,6 @@ public class Wrapper {
 	 * @return 包装后的字段名
 	 */
 	public String wrap(String field){
-		return wrapWord(field);
-	}
-	
-	/**
-	 * 包装字段名<br>
-	 * 有时字段与SQL的某些关键字冲突，导致SQL出错，因此需要将字段名用单引号或者反引号包装起来，避免冲突
-	 * @param field 字段名
-	 * @return 包装后的字段名
-	 */
-	private String wrapWord(String field){
 		if(preWrapQuote == null || sufWrapQuote == null || StrUtil.isBlank(field)) {
 			return field;
 		}
@@ -118,7 +108,7 @@ public class Wrapper {
 		}
 		
 		//如果字段中包含通配符或者括号（字段通配符或者函数），不做包装
-		if(field.contains("*") || field.contains("(")) {
+		if(StrUtil.containsAnyIgnoreCase(field, "*", "(", " ", "as")) {
 			return field;
 		}
 		

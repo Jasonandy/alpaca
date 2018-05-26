@@ -17,8 +17,11 @@ import java.sql.Savepoint;
 
 import javax.sql.DataSource;
 
+import cn.ucaner.alpaca.framework.utils.tools.core.lang.VoidFunc;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 import cn.ucaner.alpaca.framework.utils.tools.db.dialect.DialectFactory;
+import cn.ucaner.alpaca.framework.utils.tools.db.ds.DSFactory;
+import cn.ucaner.alpaca.framework.utils.tools.db.sql.Wrapper;
 import cn.ucaner.alpaca.framework.utils.tools.log.Log;
 import cn.ucaner.alpaca.framework.utils.tools.log.LogFactory;
 
@@ -40,11 +43,33 @@ public class Session extends AbstractSqlRunner implements Closeable{
 	
 	private Connection conn = null;
 	private Boolean isSupportTransaction = null;
+
+	/**
+	 * 创建默认数据源会话
+	 * 
+	 * @return {@link Session}
+	 * @since 3.2.3
+	 */
+	public static Session create() {
+		return new Session(DSFactory.get());
+	}
 	
 	/**
 	 * 创建会话
+	 * 
+	 * @param group 分组
+	 * @return {@link Session}
+	 * @since 4.0.11
+	 */
+	public static Session create(String group) {
+		return new Session(DSFactory.get(group));
+	}
+
+	/**
+	 * 创建会话
+	 * 
 	 * @param ds 数据源
-	 * @return this
+	 * @return {@link Session}
 	 */
 	public static Session create(DataSource ds) {
 		return new Session(ds);
@@ -53,7 +78,7 @@ public class Session extends AbstractSqlRunner implements Closeable{
 	/**
 	 * 创建会话
 	 * @param conn 数据库连接对象
-	 * @return this
+	 * @return {@link Session}
 	 */
 	public static Session create(Connection conn) {
 		return new Session(conn);
@@ -114,9 +139,27 @@ public class Session extends AbstractSqlRunner implements Closeable{
 	public void setRunner(SqlConnRunner runner) {
 		this.runner = runner;
 	}
-	//---------------------------------------------------------------------------- Getters and Setters end
-	
-	//---------------------------------------------------------------------------- Transaction method start
+	// ---------------------------------------------------------------------------- Getters and Setters end
+
+	// ---------------------------------------------------------------------------- Transaction method start
+	/**
+	 * 数据库是否支持事务
+	 * 
+	 * @return 是否支持事务
+	 * @throws DbRuntimeException SQLException包装
+	 * @since 3.2.3
+	 */
+	public boolean isSupportTransaction() throws DbRuntimeException {
+		if (null == isSupportTransaction) {
+			try {
+				isSupportTransaction = conn.getMetaData().supportsTransactions();
+			} catch (SQLException e) {
+				throw new DbRuntimeException(e, "Because of SQLException [{}], We can not know transation support or not.", e.getMessage());
+			}
+		}
+		return this.isSupportTransaction;
+	}
+
 	/**
 	 * 开始事务
 	 * @throws SQLException SQL执行异常
@@ -246,23 +289,52 @@ public class Session extends AbstractSqlRunner implements Closeable{
 	/**
 	 * 设置事务的隔离级别<br>
 	 * 
-	 * Connection.TRANSACTION_NONE                             驱动不支持事务<br>
-	 * Connection.TRANSACTION_READ_UNCOMMITTED   允许脏读、不可重复读和幻读<br>
-	 * Connection.TRANSACTION_READ_COMMITTED        禁止脏读，但允许不可重复读和幻读<br>
-	 * Connection.TRANSACTION_REPEATABLE_READ         禁止脏读和不可重复读，单运行幻读<br>
-	 * Connection.TRANSACTION_SERIALIZABLE                 禁止脏读、不可重复读和幻读<br>
+	 * Connection.TRANSACTION_NONE 驱动不支持事务<br>
+	 * Connection.TRANSACTION_READ_UNCOMMITTED 允许脏读、不可重复读和幻读<br>
+	 * Connection.TRANSACTION_READ_COMMITTED 禁止脏读，但允许不可重复读和幻读<br>
+	 * Connection.TRANSACTION_REPEATABLE_READ 禁止脏读和不可重复读，单运行幻读<br>
+	 * Connection.TRANSACTION_SERIALIZABLE 禁止脏读、不可重复读和幻读<br>
 	 * 
 	 * @param level 隔离级别
 	 * @throws SQLException SQL执行异常
 	 */
 	public void setTransactionIsolation(int level) throws SQLException {
-		if(conn.getMetaData().supportsTransactionIsolationLevel(level) == false) {
+		if (conn.getMetaData().supportsTransactionIsolationLevel(level) == false) {
 			throw new SQLException(StrUtil.format("Transaction isolation [{}] not support!", level));
 		}
 		conn.setTransactionIsolation(level);
 	}
-	//---------------------------------------------------------------------------- Transaction method end
-	
+
+	/**
+	 * 在事务中执行操作，通过实现{@link VoidFunc}接口的call方法执行多条SQL语句从而完成事务
+	 * 
+	 * @param func 函数抽象，在函数中执行多个SQL操作，多个操作会被合并为同一事务
+	 * @since 3.2.3
+	 */
+	public void trans(VoidFunc func) {
+		try {
+			beginTransaction();
+			func.call();
+			commit();
+		} catch (Exception e) {
+			quietRollback();
+			throw new DbRuntimeException(e);
+		}
+	}
+	// ---------------------------------------------------------------------------- Transaction method end
+
+	// ---------------------------------------------------------------------------- Getters and Setters start
+	@Override
+	public Session setWrapper(Character wrapperChar) {
+		return (Session) super.setWrapper(wrapperChar);
+	}
+
+	@Override
+	public Session setWrapper(Wrapper wrapper) {
+		return (Session) super.setWrapper(wrapper);
+	}
+	// ---------------------------------------------------------------------------- Getters and Setters end
+
 	/**
 	 * 获得连接，Session中使用同一个连接
 	 * @return {@link Connection}

@@ -1,6 +1,7 @@
 package cn.ucaner.alpaca.framework.utils.tools.core.convert;
 
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ArrayUtil;
+import cn.ucaner.alpaca.framework.utils.tools.core.util.CharUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ClassUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
@@ -84,6 +85,9 @@ public abstract class AbstractConverter<T> implements Converter<T> {
 			return (String) value;
 		} else if (ArrayUtil.isArray(value)) {
 			return ArrayUtil.toString(value);
+		} else if(CharUtil.isChar(value)) {
+			//对于ASCII字符使用缓存加速转换，减少空间创建
+			return CharUtil.toString((char)value);
 		}
 		return value.toString();
 	}
