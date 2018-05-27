@@ -84,7 +84,6 @@ public class AnnotationUtil {
 	/**
 	 * 获取指定注解属性的值<br>
 	 * 如果无指定的属性方法返回null
-	 * 
 	 * @param <T> 注解值类型
 	 * @param annotationEle {@link AccessibleObject}，可以是Class、Method、Field、Constructor、ReflectPermission
 	 * @param annotationType 注解类型
@@ -166,10 +165,11 @@ public class AnnotationUtil {
 	public static ElementType[] getTargetType(Class<? extends Annotation> annotationType) {
 		final Target target = annotationType.getAnnotation(Target.class);
 		if (null == target) {
-			return new ElementType[] { ElementType.TYPE, //
-					ElementType.FIELD, //
-					ElementType.METHOD, //
-					ElementType.PARAMETER, //
+			return new ElementType[] { 
+					ElementType.TYPE, //可用于类或者接口上
+					ElementType.FIELD, //可用于域上
+					ElementType.METHOD, //可用于方法上
+					ElementType.PARAMETER, //用于参数上面 
 					ElementType.CONSTRUCTOR, //
 					ElementType.LOCAL_VARIABLE, //
 					ElementType.ANNOTATION_TYPE, //
@@ -181,7 +181,6 @@ public class AnnotationUtil {
 
 	/**
 	 * 是否会保存到 Javadoc 文档中
-	 * 
 	 * @param annotationType 注解类
 	 * @return 是否会保存到 Javadoc 文档中
 	 */
@@ -191,7 +190,6 @@ public class AnnotationUtil {
 	
 	/**
 	 * 是否可以被继承，默认为 false
-	 * 
 	 * @param annotationType 注解类
 	 * @return 是否会保存到 Javadoc 文档中
 	 */
