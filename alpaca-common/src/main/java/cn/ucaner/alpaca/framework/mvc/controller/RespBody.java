@@ -15,7 +15,9 @@ import java.io.Serializable;
 /**
 * @Package：cn.ucaner.framework.mvc.controller   
 * @ClassName：RespBody   
-* @Description：   <p> 响应格式</p>
+* @Description：   <p> 响应格式
+* 兼容Layui数据结构 {@link http://www.layui.com/doc/modules/table.html}
+* </p>
 * @Author： - Jason 
 * @CreatTime：2017年8月30日 下午1:55:06   
 * @Modify By：   
@@ -26,6 +28,7 @@ import java.io.Serializable;
 public class RespBody implements Serializable {
 
 	private static final long serialVersionUID = 5905715228490291386L;
+	
 	/**
 	 * 状态
 	 */
@@ -71,7 +74,7 @@ public class RespBody implements Serializable {
 	 * 结果类型信息
 	 */
 	public enum Status {
-		OK, ERROR, PROMPT
+		OK, ERROR, FAIL
 	}
 
 	/**
@@ -95,6 +98,11 @@ public class RespBody implements Serializable {
 	 * 添加错误消息
 	 */
 	public void addError(String message) {
+		this.message = message;
+		this.status = Status.ERROR;
+	}
+	
+	public void addFail(String message) {
 		this.message = message;
 		this.status = Status.ERROR;
 	}

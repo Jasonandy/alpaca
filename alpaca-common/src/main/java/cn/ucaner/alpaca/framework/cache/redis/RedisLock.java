@@ -33,6 +33,7 @@ import redis.clients.jedis.ShardedJedisPool;
 * @version    V1.0
  */
 public class RedisLock {
+	
 	public static Logger logger = LoggerFactory.getLogger(RedisLock.class);
 
 	/** 加锁标志 */
@@ -83,7 +84,6 @@ public class RedisLock {
 			this.redisPool = redisPool;
 			this.singleJedis = this.redisPool.getResource();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			logger.error("redis server connect exception!", e);
 			throw new SystemException(e);
 		}
@@ -168,6 +168,7 @@ public class RedisLock {
 	 * 单机redis加锁 
 	 * 无论是否加锁成功，都需要调用unlock 
 	 */
+	@SuppressWarnings("deprecation")
 	public void singleUnlock(String key) {
 		key = key.concat("_lock");
 		try {
@@ -248,6 +249,7 @@ public class RedisLock {
 	 * 对切片redis群解锁 
 	 * 无论是否加锁成功，都需要调用unlock 
 	 */
+	@SuppressWarnings("deprecation")
 	public void shardedUnlock(String key) {
 		key = key.concat("_lock");
 		try {

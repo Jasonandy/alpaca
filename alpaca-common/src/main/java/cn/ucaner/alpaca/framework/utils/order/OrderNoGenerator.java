@@ -164,4 +164,14 @@ public class OrderNoGenerator {
 		serialNumSb.append(serialNum);
 		return serialNumSb.toString();
 	}
+	
+	
+	/**
+	 * @Description: Just for test
+	 * @param args void
+	 * @Autor: wubin - binwu@pcitech.com
+	 */
+	public static void main(String[] args) {
+		System.out.println(genOrderNo(1, 1, 1));
+	}
 }

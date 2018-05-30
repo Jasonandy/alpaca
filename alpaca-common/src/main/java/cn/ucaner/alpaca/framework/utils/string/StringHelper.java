@@ -82,6 +82,13 @@ public class StringHelper {
 		return strToArrayListManager(str, separator);
 	}
 
+	/**
+	 * @Description: 分割
+	 * @param str
+	 * @param separator
+	 * @return ArrayList<String>
+	 * @Autor: jasonandy@hotmail.com
+	 */
 	private static ArrayList<String> strToArrayListManager(String str, String separator) {
 
 		StringTokenizer strTokens = new StringTokenizer(str, separator);

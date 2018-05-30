@@ -88,7 +88,19 @@ public class SignatureUtils {
 	 * 签名字符串标识字符
 	 */
 	public static final String PARAM_SIGN = "sign";
-
+	
+	
+	/**
+	 * 自定义私钥标识
+	 */
+	public static final String CUST_PRIVATE_KEY="alpacaPrivateKey";
+	
+	/**
+	 * 自定义公钥标识
+	 */
+	public static final String CUST_PUBLIC_KEY="alpacaPublicKey";
+	
+	
 	/**
 	 * 消息加签
 	 * @param paramsMap
@@ -96,15 +108,15 @@ public class SignatureUtils {
 	 */
 	public static String rsa256Sign(Map<String, String> paramsMap) {
 		//支付平台公钥字符串不参与加签,只作为进行消息加签的钥匙
-		String ygkzPrivateKey = paramsMap.get("ygkzPrivateKey");
-		paramsMap.remove("ygkzPrivateKey");
-		if (StringUtils.isBlank(ygkzPrivateKey)) {
+		String custPrivateKey = paramsMap.get(CUST_PRIVATE_KEY);
+		paramsMap.remove(CUST_PRIVATE_KEY);
+		if (StringUtils.isBlank(custPrivateKey)) {
 			return null;
 		}
 		//排序
 		String sortContent = getSortContent(paramsMap);
 		//加签
-		String sign = SignatureUtils.rsa256Sign(sortContent, ygkzPrivateKey);
+		String sign = SignatureUtils.rsa256Sign(sortContent, custPrivateKey);
 		return sign;
 
 	}
@@ -274,32 +286,19 @@ public class SignatureUtils {
 	}
 
 	public static void main(String[] args) {
-		//String privateKey =
-		//		"MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC4pTB7ZqKmxWUSW1xE8UVtqm5mWyiG6ocJ1iWIHQqRO8zxO6hiRD+PK3R1CADkTcb6MaeDxdp+hxUN2cPXIbEUSjBHu6xFkJiJYhD/qaD7QNcRAELowzV3zYBVyIbih3YMCUSeRqj7N0yGuy7Lmy5DSiRNHcWAQWWLAMoByTlxRuEiLPe1fuhBKOOLlnTn+7BgrVrC9XDkhTIeom9WMfHY+HmDpU5WwZvuHJuVahued1vKOKy1qcJsmkCTGjCIMDmAVs1IzyGd16VojLv2FBGoid58zlo5XsoGsodCBlM5r8GmEkmtMfKxYmNxV+hWUPrh4j7dXPiaboI8ZUBwZk3XAgMBAAECggEBAKxpevLPLHODAFR6wJaTn5u+N6YV2qrYFU3nC1akn3hrmXtrlFhll9/M2MpqtcJ4qaJ3eQ6/Ub0xz0QGoiqgiCQE/j4NDNhMI1KtImhH8UyLCAcU8mU72hJK7lmri9+8U0r74HnWSvWAdlGcOR7fgPxOH8VuVjvjVLjN/NJcHeoZhVzdd3eLPQ39hYJOJqi4ZlBttOsAiUK2hzdgvbAgiRuOTdNMiRPeoYEBxqAFkM68KR4S2Zkk7bkhVeqjUC1oeOmwdE9uBwT9AvJRSyrbQwlbSt9B+9B9ftduo9pE/8iQYIz1j+EGYHB6i0CTDt8t8uen2hJrZWmVzj8IjCIvQkECgYEA/USOqWKmjdN+pvrD0ZtKqpdBuoto1hJtq10UAAwCPKnKovRcFBhT0sGpEG0ZrNu+m7TScKtEjmcRJ1QCH1FEBqvBk6LviBEBeHHRd5sp5eQAbzcrm/E5tvaxhch4u96zj6qv5Vt8sCgWXRNGtuNQtTaeo8UFJXPmemWvulh0+CECgYEAuqMegNZmbgbCtQNuZYqVeaDs7oOFaIcEttPLxDqiy3w/RdFJBEswdNWsy1Oi2owqsVtzHLyUIwH4mOJ8fDAnzCDnAnhWFksYXWbCtQhyU6yddqya8fpHY5rVrotkOd84WN1ilK9BSHKvoJlAethW2J+RhqmYZ2M1vZ0+R+v2JvcCgYAunhLgTL85dcdnNtsaVsoskkDP9F8soCG9nBlVVOCIh/w7eF0Ged/b+DeFRX+nWJ9CC8t8X5nz2DbJFWZ6mzu5Op4b7a7HTdIGeHTE3jOdFBWcYvxM7N7htZDBfj/y3LASbqmHvwo5ZnePVD/84+R0JoSWwmoLFcVDnDn3Q9br4QKBgF7X9fBTA8p19Qw3qio/uqYMeVrbyzfLJUIjbzFQ+tmdUioQqKJd80nsK9tHrUKSaD+o0V6RFlaT8dj/f3M8pXy+W6aNsHGzx7XvOpL0r+SFm59rJ3JAVXbwgBYrD8u4+9Fs72PPi8VdQpLCTlofBkMfE7zzAlfHus+Y0MWLy5MRAoGBANEEWFh/7Li0w4PK6SNkRsUD1GbqpYfRalJcXu7T3fqy8iGc/HnvJZ5Mncl50T1l88O5tRXMVLT0AQO0kkjfoHakL4Ig/OqL8yqA36fidYoieDdFfJmKPH5hNft/AT8gdDvfDOtpAohM9IPN/j/pncyqlZRNP1LFBq6Gp6AaHJki";
-		//String publicKey =
-		//		"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuKUwe2aipsVlEltcRPFFbapuZlsohuqHCdYliB0KkTvM8TuoYkQ/jyt0dQgA5E3G+jGng8XafocVDdnD1yGxFEowR7usRZCYiWIQ/6mg+0DXEQBC6MM1d82AVciG4od2DAlEnkao+zdMhrsuy5suQ0okTR3FgEFliwDKAck5cUbhIiz3tX7oQSjji5Z05/uwYK1awvVw5IUyHqJvVjHx2Ph5g6VOVsGb7hyblWobnndbyjistanCbJpAkxowiDA5gFbNSM8hndelaIy79hQRqInefM5aOV7KBrKHQgZTOa/BphJJrTHysWJjcVfoVlD64eI+3Vz4mm6CPGVAcGZN1wIDAQAB";
-		//String password =
-		//		"appId=sun90f99466b08c4c7&merchantNo=9683091070339795&nonceStr=UcWyb5ohEEnb5itLefNGFMNJumGwJDi&outOrderNo=10101201709210000003&timeStamp=2017-09-21 22:08:54";
-		//String encryptStr = rsa256Sign(password, privateKey);
-		//System.out.println("encryptStr:" + encryptStr);
-		/*String encryptStr =
-				"GnvHK8SjsLoN7MfpY2gSfUfXwr3of7cL9/5BtFa8lCpYDYeHqSPmMjWJFWHM9vhjowznvv8NQFq9s2msUWb7Fn8v4YU91HG3Y7ldMU//4+iYWy721ezAHWvzmPX2PbZdVfvumrQ7AaROoS8ecerjVS+e1BomKTTwWHhjBeDqoPZgXbXXeUPbdobfgfdDYkXNd8VHksRZz7RSj8Xix/uRNpjoUkRRJ8E2+5BWQHP5ldWMpwiO5Cve5ksKIPsIY+Fu/tTvJ90UxNw2pxe4jJffhcYZrjqRSUVp5+B/HF7y0X7EPcuuBUilGa8igFp/tNMRrYBV23D2COWMO3CW7Bhe4w==";
-		System.out.println(rsa256CheckContent(password, encryptStr, publicKey));*/
-		//System.out.println(encryptStr.length());
-
-		/*String publicKey =
-				"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuDfinAVacwdfIv/P2zqXUL2DjFzhw9SEfAd+JQZNlWh6bMZx6JAxwcvLSy9w8UGHr7EOhcjmd1uGiZKuixCbsiBAuUpTFq76LUhOlY4een4phoIJ8JNIZm9n6Bff4SlN0+6pNhp96Wt4vZpB6cMcyJaL0yVVbEs37oe17bNyuhnnTTdjSBSu9GTcW8erBOTgwxl7nLgU1Mm2nBdJ495eBa78B1ZppoJ3O2iJ5jDlV5Go5/5XdKLB0+/+EIMcC8Yb/ZlMzzf4Dgjpo0LR8ILDoiEkRHVQguTojaiZjbS4g0qwb9NEYYStEQSoiJ1wsGa1tWYALwiGcRbCun1Zg1e+SQIDAQAB";
-
-		String str =
-				"{\"appId\":\"sun90f99466b08c4c7\",\"cashierId\":\"f41ad7bdc6934651ad2a71e8947168bc\",\"cashierUrl\":\"http://cashierdev.968309.cn/trade/choicePayment\",\"merchantNo\":\"9683091070339795\",\"nonceStr\":\"663ee4b4ecaf4510b26f330b88b12001\",\"sign\":\"ZfPt7UvbNNIBUsovBE2t+BMy1gUCrJcxXtdPl8q3tgf0G6sj7xks2F/ikYD1ptpzeEnCrkUpNKODQliaMme+Aiyy49yYMXkXtTRO2HZ2PBOPHa+3R+hprQssH/L1pIZ4KrJvZQVRflpp8hvEFWUYiXyFVNpqJXrnpmBIFerW7S8LBm2Rf066NiVqMhKAQfWve4/y8dFQCNH6PUSfpz1A/xU6bG/kKLVXn7c+crFP+Pe8qWuexUoMuyio7mNAvVPgBRhRUur/UxcYMG+beUFQgTOe3SXNbzL8Mn8fMx/MYCUQRuHryigSn2qCZgHnbUKQvlh6hd7RKaiFfao4I/EI3g==\",\"timeStamp\":\"2017-09-20 21:08:49\"}";
-		Map<String, String> dataMap = (Map<String, String>) JSON.parse(str);
-		String encryptStr = dataMap.remove("sign");
-		String password = buildSortJson(dataMap);
-		System.out.println(rsa256CheckContent(password, encryptStr, publicKey));*/
 		try {
 			Map<String, Object> map = genKeyPair();
-			System.out.println("私钥:" + getPrivateKey(map));
+			HashMap<String, String> signMap = new HashMap<String, String>();
+			signMap.put(CUST_PRIVATE_KEY, getPrivateKey(map));
+			signMap.put("content", "jasonandy@hotmail.com");
+			String rsa256Sign = rsa256Sign(signMap);
+			System.out.println(rsa256Sign);
+			/*System.out.println("私钥:" + getPrivateKey(map));
 			System.out.println("公钥:" + getPublicKey(map));
+			String sign = rsa256Sign("jasonandy@hotmail.com", getPrivateKey(map));
+			System.out.println(rsa256Sign("jasonandy@hotmail.com", getPrivateKey(map)));
+			System.out.println(rsa256CheckContent("jasonandy", sign, getPublicKey(map)));*/
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

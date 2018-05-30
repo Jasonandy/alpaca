@@ -16,7 +16,7 @@ import java.awt.image.BufferedImage;
 * @Package：cn.ucaner.common.utils.QRCode   
 * @ClassName：MatrixToImageConfig   
 * @Description：   <p> MatrixToImageConfig</p>
-* @Author： - DaoDou 
+* @Author： - Jason 
 * @CreatTime：2017年10月26日 上午10:48:20   
 * @Modify By：   
 * @ModifyTime：  

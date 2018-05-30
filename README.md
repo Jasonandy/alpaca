@@ -7,7 +7,15 @@
   You are what you want to be.
 </p>
 
-----
+
+<p align="center">
+	<a href="#"><img src="https://img.shields.io/wercker/ci/wercker/docs.svg?style=for-the-badge" alt=""></a>
+	<a href="#"><img src="https://img.shields.io/badge/Author-Jason-orange.svg?style=for-the-badge" alt=""></a>
+</p>
+
+
+# Ucaner
+> You are what you want to be. - w.b
 
 # alpaca
 * Project：alpaca

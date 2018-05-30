@@ -152,4 +152,13 @@ public class SensitivewordFilterUtil{
 		}
 		return matchFlag;
 	}
+	
+	/**
+	 * @Description: Just for Test
+	 * @param args void
+	 * @Autor: Jason - jasonandy@hotmail.com
+	 */
+	public static void main(String[] args) {
+		
+	}
 }
