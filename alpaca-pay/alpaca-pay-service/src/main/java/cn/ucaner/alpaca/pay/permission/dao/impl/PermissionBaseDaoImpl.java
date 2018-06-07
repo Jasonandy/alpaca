@@ -12,9 +12,9 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 import cn.ucaner.alpaca.pay.permission.dao.PermissionBaseDao;
 import cn.ucaner.alpaca.pay.permission.entity.PermissionBaseEntity;
 

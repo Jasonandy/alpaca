@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 import cn.ucaner.alpaca.pay.account.enums.AccountFundDirectionEnum;
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
-import cn.ucaner.alpaca.pay.common.core.utils.DateUtils;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.utils.DateUtils;
 import cn.ucaner.alpaca.pay.trade.enums.TrxTypeEnum;
 
 /**

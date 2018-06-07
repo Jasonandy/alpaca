@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.utils;
+package cn.ucaner.alpaca.pay.common.utils;
 
 import java.sql.Timestamp;
 import java.text.ParseException;

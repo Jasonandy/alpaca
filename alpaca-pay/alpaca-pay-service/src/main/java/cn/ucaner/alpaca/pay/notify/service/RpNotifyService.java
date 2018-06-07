@@ -2,8 +2,8 @@ package cn.ucaner.alpaca.pay.notify.service;
 
 import java.util.Map;
 
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 import cn.ucaner.alpaca.pay.notify.entity.RpNotifyRecord;
 import cn.ucaner.alpaca.pay.notify.entity.RpNotifyRecordLog;
 

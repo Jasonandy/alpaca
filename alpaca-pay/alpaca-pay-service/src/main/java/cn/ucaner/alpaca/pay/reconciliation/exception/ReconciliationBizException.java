@@ -3,7 +3,7 @@ package cn.ucaner.alpaca.pay.reconciliation.exception;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.reconciliation.exception   

@@ -99,4 +99,17 @@ public class NamedThreadFactory implements ThreadFactory {
 		return t;
 	}
 
+	/**
+	 * @Description: Just for test
+	 * @Autor: Jason - jasonandy@hotmail.com
+	 */
+	public static void main(String[] args) {
+		NamedThreadFactory threadFactory = new NamedThreadFactory("Alpaca-Thread", false);
+		threadFactory.newThread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("HelloWorld");
+			}
+		});
+	}
 }

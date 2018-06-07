@@ -2,8 +2,8 @@ package cn.ucaner.alpaca.pay.user.entity;
 
 import java.io.Serializable;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicStatusEnum;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.enums.PublicStatusEnum;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.user.entity   

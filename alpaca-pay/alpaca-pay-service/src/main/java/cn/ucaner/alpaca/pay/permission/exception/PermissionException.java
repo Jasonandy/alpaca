@@ -3,7 +3,7 @@ package cn.ucaner.alpaca.pay.permission.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.permission.exception   
@@ -17,7 +17,9 @@ import cn.ucaner.alpaca.pay.common.core.exception.BizException;
 * @version    V1.0
  */
 public class PermissionException extends BizException {
+	
 	private static final long serialVersionUID = -5371846727040729628L;
+	
 	private static final Logger logger = LoggerFactory.getLogger(PermissionException.class);
 	/** 该用户没有分配菜单权限 */
 	public static final Integer PERMISSION_USER_NOT_MENU = 1001;

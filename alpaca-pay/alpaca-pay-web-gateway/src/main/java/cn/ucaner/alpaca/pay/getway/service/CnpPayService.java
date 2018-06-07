@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import cn.ucaner.alpaca.pay.common.core.enums.SecurityRatingEnum;
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.enums.SecurityRatingEnum;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import cn.ucaner.alpaca.pay.getway.utils.NetworkUtil;
 import cn.ucaner.alpaca.pay.trade.exception.TradeBizException;
 import cn.ucaner.alpaca.pay.user.entity.RpUserPayConfig;

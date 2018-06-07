@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.entity;
+package cn.ucaner.alpaca.pay.common.entity;
 
 import com.alibaba.fastjson.JSONObject;
 

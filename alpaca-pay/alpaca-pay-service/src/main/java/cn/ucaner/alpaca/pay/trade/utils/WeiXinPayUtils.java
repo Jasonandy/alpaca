@@ -22,7 +22,7 @@ import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import cn.ucaner.alpaca.pay.trade.entity.weixinpay.WeiXinPrePay;
 import cn.ucaner.alpaca.pay.trade.enums.weixinpay.WeiXinTradeTypeEnum;
 

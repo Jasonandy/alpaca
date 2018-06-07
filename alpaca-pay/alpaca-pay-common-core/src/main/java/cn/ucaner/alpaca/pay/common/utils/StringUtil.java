@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.utils;
+package cn.ucaner.alpaca.pay.common.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -12,7 +12,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * String字符串工具类.
+* @Package：cn.ucaner.alpaca.pay.common.core.utils   
+* @ClassName：StringUtil   
+* @Description：   <p> String字符串工具类</p>
+* @Author： - Jason   
+* @CreatTime：2018年6月7日 下午8:07:26   
+* @Modify By：   
+* @ModifyTime：  2018年6月7日
+* @Modify marker：   
+* @version    V1.0
  */
 public final class StringUtil {
 

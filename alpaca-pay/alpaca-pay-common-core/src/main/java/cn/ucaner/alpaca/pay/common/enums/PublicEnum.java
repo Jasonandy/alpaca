@@ -1,32 +1,31 @@
-package cn.ucaner.alpaca.pay.common.core.enums;
+package cn.ucaner.alpaca.pay.common.enums;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.enums   
-* @ClassName：PublicStatusEnum   
-* @Description：   <p>  公共状态枚举. 只有 (冻结) 与(激活) 两种状态 </p>
+* @ClassName：PublicEnum   
+* @Description：   <p> 公共枚举. 针对只有“是”，“否”两种状态</p>
 * @Author： - Jason   
-* @CreatTime：2018年5月10日 下午9:53:53   
+* @CreatTime：2018年5月10日 下午9:54:18   
 * @Modify By：   
 * @ModifyTime：  2018年5月10日
 * @Modify marker：   
 * @version    V1.0
  */
-public enum PublicStatusEnum {
+public enum PublicEnum {
 
-	ACTIVE("激活"),
+	YES("是"),
 
-	UNACTIVE("冻结");
+	NO("否");
 
 	/** 描述 */
 	private String desc;
 
-	private PublicStatusEnum(String desc) {
+	private PublicEnum(String desc) {
 		this.desc = desc;
 	}
 
@@ -39,12 +38,11 @@ public enum PublicStatusEnum {
 	}
 
 	public static Map<String, Map<String, Object>> toMap() {
-		PublicStatusEnum[] ary = PublicStatusEnum.values();
+		PublicEnum[] ary = PublicEnum.values();
 		Map<String, Map<String, Object>> enumMap = new HashMap<String, Map<String, Object>>();
 		for (int num = 0; num < ary.length; num++) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			String key = ary[num].name();
-			map.put("value", ary[num].name());
 			map.put("desc", ary[num].getDesc());
 			enumMap.put(key, map);
 		}
@@ -53,35 +51,34 @@ public enum PublicStatusEnum {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static List toList() {
-		PublicStatusEnum[] ary = PublicStatusEnum.values();
+		PublicEnum[] ary = PublicEnum.values();
 		List list = new ArrayList();
 		for (int i = 0; i < ary.length; i++) {
 			Map<String, String> map = new HashMap<String, String>();
 			map.put("desc", ary[i].getDesc());
-			map.put("name", ary[i].name());
 			list.add(map);
 		}
 		return list;
 	}
-
-	public static PublicStatusEnum getEnum(String name) {
-		PublicStatusEnum[] arry = PublicStatusEnum.values();
-		for (int i = 0; i < arry.length; i++) {
-			if (arry[i].name().equalsIgnoreCase(name)) {
-				return arry[i];
-			}
-		}
-		return null;
-	}
+	
+    public static PublicEnum getEnum(String name) {
+        PublicEnum[] arry = PublicEnum.values();
+        for (int i = 0; i < arry.length; i++) {
+            if (arry[i].name().equalsIgnoreCase(name)) {
+                return arry[i];
+            }
+        }
+        return null;
+    }
 
 	/**
 	 * 取枚举的json字符串
 	 * @return
 	 */
 	public static String getJsonStr() {
-		PublicStatusEnum[] enums = PublicStatusEnum.values();
+		PublicEnum[] enums = PublicEnum.values();
 		StringBuffer jsonStr = new StringBuffer("[");
-		for (PublicStatusEnum senum : enums) {
+		for (PublicEnum senum : enums) {
 			if (!"[".equals(jsonStr.toString())) {
 				jsonStr.append(",");
 			}
@@ -91,7 +88,4 @@ public enum PublicStatusEnum {
 		return jsonStr.toString();
 	}
 
-	public static void main(String[] args) {
-		System.out.println(getJsonStr());
-	}
 }

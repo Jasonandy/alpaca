@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
 import cn.ucaner.alpaca.pay.notify.enums.NotifyStatusEnum;
 
 /**

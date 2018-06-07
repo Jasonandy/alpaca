@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicEnum;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.enums.PublicEnum;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.entity   

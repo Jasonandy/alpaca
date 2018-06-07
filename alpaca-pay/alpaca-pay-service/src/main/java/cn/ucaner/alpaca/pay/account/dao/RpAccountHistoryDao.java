@@ -5,7 +5,7 @@ import java.util.Map;
 
 import cn.ucaner.alpaca.pay.account.entity.RpAccountHistory;
 import cn.ucaner.alpaca.pay.account.vo.DailyCollectAccountHistoryVo;
-import cn.ucaner.alpaca.pay.common.core.dao.BaseDao;
+import cn.ucaner.alpaca.pay.common.dao.BaseDao;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.account.dao   

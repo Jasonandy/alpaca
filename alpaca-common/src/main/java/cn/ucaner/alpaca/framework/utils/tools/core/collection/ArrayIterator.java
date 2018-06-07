@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.collection   
 * @ClassName：ArrayIterator   
 * @Description：   <p> 数组Iterator对象 </p>
-* @Author： - wubin   
+* @Author： -    
 * @CreatTime：2018年5月25日 下午1:27:25   
 * @Modify By：   
 * @ModifyTime：  2018年5月25日

@@ -3,7 +3,7 @@ package cn.ucaner.alpaca.pay.account.service;
 import java.math.BigDecimal;
 
 import cn.ucaner.alpaca.pay.account.entity.RpAccount;
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.account.service   

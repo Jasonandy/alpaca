@@ -2,7 +2,7 @@ package cn.ucaner.alpaca.pay.notify.entity;
 
 import java.util.Date;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.notify.entity   

@@ -14,11 +14,15 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * 针对 {@link Comparable}对象的默认比较器
- * 
- * @param <E> 比较对象类型
- * @author Looly
- * @since 3.0.7
+* @Package：cn.ucaner.alpaca.framework.utils.tools.core.comparator   
+* @ClassName：ComparableComparator   
+* @Description：   <p> 针对 {@link Comparable}对象的默认比较器 <E> 比较对象类型 </p>
+* @Author： -    
+* @CreatTime：2018年6月5日 上午12:09:53   
+* @Modify By：   
+* @ModifyTime：  2018年6月5日
+* @Modify marker：   
+* @version    V1.0
  */
 public class ComparableComparator<E extends Comparable<? super E>> implements Comparator<E>, Serializable {
 	private static final long serialVersionUID = 3020871676147289162L;

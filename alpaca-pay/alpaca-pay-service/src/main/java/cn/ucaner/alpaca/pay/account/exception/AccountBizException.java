@@ -3,7 +3,7 @@ package cn.ucaner.alpaca.pay.account.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.account.exception   

@@ -2,7 +2,7 @@ package cn.ucaner.alpaca.pay.trade.entity.weixinpay;
 
 import java.io.Serializable;
 
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import cn.ucaner.alpaca.pay.trade.enums.weixinpay.WeiXinTradeTypeEnum;
 
 /**

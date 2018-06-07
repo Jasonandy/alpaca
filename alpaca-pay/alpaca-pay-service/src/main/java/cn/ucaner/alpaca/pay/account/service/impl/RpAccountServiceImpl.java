@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import cn.ucaner.alpaca.pay.account.dao.RpAccountDao;
 import cn.ucaner.alpaca.pay.account.entity.RpAccount;
 import cn.ucaner.alpaca.pay.account.service.RpAccountService;
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.account.service.impl   

@@ -17,14 +17,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.ucaner.alpaca.pay.common.core.utils.DateUtils;
+import cn.ucaner.alpaca.pay.common.utils.DateUtils;
 import cn.ucaner.alpaca.pay.getway.controller.common.BaseController;
 import cn.ucaner.alpaca.pay.getway.service.CnpPayService;
 import cn.ucaner.alpaca.pay.trade.exception.TradeBizException;
-import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
 import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentQueryService;
 import cn.ucaner.alpaca.pay.trade.utils.MerchantApiUtil;
-import cn.ucaner.alpaca.pay.trade.vo.F2FPayResultVo;
 import cn.ucaner.alpaca.pay.user.entity.RpUserPayConfig;
 import cn.ucaner.alpaca.pay.user.exception.UserBizException;
 import cn.ucaner.alpaca.pay.user.service.RpUserPayConfigService;
@@ -44,6 +42,7 @@ import cn.ucaner.alpaca.pay.user.service.RpUserPayConfigService;
 @Controller
 @RequestMapping(value = "/f2fPay")
 public class F2FPayController extends BaseController {
+	
     private static final Logger logger = LoggerFactory.getLogger(F2FPayController.class);
 
     //@Autowired(required=false)

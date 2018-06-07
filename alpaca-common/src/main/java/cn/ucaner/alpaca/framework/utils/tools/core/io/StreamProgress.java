@@ -11,9 +11,15 @@
 package cn.ucaner.alpaca.framework.utils.tools.core.io;
 
 /**
- * Stream进度条
- * @author Looly
- *
+* @Package：cn.ucaner.alpaca.framework.utils.tools.core.io   
+* @ClassName：StreamProgress   
+* @Description：   <p> Stream进度条</p>
+* @Author： -    
+* @CreatTime：2018年6月4日 下午11:21:42   
+* @Modify By：   
+* @ModifyTime：  2018年6月4日
+* @Modify marker：   
+* @version    V1.0
  */
 public interface StreamProgress {
 	

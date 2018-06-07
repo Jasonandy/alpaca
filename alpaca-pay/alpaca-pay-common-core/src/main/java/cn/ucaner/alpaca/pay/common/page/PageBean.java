@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.page;
+package cn.ucaner.alpaca.pay.common.page;
 
 import java.io.Serializable;
 import java.util.ArrayList;

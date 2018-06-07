@@ -12,7 +12,6 @@ package cn.ucaner.alpaca.framework.utils.tools.core.io.resource;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;

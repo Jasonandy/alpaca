@@ -2,10 +2,21 @@ package cn.ucaner.alpaca.pay.notify.entity;
 
 import java.util.Date;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
 import cn.ucaner.alpaca.pay.notify.enums.NotifyStatusEnum;
 import cn.ucaner.alpaca.pay.notify.enums.NotifyTypeEnum;
 
+/**
+* @Package：cn.ucaner.alpaca.pay.notify.entity   
+* @ClassName：RpNotifyRecord   
+* @Description：   <p> RpNotifyRecord</p>
+* @Author： -    
+* @CreatTime：2018年6月7日 下午9:28:58   
+* @Modify By：   
+* @ModifyTime：  2018年6月7日
+* @Modify marker：   
+* @version    V1.0
+ */
 public class RpNotifyRecord  extends BaseEntity {
 
     
@@ -16,7 +27,9 @@ public class RpNotifyRecord  extends BaseEntity {
 //        return notifyId;
 //    }
 
-    private Date createTime;
+	private static final long serialVersionUID = -4680910451715844967L;
+
+	private Date createTime;
 
     /** 最后一次通知时间 **/
     private Date lastNotifyTime;

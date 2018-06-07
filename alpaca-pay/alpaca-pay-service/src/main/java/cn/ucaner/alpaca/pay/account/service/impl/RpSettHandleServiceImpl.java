@@ -24,8 +24,8 @@ import cn.ucaner.alpaca.pay.account.service.RpAccountTransactionService;
 import cn.ucaner.alpaca.pay.account.service.RpSettHandleService;
 import cn.ucaner.alpaca.pay.account.utils.AccountConfigUtil;
 import cn.ucaner.alpaca.pay.account.vo.DailyCollectAccountHistoryVo;
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
-import cn.ucaner.alpaca.pay.common.core.utils.DateUtils;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
+import cn.ucaner.alpaca.pay.common.utils.DateUtils;
 import cn.ucaner.alpaca.pay.trade.enums.TrxTypeEnum;
 import cn.ucaner.alpaca.pay.user.entity.RpUserBankAccount;
 import cn.ucaner.alpaca.pay.user.entity.RpUserInfo;
@@ -34,11 +34,6 @@ import cn.ucaner.alpaca.pay.user.exception.UserBizException;
 import cn.ucaner.alpaca.pay.user.service.RpUserBankAccountService;
 import cn.ucaner.alpaca.pay.user.service.RpUserInfoService;
 
-/**
- * 
- * 龙果学院：www.roncoo.com
- * @author：zenghao
- */
 /**
 * @Package：cn.ucaner.alpaca.pay.account.service.impl   
 * @ClassName：RpSettHandleServiceImpl   

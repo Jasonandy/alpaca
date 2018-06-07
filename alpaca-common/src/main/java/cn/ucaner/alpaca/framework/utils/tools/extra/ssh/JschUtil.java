@@ -299,7 +299,7 @@ public class JschUtil {
 	public static void main(String[] args) {
 		Session session = getSession("47.106.125.14", 55522, "wubin", "wubin");
 		System.out.println(session);
-		String exec = exec(session, "ls /data/", null);
+		String exec = exec(session, "ls /data", null);
 		System.out.println(exec);
 	}
 }

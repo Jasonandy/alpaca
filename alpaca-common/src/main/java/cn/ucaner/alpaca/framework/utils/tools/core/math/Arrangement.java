@@ -134,4 +134,10 @@ public class Arrangement {
 			}
 		}
 	}
+	
+	public static void main(String[] args) {
+		System.out.println(count(10));//3628800   A10全排
+		System.out.println(count(5, 4));//120     C5取4
+
+	}
 }

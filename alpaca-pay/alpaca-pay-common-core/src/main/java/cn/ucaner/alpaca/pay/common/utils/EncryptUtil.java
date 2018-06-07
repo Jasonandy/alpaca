@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.utils;
+package cn.ucaner.alpaca.pay.common.utils;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -21,6 +21,7 @@ import sun.misc.BASE64Encoder;
 * @Modify marker：   
 * @version    V1.0
  */
+@SuppressWarnings("restriction")
 public class EncryptUtil {
 
 	private static final Log LOG = LogFactory.getLog(EncryptUtil.class);

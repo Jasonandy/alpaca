@@ -1,21 +1,13 @@
 package cn.ucaner.alpaca.pay.trade.utils.alipay;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alipay.api.AlipayApiException;
-import com.alipay.api.AlipayClient;
-import com.alipay.api.DefaultAlipayClient;
-import com.alipay.api.request.AlipayTradePayRequest;
-import com.alipay.api.request.AlipayTradeQueryRequest;
-import com.alipay.api.response.AlipayTradePayResponse;
-import com.alipay.api.response.AlipayTradeQueryResponse;
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
-import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpProtocolHandler;
-import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpRequest;
-import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpResponse;
-import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpResultType;
-import cn.ucaner.alpaca.pay.trade.entity.RoncooPayGoodsDetails;
-import cn.ucaner.alpaca.pay.trade.utils.alipay.config.AlipayConfigUtil;
-import cn.ucaner.alpaca.pay.trade.utils.alipay.sign.MD5;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.apache.commons.httpclient.NameValuePair;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -24,9 +16,35 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.util.*;
+import com.alibaba.fastjson.JSONObject;
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.AlipayClient;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipayTradePayRequest;
+import com.alipay.api.request.AlipayTradeQueryRequest;
+import com.alipay.api.response.AlipayTradePayResponse;
+import com.alipay.api.response.AlipayTradeQueryResponse;
 
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
+import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpProtocolHandler;
+import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpRequest;
+import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpResponse;
+import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpResultType;
+import cn.ucaner.alpaca.pay.trade.entity.RoncooPayGoodsDetails;
+import cn.ucaner.alpaca.pay.trade.utils.alipay.config.AlipayConfigUtil;
+import cn.ucaner.alpaca.pay.trade.utils.alipay.sign.MD5;
+
+/**
+* @Package：cn.ucaner.alpaca.pay.trade.utils.alipay   
+* @ClassName：AliPayUtil   
+* @Description：   <p> AliPayUtil</p>
+* @Author： -    
+* @CreatTime：2018年6月7日 下午9:39:20   
+* @Modify By：   
+* @ModifyTime：  2018年6月7日
+* @Modify marker：   
+* @version    V1.0
+ */
 public class AliPayUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(AliPayUtil.class);

@@ -1,6 +1,6 @@
 package cn.ucaner.alpaca.pay.user.dao;
 
-import cn.ucaner.alpaca.pay.common.core.dao.BaseDao;
+import cn.ucaner.alpaca.pay.common.dao.BaseDao;
 import cn.ucaner.alpaca.pay.user.entity.RpPayProduct;
 
 /**

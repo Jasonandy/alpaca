@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.enums;
+package cn.ucaner.alpaca.pay.common.enums;
 
 import java.util.ArrayList;
 import java.util.HashMap;

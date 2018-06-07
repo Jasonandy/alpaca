@@ -14,8 +14,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import  cn.ucaner.alpaca.pay.common.core.enums.PayWayEnum;
-import  cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.enums.PayWayEnum;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import  cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
 import  cn.ucaner.alpaca.pay.trade.utils.WeiXinPayUtils;
 import  cn.ucaner.alpaca.pay.trade.utils.alipay.util.AliPayUtil;

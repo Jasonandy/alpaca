@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 
 import cn.ucaner.alpaca.pay.account.dao.RpAccountDao;
 import cn.ucaner.alpaca.pay.account.entity.RpAccount;
-import cn.ucaner.alpaca.pay.common.core.dao.impl.BaseDaoImpl;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicStatusEnum;
+import cn.ucaner.alpaca.pay.common.dao.impl.BaseDaoImpl;
+import cn.ucaner.alpaca.pay.common.enums.PublicStatusEnum;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.account.dao.impl   

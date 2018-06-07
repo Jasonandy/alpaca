@@ -5,10 +5,21 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
-import cn.ucaner.alpaca.pay.common.core.dao.impl.BaseDaoImpl;
+import cn.ucaner.alpaca.pay.common.dao.impl.BaseDaoImpl;
 import cn.ucaner.alpaca.pay.notify.dao.RpNotifyRecordDao;
 import cn.ucaner.alpaca.pay.notify.entity.RpNotifyRecord;
 
+/**
+* @Package：cn.ucaner.alpaca.pay.notify.dao.impl   
+* @ClassName：RpNotifyRecordDaoImpl   
+* @Description：   <p> RpNotifyRecordDaoImpl</p>
+* @Author： -    
+* @CreatTime：2018年6月7日 下午9:30:04   
+* @Modify By：   
+* @ModifyTime：  2018年6月7日
+* @Modify marker：   
+* @version    V1.0
+ */
 @Repository("rpNotifyRecordDao")
 public class RpNotifyRecordDaoImpl extends BaseDaoImpl<RpNotifyRecord> implements RpNotifyRecordDao {
 

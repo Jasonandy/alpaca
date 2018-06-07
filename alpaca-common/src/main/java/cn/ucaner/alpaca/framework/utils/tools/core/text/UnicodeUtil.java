@@ -78,4 +78,13 @@ public class UnicodeUtil {
 		}
 		return unicode.toString();
 	}
+	
+	
+	public static void main(String[] args) {
+		System.out.println(toUnicode("HelloWorld!"));
+		System.out.println(toUnicode("你好，世界！"));
+	}
 }
+//Outputs
+//HelloWorld!
+//\u4f60\u597d\uff0c\u4e16\u754c\uff01

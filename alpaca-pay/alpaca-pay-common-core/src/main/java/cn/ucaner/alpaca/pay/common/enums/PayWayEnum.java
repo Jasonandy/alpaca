@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.enums;
+package cn.ucaner.alpaca.pay.common.enums;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,25 +7,26 @@ import java.util.Map;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.enums   
-* @ClassName：PublicEnum   
-* @Description：   <p> 公共枚举. 针对只有“是”，“否”两种状态</p>
+* @ClassName：PayWayEnum   
+* @Description：   <p> 支付方式枚举</p>
 * @Author： - Jason   
-* @CreatTime：2018年5月10日 下午9:54:18   
+* @CreatTime：2018年5月10日 下午9:54:41   
 * @Modify By：   
 * @ModifyTime：  2018年5月10日
 * @Modify marker：   
 * @version    V1.0
  */
-public enum PublicEnum {
+public enum PayWayEnum {
 
-	YES("是"),
+	WEIXIN("微信"),
+	
+	UNIONPAY("银联"),
+	
+	ALIPAY("支付宝");
 
-	NO("否");
-
-	/** 描述 */
 	private String desc;
 
-	private PublicEnum(String desc) {
+	private PayWayEnum(String desc) {
 		this.desc = desc;
 	}
 
@@ -38,7 +39,7 @@ public enum PublicEnum {
 	}
 
 	public static Map<String, Map<String, Object>> toMap() {
-		PublicEnum[] ary = PublicEnum.values();
+		PayWayEnum[] ary = PayWayEnum.values();
 		Map<String, Map<String, Object>> enumMap = new HashMap<String, Map<String, Object>>();
 		for (int num = 0; num < ary.length; num++) {
 			Map<String, Object> map = new HashMap<String, Object>();
@@ -51,34 +52,34 @@ public enum PublicEnum {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static List toList() {
-		PublicEnum[] ary = PublicEnum.values();
+		PayWayEnum[] ary = PayWayEnum.values();
 		List list = new ArrayList();
 		for (int i = 0; i < ary.length; i++) {
 			Map<String, String> map = new HashMap<String, String>();
 			map.put("desc", ary[i].getDesc());
+			map.put("name", ary[i].name());
 			list.add(map);
 		}
 		return list;
 	}
-	
-    public static PublicEnum getEnum(String name) {
-        PublicEnum[] arry = PublicEnum.values();
-        for (int i = 0; i < arry.length; i++) {
-            if (arry[i].name().equalsIgnoreCase(name)) {
-                return arry[i];
-            }
-        }
-        return null;
-    }
+
+	public static PayWayEnum getEnum(String name) {
+		PayWayEnum[] arry = PayWayEnum.values();
+		for (int i = 0; i < arry.length; i++) {
+			if (arry[i].name().equalsIgnoreCase(name)) {
+				return arry[i];
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * 取枚举的json字符串
-	 * @return
 	 */
 	public static String getJsonStr() {
-		PublicEnum[] enums = PublicEnum.values();
+		PayWayEnum[] enums = PayWayEnum.values();
 		StringBuffer jsonStr = new StringBuffer("[");
-		for (PublicEnum senum : enums) {
+		for (PayWayEnum senum : enums) {
 			if (!"[".equals(jsonStr.toString())) {
 				jsonStr.append(",");
 			}

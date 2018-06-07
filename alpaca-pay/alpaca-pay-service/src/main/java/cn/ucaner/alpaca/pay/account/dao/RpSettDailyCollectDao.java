@@ -1,7 +1,7 @@
 package cn.ucaner.alpaca.pay.account.dao;
 
 import cn.ucaner.alpaca.pay.account.entity.RpSettDailyCollect;
-import cn.ucaner.alpaca.pay.common.core.dao.BaseDao;
+import cn.ucaner.alpaca.pay.common.dao.BaseDao;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.account.dao   

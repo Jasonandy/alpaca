@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.dwz;
+package cn.ucaner.alpaca.pay.common.dwz;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.dwz   

@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
-import cn.ucaner.alpaca.pay.common.core.dao.impl.BaseDaoImpl;
+import cn.ucaner.alpaca.pay.common.dao.impl.BaseDaoImpl;
 import cn.ucaner.alpaca.pay.trade.dao.RpTradePaymentRecordDao;
 import cn.ucaner.alpaca.pay.trade.entity.RpTradePaymentRecord;
 import cn.ucaner.alpaca.pay.trade.enums.TradeStatusEnum;

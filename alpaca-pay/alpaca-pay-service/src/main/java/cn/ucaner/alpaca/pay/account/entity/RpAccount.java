@@ -3,7 +3,7 @@ package cn.ucaner.alpaca.pay.account.entity;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.account.entity   

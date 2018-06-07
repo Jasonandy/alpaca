@@ -2,7 +2,7 @@ package cn.ucaner.alpaca.pay.reconciliation.dao.impl;
 
 import org.springframework.stereotype.Repository;
 
-import cn.ucaner.alpaca.pay.common.core.dao.impl.BaseDaoImpl;
+import cn.ucaner.alpaca.pay.common.dao.impl.BaseDaoImpl;
 import cn.ucaner.alpaca.pay.reconciliation.dao.RpAccountCheckBatchDao;
 import cn.ucaner.alpaca.pay.reconciliation.entity.RpAccountCheckBatch;
 

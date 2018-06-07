@@ -17,7 +17,7 @@ import java.util.Iterator;
 * @Package：cn.ucaner.alpaca.framework.utils.tools.core.collection   
 * @ClassName：EnumerationIterator   
 * @Description：   <p> {@link Enumeration}对象转{@link Iterator}对象 </p>
-* @Author： - wubin   
+* @Author： -    
 * @CreatTime：2018年5月25日 下午1:28:37   
 * @Modify By：   
 * @ModifyTime：  2018年5月25日

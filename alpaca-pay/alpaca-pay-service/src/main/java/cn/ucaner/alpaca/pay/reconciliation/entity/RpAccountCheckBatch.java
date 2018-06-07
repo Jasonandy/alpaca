@@ -3,7 +3,7 @@ package cn.ucaner.alpaca.pay.reconciliation.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.reconciliation.entity   

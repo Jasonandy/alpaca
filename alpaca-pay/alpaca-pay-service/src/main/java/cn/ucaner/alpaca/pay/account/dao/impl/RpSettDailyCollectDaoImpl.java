@@ -4,7 +4,7 @@ import org.springframework.stereotype.Repository;
 
 import cn.ucaner.alpaca.pay.account.dao.RpSettDailyCollectDao;
 import cn.ucaner.alpaca.pay.account.entity.RpSettDailyCollect;
-import cn.ucaner.alpaca.pay.common.core.dao.impl.BaseDaoImpl;
+import cn.ucaner.alpaca.pay.common.dao.impl.BaseDaoImpl;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.account.dao.impl   

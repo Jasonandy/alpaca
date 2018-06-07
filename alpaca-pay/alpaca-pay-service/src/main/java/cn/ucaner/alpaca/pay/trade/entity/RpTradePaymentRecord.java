@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
-import cn.ucaner.alpaca.pay.common.core.enums.PayTypeEnum;
-import cn.ucaner.alpaca.pay.common.core.enums.PayWayEnum;
-import cn.ucaner.alpaca.pay.common.core.utils.DateUtils;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.enums.PayTypeEnum;
+import cn.ucaner.alpaca.pay.common.enums.PayWayEnum;
+import cn.ucaner.alpaca.pay.common.utils.DateUtils;
 import cn.ucaner.alpaca.pay.trade.enums.TradeStatusEnum;
 import cn.ucaner.alpaca.pay.trade.enums.TrxTypeEnum;
 

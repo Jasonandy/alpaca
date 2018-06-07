@@ -10,19 +10,13 @@
  */
 package cn.ucaner.alpaca.framework.utils.tools.captcha;
 
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.OutputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
-import cn.ucaner.alpaca.framework.utils.tools.core.io.FileUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.io.IORuntimeException;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.ImageUtil;
 import cn.ucaner.alpaca.framework.utils.tools.core.util.RandomUtil;
-import cn.ucaner.alpaca.framework.utils.tools.core.util.StrUtil;
 
 
 /**

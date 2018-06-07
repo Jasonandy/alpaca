@@ -7,9 +7,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cn.ucaner.alpaca.pay.common.core.enums.PublicEnum;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicStatusEnum;
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.enums.PublicEnum;
+import cn.ucaner.alpaca.pay.common.enums.PublicStatusEnum;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import cn.ucaner.alpaca.pay.user.dao.RpUserBankAccountDao;
 import cn.ucaner.alpaca.pay.user.entity.RpUserBankAccount;
 import cn.ucaner.alpaca.pay.user.enums.BankCodeEnum;

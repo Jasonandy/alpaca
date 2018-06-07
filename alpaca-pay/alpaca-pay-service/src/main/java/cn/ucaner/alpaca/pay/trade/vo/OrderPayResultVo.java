@@ -3,7 +3,7 @@ package cn.ucaner.alpaca.pay.trade.vo;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import cn.ucaner.alpaca.pay.common.core.enums.PublicEnum;
+import cn.ucaner.alpaca.pay.common.enums.PublicEnum;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.vo   

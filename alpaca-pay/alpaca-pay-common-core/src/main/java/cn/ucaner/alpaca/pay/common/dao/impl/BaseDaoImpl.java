@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.dao.impl;
+package cn.ucaner.alpaca.pay.common.dao.impl;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -12,12 +12,11 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cn.ucaner.alpaca.pay.common.core.dao.BaseDao;
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
-
+import cn.ucaner.alpaca.pay.common.dao.BaseDao;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.dao.impl   
@@ -62,6 +61,7 @@ public abstract class BaseDaoImpl<T extends BaseEntity> extends SqlSessionDaoSup
         return sessionTemplate;
     }
 
+    @Autowired
     public void setSessionTemplate(SqlSessionTemplate sessionTemplate) {
         this.sessionTemplate = sessionTemplate;
     }

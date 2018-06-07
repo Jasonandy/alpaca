@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
-import cn.ucaner.alpaca.pay.common.core.dao.impl.BaseDaoImpl;
+import cn.ucaner.alpaca.pay.common.dao.impl.BaseDaoImpl;
 import cn.ucaner.alpaca.pay.user.dao.RpUserPayInfoDao;
 import cn.ucaner.alpaca.pay.user.entity.RpUserPayInfo;
 

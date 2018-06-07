@@ -3,13 +3,13 @@ package cn.ucaner.alpaca.pay.trade.exception;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.exception   
 * @ClassName：TradeBizException   
 * @Description：   <p> 功能说明:交易模块异常类</p>
-* @Author： - wubin   
+* @Author： -    
 * @CreatTime：2018年5月10日 下午11:20:59   
 * @Modify By：   
 * @ModifyTime：  2018年5月10日

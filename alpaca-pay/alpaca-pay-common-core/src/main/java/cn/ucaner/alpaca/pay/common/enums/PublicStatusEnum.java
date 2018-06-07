@@ -1,31 +1,32 @@
-package cn.ucaner.alpaca.pay.common.core.enums;
+package cn.ucaner.alpaca.pay.common.enums;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.enums   
-* @ClassName：SecurityRatingEnum   
-* @Description：   <p> 安全等级枚举</p>
+* @ClassName：PublicStatusEnum   
+* @Description：   <p>  公共状态枚举. 只有 (冻结) 与(激活) 两种状态 </p>
 * @Author： - Jason   
-* @CreatTime：2018年5月10日 下午9:52:21   
+* @CreatTime：2018年5月10日 下午9:53:53   
 * @Modify By：   
 * @ModifyTime：  2018年5月10日
 * @Modify marker：   
 * @version    V1.0
  */
-public enum SecurityRatingEnum {
+public enum PublicStatusEnum {
 
-	MD5("MD5"),
+	ACTIVE("激活"),
 
-	MD5_IP("MD5+IP白名单");
+	UNACTIVE("冻结");
 
 	/** 描述 */
 	private String desc;
 
-	private SecurityRatingEnum(String desc) {
+	private PublicStatusEnum(String desc) {
 		this.desc = desc;
 	}
 
@@ -37,24 +38,13 @@ public enum SecurityRatingEnum {
 		this.desc = desc;
 	}
 
-	public static SecurityRatingEnum getEnum(String enumName) {
-		SecurityRatingEnum resultEnum = null;
-		SecurityRatingEnum[] enumAry = SecurityRatingEnum.values();
-		for (int i = 0; i < enumAry.length; i++) {
-			if (enumAry[i].name().equals(enumName)) {
-				resultEnum = enumAry[i];
-				break;
-			}
-		}
-		return resultEnum;
-	}
-
 	public static Map<String, Map<String, Object>> toMap() {
-		SecurityRatingEnum[] ary = SecurityRatingEnum.values();
+		PublicStatusEnum[] ary = PublicStatusEnum.values();
 		Map<String, Map<String, Object>> enumMap = new HashMap<String, Map<String, Object>>();
 		for (int num = 0; num < ary.length; num++) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			String key = ary[num].name();
+			map.put("value", ary[num].name());
 			map.put("desc", ary[num].getDesc());
 			enumMap.put(key, map);
 		}
@@ -63,26 +53,35 @@ public enum SecurityRatingEnum {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static List toList() {
-		SecurityRatingEnum[] ary = SecurityRatingEnum.values();
+		PublicStatusEnum[] ary = PublicStatusEnum.values();
 		List list = new ArrayList();
 		for (int i = 0; i < ary.length; i++) {
 			Map<String, String> map = new HashMap<String, String>();
-			map.put("name", ary[i].name());
 			map.put("desc", ary[i].getDesc());
+			map.put("name", ary[i].name());
 			list.add(map);
 		}
 		return list;
 	}
 
+	public static PublicStatusEnum getEnum(String name) {
+		PublicStatusEnum[] arry = PublicStatusEnum.values();
+		for (int i = 0; i < arry.length; i++) {
+			if (arry[i].name().equalsIgnoreCase(name)) {
+				return arry[i];
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * 取枚举的json字符串
-	 * 
 	 * @return
 	 */
 	public static String getJsonStr() {
-		SecurityRatingEnum[] enums = SecurityRatingEnum.values();
+		PublicStatusEnum[] enums = PublicStatusEnum.values();
 		StringBuffer jsonStr = new StringBuffer("[");
-		for (SecurityRatingEnum senum : enums) {
+		for (PublicStatusEnum senum : enums) {
 			if (!"[".equals(jsonStr.toString())) {
 				jsonStr.append(",");
 			}
@@ -91,14 +90,8 @@ public enum SecurityRatingEnum {
 		jsonStr.append("]");
 		return jsonStr.toString();
 	}
-	
-	/**
-	 * @Description: Just for Test
-	 * @param args void
-	 * @Autor: jason -  jasoandy@hotmail.com
-	 */
+
 	public static void main(String[] args) {
 		System.out.println(getJsonStr());
 	}
 }
-//[{id:'MD5',desc:'MD5'},{id:'MD5_IP',desc:'MD5+IP白名单'}]

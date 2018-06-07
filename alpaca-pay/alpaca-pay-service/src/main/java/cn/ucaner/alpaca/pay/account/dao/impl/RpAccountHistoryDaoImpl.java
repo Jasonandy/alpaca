@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import cn.ucaner.alpaca.pay.account.dao.RpAccountHistoryDao;
 import cn.ucaner.alpaca.pay.account.entity.RpAccountHistory;
 import cn.ucaner.alpaca.pay.account.vo.DailyCollectAccountHistoryVo;
-import cn.ucaner.alpaca.pay.common.core.dao.impl.BaseDaoImpl;
+import cn.ucaner.alpaca.pay.common.dao.impl.BaseDaoImpl;
 
 
 /**

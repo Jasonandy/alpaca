@@ -16,7 +16,7 @@ import java.util.Iterator;
 * @Package：cn.ucaner.alpaca.framework.utils.tools.cache   
 * @ClassName：Cache   
 * @Description：   <p> 缓存接口  <K> 键类型  <V> 值类型 </p>
-* @Author： - wubin   
+* @Author： - Jason   
 * @CreatTime：2018年5月25日 上午9:54:53   
 * @Modify By：   
 * @ModifyTime：  2018年5月25日

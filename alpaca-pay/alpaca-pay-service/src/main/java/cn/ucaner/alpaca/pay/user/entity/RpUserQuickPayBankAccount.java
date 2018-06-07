@@ -1,8 +1,8 @@
 package cn.ucaner.alpaca.pay.user.entity;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicStatusEnum;
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.enums.PublicStatusEnum;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.user.entity   

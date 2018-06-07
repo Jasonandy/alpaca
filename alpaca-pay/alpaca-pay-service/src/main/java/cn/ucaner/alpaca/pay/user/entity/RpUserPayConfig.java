@@ -2,9 +2,9 @@ package cn.ucaner.alpaca.pay.user.entity;
 
 import java.io.Serializable;
 
-import cn.ucaner.alpaca.pay.common.core.entity.BaseEntity;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicEnum;
-import cn.ucaner.alpaca.pay.common.core.enums.SecurityRatingEnum;
+import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
+import cn.ucaner.alpaca.pay.common.enums.PublicEnum;
+import cn.ucaner.alpaca.pay.common.enums.SecurityRatingEnum;
 import cn.ucaner.alpaca.pay.user.enums.FundInfoTypeEnum;
 
 /**

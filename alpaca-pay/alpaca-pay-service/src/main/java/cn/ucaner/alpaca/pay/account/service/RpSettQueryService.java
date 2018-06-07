@@ -3,15 +3,10 @@ package cn.ucaner.alpaca.pay.account.service;
 import java.util.Map;
 
 import cn.ucaner.alpaca.pay.account.entity.RpSettRecord;
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 
-/**
- * 
- * 龙果学院：www.roncoo.com
- * @author：zenghao
- */
 /**
 * @Package：cn.ucaner.alpaca.pay.account.service   
 * @ClassName：RpSettQueryService   

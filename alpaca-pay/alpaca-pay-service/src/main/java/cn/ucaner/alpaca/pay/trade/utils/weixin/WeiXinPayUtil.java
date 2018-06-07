@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import cn.ucaner.alpaca.pay.trade.entity.RoncooPayGoodsDetails;
 import cn.ucaner.alpaca.pay.trade.utils.MD5Util;
 import cn.ucaner.alpaca.pay.trade.utils.WeiXinPayUtils;

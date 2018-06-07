@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.ucaner.alpaca.pay.common.core.utils.DateUtils;
+import cn.ucaner.alpaca.pay.common.utils.DateUtils;
 import cn.ucaner.alpaca.pay.getway.controller.common.BaseController;
 import cn.ucaner.alpaca.pay.getway.service.CnpPayService;
 import cn.ucaner.alpaca.pay.trade.exception.TradeBizException;

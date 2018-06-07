@@ -165,6 +165,12 @@ public class EncryptAndDecryptUtils {
      *For Test By Jason 
      */
     public static void main(String[] args) {
-		
+		System.out.println(base64Encrypt("jasonandy@hotmail.com"));
+		System.out.println(base64Decrypt("amFzb25hbmR5QGhvdG1haWwuY29t"));
+		System.out.println(aesEncrypt("jasonandy@hotmail.com", "alpaca"));
+		System.out.println(aesDecrypt("gecGQeaqwnP/jVs1LK4IqZzMP1tti0B7N8tkg2YKuR4=", "alpaca"));
 	}
 }
+//Outputs
+//amFzb25hbmR5QGhvdG1haWwuY29t
+//jasonandy@hotmail.com

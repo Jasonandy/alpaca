@@ -1,9 +1,9 @@
-package cn.ucaner.alpaca.pay.common.core.entity;
+package cn.ucaner.alpaca.pay.common.entity;
 
 import java.io.Serializable;
 import java.util.Date;
 
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.entity   

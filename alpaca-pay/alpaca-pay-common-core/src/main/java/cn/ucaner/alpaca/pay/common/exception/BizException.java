@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.common.core.exception;
+package cn.ucaner.alpaca.pay.common.exception;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.exception   

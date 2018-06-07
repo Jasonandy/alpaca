@@ -3,7 +3,7 @@ package cn.ucaner.alpaca.pay.trade.dao;
 import java.util.List;
 import java.util.Map;
 
-import cn.ucaner.alpaca.pay.common.core.dao.BaseDao;
+import cn.ucaner.alpaca.pay.common.dao.BaseDao;
 import cn.ucaner.alpaca.pay.trade.entity.RpTradePaymentRecord;
 
 /**
