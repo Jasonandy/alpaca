@@ -8,7 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import cn.ucaner.alpaca.pay.reconciliation.fileDown.service.ReconciliationFactory;
 
 /**

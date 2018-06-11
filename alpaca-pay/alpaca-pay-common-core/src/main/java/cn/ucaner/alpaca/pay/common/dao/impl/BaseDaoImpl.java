@@ -61,7 +61,6 @@ public abstract class BaseDaoImpl<T extends BaseEntity> extends SqlSessionDaoSup
         return sessionTemplate;
     }
 
-    @Autowired
     public void setSessionTemplate(SqlSessionTemplate sessionTemplate) {
         this.sessionTemplate = sessionTemplate;
     }

@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import cn.ucaner.alpaca.pay.common.core.dwz.DWZ;
-import cn.ucaner.alpaca.pay.common.core.dwz.DwzAjax;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicEnum;
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
+import cn.ucaner.alpaca.pay.common.dwz.DWZ;
+import cn.ucaner.alpaca.pay.common.dwz.DwzAjax;
+import cn.ucaner.alpaca.pay.common.enums.PublicEnum;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 import cn.ucaner.alpaca.pay.user.entity.RpPayProduct;
 import cn.ucaner.alpaca.pay.user.service.RpPayProductService;
 

@@ -15,7 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.ucaner.alpaca.pay.app.order.polling.core.PollingQueue;
 import cn.ucaner.alpaca.pay.app.order.polling.entity.PollingParam;
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 import cn.ucaner.alpaca.pay.notify.entity.RpOrderResultQueryVo;
 import cn.ucaner.alpaca.pay.notify.enums.NotifyStatusEnum;
 

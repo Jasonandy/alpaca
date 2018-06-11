@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 import cn.ucaner.alpaca.pay.notify.entity.RpOrderResultQueryVo;
 import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
 

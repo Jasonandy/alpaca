@@ -111,13 +111,14 @@
 		    <!-- 配置Tomcat插件 -->  
 		    <plugin>  
 		        <groupId>org.apache.tomcat.maven</groupId>  
-		        <artifactId>tomcat7-maven-plugin</artifactId>  
+		        <artifactId>tomcat7-maven-plugin</artifactId>
+		        <version>2.2</version>  
 		        <configuration>  
-		            <!-- 这里配置端口号和访问路径 -->  
+		            <!-- 这里配置端口号和访问路径  -->
 		            <port>9080</port>  
 		            <path>/gateway</path>  
 		        </configuration>  
-		    </plugin>  
+		    </plugin>   
         </plugins>
     </build>
 </project>

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import cn.ucaner.alpaca.pay.account.entity.RpAccount;
 import cn.ucaner.alpaca.pay.account.service.RpSettHandleService;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicEnum;
+import cn.ucaner.alpaca.pay.common.enums.PublicEnum;
 import cn.ucaner.alpaca.pay.user.entity.RpUserPayConfig;
 import cn.ucaner.alpaca.pay.user.service.RpUserPayConfigService;
 

@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
 
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 import cn.ucaner.alpaca.pay.controller.common.BaseController;
 import cn.ucaner.alpaca.pay.controller.common.ConstantClass;
 import cn.ucaner.alpaca.pay.controller.common.JSONParam;

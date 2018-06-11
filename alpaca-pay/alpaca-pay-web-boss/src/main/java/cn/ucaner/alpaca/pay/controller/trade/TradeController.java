@@ -9,10 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import cn.ucaner.alpaca.pay.common.core.enums.PayTypeEnum;
-import cn.ucaner.alpaca.pay.common.core.enums.PayWayEnum;
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
+import cn.ucaner.alpaca.pay.common.enums.PayTypeEnum;
+import cn.ucaner.alpaca.pay.common.enums.PayWayEnum;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 import cn.ucaner.alpaca.pay.trade.enums.TradeStatusEnum;
 import cn.ucaner.alpaca.pay.trade.enums.TrxTypeEnum;
 import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentQueryService;

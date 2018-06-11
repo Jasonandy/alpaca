@@ -5,8 +5,8 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.ui.Model;
 
-import cn.ucaner.alpaca.pay.common.core.dwz.DWZ;
-import cn.ucaner.alpaca.pay.common.core.dwz.DwzAjax;
+import cn.ucaner.alpaca.pay.common.dwz.DWZ;
+import cn.ucaner.alpaca.pay.common.dwz.DwzAjax;
 import cn.ucaner.alpaca.pay.permission.entity.PmsOperator;
 
 

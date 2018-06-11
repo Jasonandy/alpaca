@@ -19,7 +19,7 @@ import org.dom4j.io.SAXReader;
 import org.springframework.stereotype.Component;
 
 import cn.ucaner.alpaca.app.reconciliation.vo.AlipayAccountLogVO;
-import cn.ucaner.alpaca.pay.common.core.enums.PayWayEnum;
+import cn.ucaner.alpaca.pay.common.enums.PayWayEnum;
 import cn.ucaner.alpaca.pay.reconciliation.entity.RpAccountCheckBatch;
 import cn.ucaner.alpaca.pay.reconciliation.enums.BatchStatusEnum;
 import cn.ucaner.alpaca.pay.reconciliation.vo.ReconciliationEntityVo;

@@ -14,8 +14,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import cn.ucaner.alpaca.pay.app.notify.core.NotifyPersist;
 import cn.ucaner.alpaca.pay.app.notify.core.NotifyQueue;
 import cn.ucaner.alpaca.pay.app.notify.core.NotifyTask;
-import cn.ucaner.alpaca.pay.common.core.page.PageBean;
-import cn.ucaner.alpaca.pay.common.core.page.PageParam;
+import cn.ucaner.alpaca.pay.common.page.PageBean;
+import cn.ucaner.alpaca.pay.common.page.PageParam;
 import cn.ucaner.alpaca.pay.notify.entity.RpNotifyRecord;
 import cn.ucaner.alpaca.pay.notify.service.RpNotifyService;
 

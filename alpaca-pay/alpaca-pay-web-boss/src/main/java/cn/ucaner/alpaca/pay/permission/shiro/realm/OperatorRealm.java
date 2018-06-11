@@ -19,7 +19,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cn.ucaner.alpaca.pay.common.core.enums.PublicStatusEnum;
+import cn.ucaner.alpaca.pay.common.enums.PublicStatusEnum;
 import cn.ucaner.alpaca.pay.permission.entity.PmsOperator;
 import cn.ucaner.alpaca.pay.permission.service.PmsOperatorRoleService;
 import cn.ucaner.alpaca.pay.permission.service.PmsOperatorService;

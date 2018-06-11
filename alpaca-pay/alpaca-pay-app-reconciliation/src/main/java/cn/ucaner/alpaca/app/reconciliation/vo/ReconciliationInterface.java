@@ -3,8 +3,8 @@ package cn.ucaner.alpaca.app.reconciliation.vo;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.ucaner.alpaca.pay.common.core.enums.PayWayEnum;
-import cn.ucaner.alpaca.pay.common.core.enums.PublicStatusEnum;
+import cn.ucaner.alpaca.pay.common.enums.PayWayEnum;
+import cn.ucaner.alpaca.pay.common.enums.PublicStatusEnum;
 
 /**
 * @Package：cn.ucaner.alpaca.app.reconciliation.vo   

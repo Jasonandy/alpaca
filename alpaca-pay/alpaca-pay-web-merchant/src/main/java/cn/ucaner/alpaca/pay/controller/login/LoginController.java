@@ -8,8 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import cn.ucaner.alpaca.pay.common.core.utils.EncryptUtil;
-import cn.ucaner.alpaca.pay.common.core.utils.StringUtil;
+import cn.ucaner.alpaca.pay.common.utils.EncryptUtil;
+import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import cn.ucaner.alpaca.pay.controller.common.BaseController;
 import cn.ucaner.alpaca.pay.controller.common.ConstantClass;
 import cn.ucaner.alpaca.pay.user.entity.RpUserInfo;
@@ -28,6 +28,7 @@ import cn.ucaner.alpaca.pay.user.service.RpUserInfoService;
  */
 @Controller
 public class LoginController extends BaseController {
+	
 	@Autowired
 	private RpUserInfoService rpUserInfoService;
 

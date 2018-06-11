@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.ucaner.alpaca.pay.app.order.polling.App;
-import cn.ucaner.alpaca.pay.common.core.utils.DateUtils;
+import cn.ucaner.alpaca.pay.common.utils.DateUtils;
 import cn.ucaner.alpaca.pay.notify.entity.RpOrderResultQueryVo;
 
 /**

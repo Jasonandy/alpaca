@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 
 
 /**

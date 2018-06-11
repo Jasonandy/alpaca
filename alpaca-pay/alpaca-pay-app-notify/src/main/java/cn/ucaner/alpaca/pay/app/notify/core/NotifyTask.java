@@ -10,7 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.ucaner.alpaca.pay.app.notify.App;
 import cn.ucaner.alpaca.pay.app.notify.entity.NotifyParam;
-import cn.ucaner.alpaca.pay.common.core.exception.BizException;
+import cn.ucaner.alpaca.pay.common.exception.BizException;
 import cn.ucaner.alpaca.pay.notify.entity.RpNotifyRecord;
 import cn.ucaner.alpaca.pay.notify.enums.NotifyStatusEnum;
 import cn.ucaner.alpaca.pay.trade.utils.httpclient.SimpleHttpParam;
