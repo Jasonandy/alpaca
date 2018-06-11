@@ -5,9 +5,9 @@
   
 	<!-- 父级依赖 -->
 	<parent>
-	  <groupId>cn.ucaner.alpaca</groupId>
-	  <artifactId>alpaca-pay</artifactId>
-	  <version>1.0.0-SNAPSHOT</version>
+		<groupId>cn.ucaner.alpaca.common</groupId>
+		<artifactId>alpaca-pay</artifactId>
+		<version>2.0.0-SNAPSHOT</version>
 	</parent>
   	
   	<!-- 坐标 -->
@@ -52,10 +52,10 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aspects</artifactId>
 		</dependency>
-		<!-- <dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-		</dependency> -->
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
@@ -198,10 +198,10 @@
 		</dependency>
 
 		<!-- http://mvnrepository.com/artifact/commons-codec/commons-codec -->
-		<dependency>
+		<!--<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-		</dependency>
+		</dependency>-->
 
 		<!-- https://mvnrepository.com/artifact/commons-configuration/commons-configuration -->
 		<dependency>
@@ -232,10 +232,10 @@
 			<artifactId>jdom</artifactId>
 		</dependency>
 
-		<!-- <dependency>
+		<!--<dependency>
 			<groupId>alipay</groupId>
 			<artifactId>alipay-sdk-java20151021120052</artifactId>
-		</dependency> -->
+		</dependency>-->
 
 		<!--<dependency>-->
 			<!--<groupId>alipay</groupId>-->
@@ -276,23 +276,7 @@
 	</dependencies>
 	
 	<!-- alipay-sdk-java20171201160035.jar -->
-	<!-- 插件 
-	<build>
-		<plugins>
-			<plugin>
-			    <artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-				<source>1.8</source>
-				<target>1.8</target>
-				<encoding>UTF-8</encoding>
-				<compilerArguments>
-					<extdirs>${project.basedir}/lib</extdirs>
-				</compilerArguments>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	 -->
+	 <!--编译插件  -->
 	 <build>
 		<plugins>
 			<plugin>
@@ -301,7 +285,8 @@
 				<source>1.8</source>
 				<target>1.8</target>
 				<encoding>UTF-8</encoding>
-				<compilerArguments>
+				<!-- alipay 额外jar -->
+				 <compilerArguments>
 					<extdirs>${project.basedir}/lib</extdirs>
 				</compilerArguments>
 				</configuration>

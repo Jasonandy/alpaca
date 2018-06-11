@@ -3,47 +3,47 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   
+	<!-- 父级依赖 -->
 	<parent>
-	  <groupId>cn.ucaner.alpaca</groupId>
-	  <artifactId>alpaca-pay</artifactId>
-	  <version>1.0.0-SNAPSHOT</version>
+		<groupId>cn.ucaner.alpaca.common</groupId>
+		<artifactId>alpaca-pay</artifactId>
+		<version>2.0.0-SNAPSHOT</version>
 	</parent>
   
+  	<!-- alpaca service -->
+  	<groupId>cn.ucaner.alpaca.pay.service</groupId>
 	<artifactId>alpaca-pay-service</artifactId>
 	<name>alpaca-pay-service</name>
 	<url>http://alpaca-pay-service.ucaner.cn</url>
   
-  
 	<dependencies>
+	
+		<!-- 依赖  common-core jar -->
 		<dependency>
-			<groupId>cn.ucaner.alpaca</groupId>
+			<groupId>cn.ucaner.alpaca.common</groupId>
 			<artifactId>alpaca-pay-common-core</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		
+		<!-- http://mvnrepository.com/artifact/commons-httpclient/commons-httpclient -->
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
 		</dependency>
-		<dependency>
-		    <groupId>com.alibaba</groupId>
-		    <artifactId>druid</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 			<version>1.6.1</version>
 		</dependency>
-		<dependency>
-		    <groupId>org.jdom</groupId>
-		    <artifactId>jdom2</artifactId>
-		    <version>2.0.5</version>
-		</dependency>
+
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-ehcache</artifactId>
 			<version>1.2.5</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-web</artifactId>
@@ -85,9 +85,9 @@
 						<arg>-Xlint:unchecked</arg>
 						<arg>-Xlint:deprecation</arg>
 						<arg>-bootclasspath</arg>
-						 <arg>-extdirs</arg>
+						<arg>-extdirs</arg>
 						<arg>${project.basedir}/lib</arg> 
-					</compilerArgs>-->
+					</compilerArgs> -->
 				</configuration>
 			</plugin>
 			<plugin>

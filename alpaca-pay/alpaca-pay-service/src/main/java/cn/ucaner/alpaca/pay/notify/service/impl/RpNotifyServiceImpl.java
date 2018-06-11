@@ -77,11 +77,11 @@ public class RpNotifyServiceImpl implements RpNotifyService {
 		final String str = toJSON.toString();
 		
 		notifyJmsTemplate.setDefaultDestinationName(MqConfig.MERCHANT_NOTIFY_QUEUE);
-		notifyJmsTemplate.send(new MessageCreator() {
+		/*notifyJmsTemplate.send(new MessageCreator() {
 			public Message createMessage(Session session) throws JMSException {
 				return session.createTextMessage(str);
 			}
-		});
+		});*/
 	}
 
 	/**
@@ -94,11 +94,11 @@ public class RpNotifyServiceImpl implements RpNotifyService {
 		final String orderNo = bankOrderNo;
 		
 		jmsTemplate.setDefaultDestinationName(MqConfig.ORDER_NOTIFY_QUEUE);
-		jmsTemplate.send(new MessageCreator() {
+		/*jmsTemplate.send(new MessageCreator() {
 			public Message createMessage(Session session) throws JMSException {
 				return session.createTextMessage(orderNo);
 			}
-		});
+		});*/
 	}
 
 	/**

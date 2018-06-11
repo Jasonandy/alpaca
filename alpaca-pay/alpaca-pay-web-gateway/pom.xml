@@ -3,12 +3,12 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
   
+	<!-- 父级依赖  alpaca-pay -->
 	<parent>
-	  <groupId>cn.ucaner.alpaca</groupId>
-	<artifactId>alpaca-pay</artifactId>
-	  <version>1.0.0-SNAPSHOT</version>
+		<groupId>cn.ucaner.alpaca.common</groupId>
+		<artifactId>alpaca-pay</artifactId>
+		<version>2.0.0-SNAPSHOT</version>
 	</parent>
-	
 	
 	<artifactId>alpaca-pay-web-gateway</artifactId>
 	<packaging>war</packaging>
@@ -17,27 +17,26 @@
 	
 	
 	 <dependencies>
-	 
-	 	<!-- core 
+        <!-- 依赖  common-core jar -->
+		<dependency>
+			<groupId>cn.ucaner.alpaca.common</groupId>
+			<artifactId>alpaca-pay-common-core</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<!-- 依赖  alpaca - service  -->
         <dependency>
-            <groupId>cn.ucaner.alpaca</groupId>
-            <artifactId>alpaca-pay-common-core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>-->
-
-		<!-- service -->
-        <dependency>
-            <groupId>cn.ucaner.alpaca</groupId>
-            <artifactId>alpaca-pay-service</artifactId>
+            <groupId>cn.ucaner.alpaca.pay.service</groupId>
+			<artifactId>alpaca-pay-service</artifactId>
             <version>${project.parent.version}</version>
         </dependency> 
 
-        <dependency>
+           <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-all</artifactId>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
+		
 		<dependency>
 		    <groupId>javax.json</groupId>
 		    <artifactId>javax.json-api</artifactId>
@@ -62,6 +61,7 @@
 			<version>6.0.37</version>
 			<scope>provided</scope>
 		</dependency>
+		
     </dependencies>
 
     <!-- 打包插件 -->
