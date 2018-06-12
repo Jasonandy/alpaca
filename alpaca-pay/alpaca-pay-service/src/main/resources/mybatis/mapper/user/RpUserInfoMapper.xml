@@ -18,15 +18,15 @@
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
     select 
     <include refid="Base_Column_List" />
-    from rp_user_info
+    from RP_USER_INFO
     where id = #{id,jdbcType=VARCHAR}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
-    delete from rp_user_info
+    delete from RP_USER_INFO
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="cn.ucaner.alpaca.pay.user.entity.RpUserInfo" >
-    insert into rp_user_info (id, create_time, status, 
+    insert into RP_USER_INFO (id, create_time, status, 
       user_no, user_name, account_no, mobile, password,
       pay_pwd
       )
@@ -37,7 +37,7 @@
   </insert>
 
   <update id="updateByPrimaryKey" parameterType="cn.ucaner.alpaca.pay.user.entity.RpUserInfo" >
-    update rp_user_info
+    update RP_USER_INFO
     set create_time = #{createTime,jdbcType=TIMESTAMP},
       status = #{status,jdbcType=VARCHAR},
       user_no = #{userNo,jdbcType=VARCHAR},
@@ -49,7 +49,7 @@
     where id = #{id,jdbcType=VARCHAR}
   </update>
   
-    <sql id="table_name">  rp_user_info </sql>
+    <sql id="table_name">  RP_USER_INFO </sql>
     
     <!-- 根据搜索条件获取数据 -->
 	<sql id="condition_sql">

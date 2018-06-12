@@ -7,9 +7,9 @@ import cn.ucaner.alpaca.pay.reconciliation.entity.RpAccountCheckMistake;
 * @ClassName：RpTradeReconciliationService   
 * @Description：   <p> 交易模块对账差错处理接口 </p>
 * @Author： -    
-* @CreatTime：2018年5月11日 上午10:16:40   
+* @CreatTime：2018年6月12日 上午9:30:14   
 * @Modify By：   
-* @ModifyTime：  2018年5月11日
+* @ModifyTime：  2018年6月12日
 * @Modify marker：   
 * @version    V1.0
  */

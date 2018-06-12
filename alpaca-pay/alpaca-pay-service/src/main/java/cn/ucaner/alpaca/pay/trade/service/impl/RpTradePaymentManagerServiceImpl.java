@@ -65,16 +65,15 @@ import cn.ucaner.alpaca.pay.user.service.RpUserPayInfoService;
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.service.impl   
 * @ClassName：RpTradePaymentManagerServiceImpl   
-* @Description：   <p> 交易模块管理实现类实现</p>
+* @Description：   <p> 功能说明:交易模块管理实现类实现 </p>
 * @Author： -    
-* @CreatTime：2018年5月11日 上午10:21:07   
+* @CreatTime：2018年6月12日 上午9:29:44   
 * @Modify By：   
-* @ModifyTime：  2018年5月11日
+* @ModifyTime：  2018年6月12日
 * @Modify marker：   
 * @version    V1.0
  */
-@Service("rpTradePaymentManagerService2") //String value() default "";
-//@Component("rpTradePaymentManagerService")
+@Service("rpTradePaymentManagerService")
 public class RpTradePaymentManagerServiceImpl implements RpTradePaymentManagerService {
 
     private static final Logger LOG = LoggerFactory.getLogger(RpTradePaymentManagerServiceImpl.class);

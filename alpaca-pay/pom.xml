@@ -27,14 +27,16 @@
   
   	<!-- 子模块 -->
 	<modules>
+		<!-- 9090 shop 总台 -->
+		
 		<!-- core 是支付系统核心基础包 -->
 		<module>alpaca-pay-common-core</module>
 		<!-- 支付系统核心业务 -->
 		<module>alpaca-pay-service</module>
-		<!-- 支付网关web -->
+		<!-- 支付网关web  8882 gateway -->
 		<module>alpaca-pay-web-gateway</module>
 		
-		<!-- 运营boss后台 -->
+		<!-- 运营boss后台   8880 boss -->
 		<module>alpaca-pay-web-boss</module>
 		<!-- 对账流程app,发起对账核心业务 -->
 		<module>alpaca-pay-app-reconciliation</module>
@@ -59,8 +61,8 @@
 		<!-- libs -->
 		<junit.version>4.11</junit.version>
 		<spring.version>4.3.16.RELEASE</spring.version>
-		<mybatis-spring.version>1.3.0</mybatis-spring.version>
-		<mybatis.version>3.4.0</mybatis.version>
+		<mybatis-spring.version>1.2.2</mybatis-spring.version>
+		<mybatis.version>3.2.8</mybatis.version>
 		<slf4j_version>1.7.21</slf4j_version>
 		<log4j_version>1.2.17</log4j_version>
 		<cglib.version>3.2.2</cglib.version>

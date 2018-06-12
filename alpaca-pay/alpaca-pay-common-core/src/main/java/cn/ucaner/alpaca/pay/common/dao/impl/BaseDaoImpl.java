@@ -62,7 +62,9 @@ public abstract class BaseDaoImpl<T extends BaseEntity> extends SqlSessionDaoSup
     }
 
     public void setSessionTemplate(SqlSessionTemplate sessionTemplate) {
+    	LOG.info("------------------------init setSessionTemplate success  start ---------------------");
         this.sessionTemplate = sessionTemplate;
+        LOG.info("------------------------init setSessionTemplate success end ------------------------");
     }
 
     public SqlSession getSqlSession() {

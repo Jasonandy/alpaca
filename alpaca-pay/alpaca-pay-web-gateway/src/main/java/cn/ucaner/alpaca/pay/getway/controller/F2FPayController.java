@@ -21,21 +21,22 @@ import cn.ucaner.alpaca.pay.common.utils.DateUtils;
 import cn.ucaner.alpaca.pay.getway.controller.common.BaseController;
 import cn.ucaner.alpaca.pay.getway.service.CnpPayService;
 import cn.ucaner.alpaca.pay.trade.exception.TradeBizException;
+import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
 import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentQueryService;
 import cn.ucaner.alpaca.pay.trade.utils.MerchantApiUtil;
+import cn.ucaner.alpaca.pay.trade.vo.F2FPayResultVo;
 import cn.ucaner.alpaca.pay.user.entity.RpUserPayConfig;
 import cn.ucaner.alpaca.pay.user.exception.UserBizException;
 import cn.ucaner.alpaca.pay.user.service.RpUserPayConfigService;
-
 
 /**
 * @Package：cn.ucaner.alpaca.pay.getway.controller   
 * @ClassName：F2FPayController   
 * @Description：   <p> F2FPayController </p>
 * @Author： -    
-* @CreatTime：2018年5月11日 下午1:46:29   
+* @CreatTime：2018年6月11日 下午10:25:51   
 * @Modify By：   
-* @ModifyTime：  2018年5月11日
+* @ModifyTime：  2018年6月11日
 * @Modify marker：   
 * @version    V1.0
  */
@@ -45,11 +46,10 @@ public class F2FPayController extends BaseController {
 	
     private static final Logger logger = LoggerFactory.getLogger(F2FPayController.class);
 
-    //@Autowired(required=false)
-    //@Autowired
-  //  private RpTradePaymentManagerService rpTradePaymentManagerService2;
+    @Autowired
+    private RpTradePaymentManagerService rpTradePaymentManagerService;
 
-    //@Autowired
+    @Autowired
     private RpUserPayConfigService rpUserPayConfigService;
 
     @Autowired
@@ -60,7 +60,8 @@ public class F2FPayController extends BaseController {
 
     /**
      * 条码支付,商户通过前置设备获取到用户支付授权码后,请求支付网关支付.
-     * @return String
+     *
+     * @return
      */
     @RequestMapping("/doPay")
     public String initPay(HttpServletRequest httpServletRequest, ModelMap modelMap) {
@@ -117,11 +118,11 @@ public class F2FPayController extends BaseController {
 
         //发起支付
         BigDecimal orderPrice = BigDecimal.valueOf(Double.valueOf(orderPriceStr));
-       // F2FPayResultVo f2FPayResultVo = rpTradePaymentManagerService2.f2fPay(payKey, authCode, productName, orderNo, orderDate, orderTime, orderPrice, payWayCode, orderIp, remark, field1, field2, field3, field4, field5);
+        F2FPayResultVo f2FPayResultVo = rpTradePaymentManagerService.f2fPay(payKey, authCode, productName, orderNo, orderDate, orderTime, orderPrice, payWayCode, orderIp, remark, field1, field2, field3, field4, field5);
 
         //String payResultJson = JSONObject.toJSONString(f2FPayResultVo);
-     //   logger.debug("条码支付--支付结果==>{}", f2FPayResultVo);
-       // modelMap.put("result", f2FPayResultVo);
+        logger.debug("条码支付--支付结果==>{}", f2FPayResultVo);
+        modelMap.put("result", f2FPayResultVo);
         // httpServletResponse.setContentType("text/text;charset=UTF-8");
         // write(httpServletResponse, payResultJson);
         return "/f2fAffirmPay";

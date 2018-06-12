@@ -29,15 +29,15 @@
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
     select 
     <include refid="Base_Column_List" />
-    from rp_user_pay_config
+    from RP_USER_PAY_CONFIG
     where id = #{id,jdbcType=VARCHAR}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
-    delete from rp_user_pay_config
+    delete from RP_USER_PAY_CONFIG
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="cn.ucaner.alpaca.pay.user.entity.RpUserPayConfig" >
-    insert into rp_user_pay_config (id, create_time, edit_time, 
+    insert into RP_USER_PAY_CONFIG (id, create_time, edit_time, 
       version, remark, status, 
       audit_status, is_auto_sett, product_code, 
       product_name, user_no, user_name, 
@@ -51,7 +51,7 @@
   </insert>
 
   <update id="updateByPrimaryKey" parameterType="cn.ucaner.alpaca.pay.user.entity.RpUserPayConfig" >
-    update rp_user_pay_config
+    update RP_USER_PAY_CONFIG
     set create_time = #{createTime,jdbcType=TIMESTAMP},
       edit_time = #{editTime,jdbcType=TIMESTAMP},
       version = #{version,jdbcType=BIGINT},
@@ -72,7 +72,7 @@
     where id = #{id,jdbcType=VARCHAR}
   </update>
   
-  <sql id="table_name">  rp_user_pay_config </sql>
+  <sql id="table_name">  RP_USER_PAY_CONFIG </sql>
   
   <!-- 根据搜索条件获取数据 -->
 	<sql id="condition_sql">

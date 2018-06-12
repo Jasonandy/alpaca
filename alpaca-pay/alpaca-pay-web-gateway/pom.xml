@@ -115,7 +115,7 @@
 		        <version>2.2</version>  
 		        <configuration>  
 		            <!-- 这里配置端口号和访问路径  -->
-		            <port>9080</port>  
+		            <port>8882</port>  
 		            <path>/gateway</path>  
 		        </configuration>  
 		    </plugin>   

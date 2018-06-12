@@ -1,5 +1,7 @@
 package cn.ucaner.alpaca.pay;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -12,6 +14,10 @@ import cn.ucaner.alpaca.pay.common.page.PageBean;
 import cn.ucaner.alpaca.pay.common.page.PageParam;
 import cn.ucaner.alpaca.pay.permission.entity.PmsOperator;
 import cn.ucaner.alpaca.pay.permission.service.PmsOperatorService;
+import cn.ucaner.alpaca.pay.trade.dao.RpTradePaymentOrderDao;
+import cn.ucaner.alpaca.pay.trade.entity.RpTradePaymentRecord;
+import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
+import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentQueryService;
 
 /**
 * @Package：cn.ucaner.alpaca.pay   
@@ -28,21 +34,33 @@ public class DubboProvider {
 
 	private static final Log log = LogFactory.getLog(DubboProvider.class);
 
+	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		try {
 			ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:spring/spring-context-service.xml");
 			RpAccountTransactionService rpAccountTransactionService = (RpAccountTransactionService) ac.getBean("rpAccountTransactionService");
 			PmsOperatorService operator = (PmsOperatorService) ac.getBean("pmsOperatorService");
+			RpTradePaymentQueryService trade = (RpTradePaymentQueryService) ac.getBean("rpTradePaymentQueryService");
+			RpTradePaymentManagerService manage = (RpTradePaymentManagerService) ac.getBean("rpTradePaymentManagerService");
+			
+			//rpTradePaymentOrderDao
+			RpTradePaymentOrderDao rpDao = (RpTradePaymentOrderDao) ac.getBean("rpTradePaymentOrderDao");
 			PmsOperator pmsOperator = new PmsOperator();
 			pmsOperator.setLoginName("admin");
 			pmsOperator.setRealName("超级");
 			//pmsOperator.setStatus("{id:'ACTIVE',desc:'激活'}");//ACTIVE
 			pmsOperator.setStatus("ACTIVE");
 			PageBean listPage = operator.listPage(new PageParam(), pmsOperator);
+			PmsOperator op = operator.findOperatorByLoginName("admin");
+			List<RpTradePaymentRecord> listPaymentRecordList = trade.listPaymentRecord(null);
+			System.out.println(listPaymentRecordList);
 			System.out.println(listPage);
 			System.out.println(JSON.toJSONString(listPage));
 			System.out.println(listPage.getCountResultMap());
+			System.out.println(JSON.toJSONString(op));
+			System.out.println(manage);
+			System.out.println(rpDao);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("== DubboProvider context start error:", e);

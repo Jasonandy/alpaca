@@ -9,11 +9,11 @@ import java.util.Map;
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.service   
 * @ClassName：RpTradePaymentManagerService   
-* @Description：   <p> 交易模块管理接口 </p>
+* @Description：   <p> 功能说明:交易模块管理接口 </p>
 * @Author： -    
-* @CreatTime：2018年5月11日 上午10:17:41   
+* @CreatTime：2018年6月12日 上午9:31:22   
 * @Modify By：   
-* @ModifyTime：  2018年5月11日
+* @ModifyTime：  2018年6月12日
 * @Modify marker：   
 * @version    V1.0
  */

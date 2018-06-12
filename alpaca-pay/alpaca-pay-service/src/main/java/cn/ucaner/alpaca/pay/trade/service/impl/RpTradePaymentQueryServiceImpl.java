@@ -28,17 +28,16 @@ import cn.ucaner.alpaca.pay.user.service.RpUserPayConfigService;
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.service.impl   
 * @ClassName：RpTradePaymentQueryServiceImpl   
-* @Description：   <p> 交易模块查询类实现</p>
+* @Description：   <p> 交易模块查询类实现 </p>
 * @Author： -    
-* @CreatTime：2018年5月11日 上午10:22:09   
+* @CreatTime：2018年6月12日 上午9:32:14   
 * @Modify By：   
-* @ModifyTime：  2018年5月11日
+* @ModifyTime：  2018年6月12日
 * @Modify marker：   
 * @version    V1.0
  */
 @Service("rpTradePaymentQueryService")
 public class RpTradePaymentQueryServiceImpl implements RpTradePaymentQueryService {
-	
 	
 	@Autowired
 	private RpTradePaymentRecordDao rpTradePaymentRecordDao;

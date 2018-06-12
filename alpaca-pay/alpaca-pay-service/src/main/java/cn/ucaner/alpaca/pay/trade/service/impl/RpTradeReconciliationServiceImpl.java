@@ -23,11 +23,11 @@ import cn.ucaner.alpaca.pay.trade.service.RpTradeReconciliationService;
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.service.impl   
 * @ClassName：RpTradeReconciliationServiceImpl   
-* @Description：   <p> 交易模块对账差错实现</p>
+* @Description：   <p> 交易模块对账差错实现 </p>
 * @Author： -    
-* @CreatTime：2018年5月11日 上午10:18:16   
+* @CreatTime：2018年6月12日 上午9:31:51   
 * @Modify By：   
-* @ModifyTime：  2018年5月11日
+* @ModifyTime：  2018年6月12日
 * @Modify marker：   
 * @version    V1.0
  */
@@ -38,13 +38,10 @@ public class RpTradeReconciliationServiceImpl implements RpTradeReconciliationSe
 
 	@Autowired
 	private RpTradePaymentOrderDao rpTradePaymentOrderDao;
-	
 	@Autowired
 	private RpTradePaymentRecordDao rpTradePaymentRecordDao;
-	
 	@Autowired
 	private RpNotifyService rpNotifyService;
-	
 	@Autowired
 	private RpAccountTransactionService rpAccountTransactionService;
 
