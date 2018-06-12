@@ -20,7 +20,7 @@
     <result column="user_no" property="userNo" jdbcType="VARCHAR" />
   </resultMap>
   
-  <sql id="table_name">  rp_account_history </sql>
+  <sql id="table_name">  RP_ACCOUNT_HISTORY </sql>
   
   <sql id="Base_Column_List" >
     id, create_time, edit_time, version, remark, account_no, amount, balance, fund_direction, 
@@ -29,15 +29,15 @@
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
     select 
     <include refid="Base_Column_List" />
-    from rp_account_history
+    from RP_ACCOUNT_HISTORY
     where id = #{id,jdbcType=VARCHAR}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
-    delete from rp_account_history
+    delete from RP_ACCOUNT_HISTORY
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="cn.ucaner.alpaca.pay.account.entity.RpAccountHistory" >
-    insert into rp_account_history (id, create_time, edit_time, 
+    insert into RP_ACCOUNT_HISTORY (id, create_time, edit_time, 
       version, remark, account_no, 
       amount, balance, fund_direction, 
       is_allow_sett, is_complete_sett, request_no, 
@@ -51,7 +51,7 @@
       #{userNo,jdbcType=VARCHAR})
   </insert>
   <update id="updateByPrimaryKey" parameterType="cn.ucaner.alpaca.pay.account.entity.RpAccountHistory" >
-    update rp_account_history
+    update RP_ACCOUNT_HISTORY
     set create_time = #{createTime,jdbcType=TIMESTAMP},
       edit_time = #{editTime,jdbcType=TIMESTAMP},
       version = #{version,jdbcType=BIGINT},

@@ -17,6 +17,7 @@ import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
 import cn.ucaner.alpaca.pay.common.exception.BizException;
 import cn.ucaner.alpaca.pay.common.page.PageBean;
 import cn.ucaner.alpaca.pay.common.page.PageParam;
+import cn.ucaner.alpaca.pay.common.utils.BeanUtils;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.dao.impl   
@@ -31,7 +32,24 @@ import cn.ucaner.alpaca.pay.common.page.PageParam;
  */
 public abstract class BaseDaoImpl<T extends BaseEntity> extends SqlSessionDaoSupport implements BaseDao<T> {
 
-    protected static final Log LOG = LogFactory.getLog(BaseDaoImpl.class);
+    protected static final Log logger = LogFactory.getLog(BaseDaoImpl.class);
+    
+	/**
+     * 注入SqlSessionTemplate实例(要求Spring中进行SqlSessionTemplate的配置).
+     * 可以调用sessionTemplate完成数据库操作.
+     */
+    @Autowired
+    private SqlSessionTemplate sessionTemplate;
+    
+    /**
+     * sqlMapper命名空间 by Jason 
+     */
+    private String sqlMapperNamespace = getDefaultSqlMapperNamespace();
+    
+    /**
+	 * SQLNAME -  分割符号 - ' . '   by Jason
+	 */
+    private final String SQLNAME_SEPARATOR = ".";
 
     public static final String SQL_INSERT = "insert";
     public static final String SQL_BATCH_INSERT = "batchInsert";
@@ -50,27 +68,43 @@ public abstract class BaseDaoImpl<T extends BaseEntity> extends SqlSessionDaoSup
     public static final String SQL_COUNT_BY_PAGE_PARAM = "countByPageParam"; // 根据当前分页参数进行统计
     
 
-    /**
-     * 注入SqlSessionTemplate实例(要求Spring中进行SqlSessionTemplate的配置).
-     * 可以调用sessionTemplate完成数据库操作.
-     */
-    @Autowired
-    private SqlSessionTemplate sessionTemplate;
-
     public SqlSessionTemplate getSessionTemplate() {
         return sessionTemplate;
     }
 
     public void setSessionTemplate(SqlSessionTemplate sessionTemplate) {
-    	LOG.info("------------------------init setSessionTemplate success  start ---------------------");
         this.sessionTemplate = sessionTemplate;
-        LOG.info("------------------------init setSessionTemplate success end ------------------------");
+        logger.debug("------------------------[Alpaca] * Has inited sessionTemplate -----------------------");
     }
 
     public SqlSession getSqlSession() {
         return super.getSqlSession();
     }
 
+    
+	public String getSqlMapperNamespace() {
+		return sqlMapperNamespace;
+	}
+	
+	public void setSqlMapperNamespace(String sqlMapperNamespace) {
+		this.sqlMapperNamespace = sqlMapperNamespace;
+	}
+
+	
+	/**
+	 * 将sqlMapperNamespace与给定的sqlName组合在一起.
+	 * @param sqlName
+	 * @return
+	 */
+	protected String getSqlName(String sqlName) {
+		// 单线程用StringBuilder，确保速度；
+        //多线程用StringBuffer,确保安全
+        StringBuilder sb = new StringBuilder();
+        sb.append(sqlMapperNamespace).append(SQLNAME_SEPARATOR).append(sqlName);
+		//return sqlMapperNamespace + SQLNAME_SEPARATOR + sqlName;
+        return sb.toString();
+	}
+    
     /**
      * 单条插入数据.
      */
@@ -225,7 +259,7 @@ public abstract class BaseDaoImpl<T extends BaseEntity> extends SqlSessionDaoSup
     }
 
     /**
-     * 分页查询数据 .
+     * 分页查询数据 .  后期可以优化为 github - pageHelper   by Jason 
      */
     public PageBean<T> listPage(PageParam pageParam, Map<String, Object> paramMap) {
         if (paramMap == null) {
@@ -262,18 +296,27 @@ public abstract class BaseDaoImpl<T extends BaseEntity> extends SqlSessionDaoSup
     }
 
     /**
-     * 函数功能说明 ： 获取Mapper命名空间. 
-     * @参数：@param sqlId
-     * @参数：@return
-     * @return：String
-     * @throws
+     * @Description:  函数功能说明:获取Mapper命名空间. 
+     * @param sqlId	  sqlId
+     * @return String
+     * @Autor: Jason - jasonandy@hotmail.com
      */
     public String getStatement(String sqlId) {
         String name = this.getClass().getName();
-        // 单线程用StringBuilder，确保速度；多线程用StringBuffer,确保安全
+        // 单线程用StringBuilder，确保速度；
+        //多线程用StringBuffer,确保安全
         StringBuilder sb = new StringBuilder();
         sb.append(name).append(".").append(sqlId);
         return sb.toString();
     }
-
+    
+    /**
+     * @Description: 获取泛型类型的实体对象类全名
+     * @return String
+     * @Autor: Jason - jasonandy@hotmail.com
+     */
+	private String getDefaultSqlMapperNamespace() {
+		Class<?> genericClass = BeanUtils.getGenericClass(this.getClass());
+		return genericClass == null ? null : genericClass.getName();
+	}
 }

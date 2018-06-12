@@ -21,7 +21,7 @@
     <result column="user_no" property="userNo" jdbcType="VARCHAR" />
   </resultMap>
   
-  <sql id="table_name">  rp_account </sql>
+  <sql id="table_name">  RP_ACCOUNT </sql>
   
   <sql id="Base_Column_List" >
     id, create_time, edit_time, version, remark, account_no, balance, unbalance, security_money, 
@@ -31,15 +31,15 @@
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
     select 
     <include refid="Base_Column_List" />
-    from rp_account
+    from RP_ACCOUNT
     where id = #{id,jdbcType=VARCHAR}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
-    delete from rp_account
+    delete from RP_ACCOUNT
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="cn.ucaner.alpaca.pay.account.entity.RpAccount" >
-    insert into rp_account (id, create_time, edit_time, 
+    insert into RP_ACCOUNT (id, create_time, edit_time, 
       version, remark, account_no, 
       balance, unbalance, security_money, 
       status, total_income, total_expend, 
@@ -54,7 +54,7 @@
   </insert>
 
   <update id="updateByPrimaryKey" parameterType="cn.ucaner.alpaca.pay.account.entity.RpAccount" >
-    update rp_account
+    update RP_ACCOUNT
     set create_time = #{createTime,jdbcType=TIMESTAMP},
       edit_time = #{editTime,jdbcType=TIMESTAMP},
       version = #{version,jdbcType=BIGINT},

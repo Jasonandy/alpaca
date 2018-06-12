@@ -54,7 +54,7 @@ public class GlobalExceptionHanlder implements HandlerExceptionResolver {
 			logger.error("全局异常处理器捕获异常", ex);
 			if (b == null){
 				// 后台管理系统页面
-				if (handlerMethod.getBean().getClass().getName().startsWith("com.sunshine.platform.")) {
+				if (handlerMethod.getBean().getClass().getName().startsWith("cn.ucaner.alpaca.")) {
 					return new ModelAndView("/platform/error/500");
 				} else {// 前端系统页面
 					return new ModelAndView("/error/500");

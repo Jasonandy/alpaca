@@ -8,7 +8,7 @@ import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 /**
 * @Package：cn.ucaner.alpaca.pay.common.core.entity   
 * @ClassName：BaseEntity   
-* @Description：   <p> 基类.</p>
+* @Description：   <p> 基类.  后期优化 需要区分 BaseEntity or  BasePlatformEntity </p>
 * @Author： - Jason   
 * @CreatTime：2018年5月10日 下午9:59:09   
 * @Modify By：   

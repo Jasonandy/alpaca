@@ -150,7 +150,6 @@ public class WinXinFileDown implements FileDown {
 				it.remove();
 			}
 		}
-
 		String sign = SignHelper.getSign(params, appSecret);
 		params.put("sign", sign.toUpperCase());
 		return WeiXinBaseUtils.arrayToXml(params);

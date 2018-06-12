@@ -18,14 +18,13 @@ import java.util.Date;
 public interface FileDown {
 
 	/**
-	 * 对帐文件下载，获得文件输出
-	 * 
-	 * @param fileDate
-	 *            账单日
-	 * @param dir
-	 *            账单文件存储地址
+	 * @Description:    对帐文件下载，获得文件输出
+	 * @param fileDate  账单日
+	 * @param dir		账单文件存储地址
 	 * @return
-	 * @throws Exception
+	 * @throws IOException
+	 * @throws Exception File
+	 * @Autor: Jason -jasonandy@hotmail.com
 	 */
 	File fileDown(Date fileDate, String dir) throws IOException, Exception;
 

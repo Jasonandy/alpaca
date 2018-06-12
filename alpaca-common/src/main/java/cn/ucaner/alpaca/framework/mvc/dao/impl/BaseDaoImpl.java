@@ -51,6 +51,9 @@ public class BaseDaoImpl<T extends BaseEntity, PK extends Serializable> implemen
 	@Resource
 	protected SqlSessionTemplate sqlSession;
 
+	/**
+	 * SQLNAME -  分割符号 - ' . '
+	 */
 	private final String SQLNAME_SEPARATOR = ".";
 
 	/**

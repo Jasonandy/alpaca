@@ -9,14 +9,14 @@
 		http://www.springframework.org/schema/aop/spring-aop-4.0.xsd"
 	default-autowire="byName" default-lazy-init="false">
 
-	<!-- 缓存管理器 -->
+	<!-- 缓存管理器 ShrioCache Spring管理-->
 	<bean id="cacheManager" class="cn.ucaner.alpaca.pay.permission.shiro.spring.SpringCacheManagerWrapper">
 		<property name="cacheManager" ref="springCacheManager" />
 	</bean>
 
 	<!-- 凭证匹配器，做登录次数验证，和密码匹配验证 -->
 	<bean id="credentialsMatcher" class="cn.ucaner.alpaca.pay.permission.shiro.credentials.RetryLimitHashedCredentialsMatcher">
-		<!-- 登录次数放入缓存 -->
+		<!-- 登录次数放入缓存  构造函数缓存管理器 -->
 		<constructor-arg ref="cacheManager" />
 		<property name="hashAlgorithmName" value="md5" />
 		<property name="hashIterations" value="2" />
@@ -83,7 +83,6 @@
 				/dwz/** =anon
 				/favicon.ico=anon
 				/login = rcCaptchaValidate,authc
-				/login = anon
 				/logout = logout
 				/** = authc
 			</value>

@@ -29,7 +29,6 @@ public class ReconciliationFactoryImpl implements ReconciliationFactory, BeanFac
 
 	/**
 	 * 去Spring容器中根据beanName获取对象（也可以直接根据名字创建实例，可以参考后面流程中的parser）
-	 * 
 	 * @param payInterface
 	 * @return
 	 */
@@ -43,12 +42,8 @@ public class ReconciliationFactoryImpl implements ReconciliationFactory, BeanFac
 
 	/**
 	 * 账单下载
-	 * 
-	 * @param payInterface
-	 *            支付渠道
-	 * 
-	 * @param billDate
-	 *            账单日
+	 * @param payInterface 支付渠道
+	 * @param billDate     账单日
 	 */
 	public File fileDown(String payInterface, Date billDate) throws Exception {
 		// 找到具体的FileDown实现，做向上转型

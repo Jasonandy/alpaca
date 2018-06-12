@@ -32,8 +32,11 @@ import cn.ucaner.alpaca.pay.trade.utils.AlipayConfigUtil;
 * @version    V1.0
  */
 public class AlipayFileDown implements FileDown {
-	private static final Log LOG = LogFactory.getLog(AlipayFileDown.class);
+	
+	private static final Log logger = LogFactory.getLog(AlipayFileDown.class);
+	
 	SimpleDateFormat timestampSDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
 	SimpleDateFormat billDateSDF = new SimpleDateFormat("yyyy-MM-dd");
 
 	/*** 配置全部放入alipay_config.properties配置文件中/ ***/
@@ -57,16 +60,12 @@ public class AlipayFileDown implements FileDown {
 
 	/**
 	 * 文件下载类
-	 *
-	 * @param billDate
-	 *            账单日
-	 * @param dir
-	 *            账单保存路径
-	 * 
+	 * @param billDate 账单日
+	 * @param dir      账单保存路径
 	 */
 	public File fileDown(Date fileDate, String dir) throws Exception {
 
-		LOG.info("======开始下载支付宝对账单");
+		logger.info("======开始下载支付宝对账单");
 		// 格式化账单日期
 		String bill_begin_date = billDateSDF.format(fileDate);
 		String bill_end_date = billDateSDF.format(DateUtils.addDay(fileDate, 1));
@@ -99,9 +98,7 @@ public class AlipayFileDown implements FileDown {
 
 	/**
 	 * 建立请求，以模拟远程HTTP的POST请求方式构造并获取支付宝的处理结果
-	 * 
-	 * @param sParaTemp
-	 *            请求参数
+	 * @param sParaTemp 请求参数
 	 * @return 支付宝处理结果
 	 * @throws Exception
 	 */
@@ -141,7 +138,7 @@ public class AlipayFileDown implements FileDown {
 	private File createFile(String bill_date, String stringResult, String dir) throws IOException {
 
 		// 创建本地文件，用于存储支付宝对账文件
-		// String dir = "/home/roncoo/app/accountcheck/billfile/alipay";
+		// String dir = "/home/alpaca/app/accountcheck/billfile/alipay";
 		File file = new File(dir, bill_date + "_" + ".xml");
 		int index = 1;
 		// 判断文件是否已经存在
@@ -164,7 +161,6 @@ public class AlipayFileDown implements FileDown {
 				throw new IOException("创建文件失败, filepath: " + file.getAbsolutePath());
 			}
 		}
-
 		try {
 			// 把支付宝返回数据写入文件
 			FileWriter fileWriter = new FileWriter(file);
@@ -172,9 +168,8 @@ public class AlipayFileDown implements FileDown {
 			fileWriter.close(); // 关闭数据流
 
 		} catch (IOException e) {
-			LOG.info("把支付宝返回的对账数据写入文件异常:" + e);
+			logger.info("把支付宝返回的对账数据写入文件异常:" + e);
 		}
-
 		return file;
 	}
 

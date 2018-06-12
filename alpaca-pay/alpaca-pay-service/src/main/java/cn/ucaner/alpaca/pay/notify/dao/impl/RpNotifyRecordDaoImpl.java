@@ -30,7 +30,6 @@ public class RpNotifyRecordDaoImpl extends BaseDaoImpl<RpNotifyRecord> implement
         paramMap.put("merchantNo",merchantNo);
         paramMap.put("merchantOrderNo",merchantOrderNo);
         paramMap.put("notifyType",notifyType);
-
         return super.getBy(paramMap);
     }
 

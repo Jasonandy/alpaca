@@ -38,10 +38,11 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
 		passwordRetryCache = cacheManager.getCache("passwordRetryCache");
 	}
 
-	@Override
+	
 	/**
-	 * 做认证匹配
+	 * 登录密码校验  + 次数限制
 	 */
+	@Override
 	public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
 		String username = (String) token.getPrincipal();
 		// retry count + 1

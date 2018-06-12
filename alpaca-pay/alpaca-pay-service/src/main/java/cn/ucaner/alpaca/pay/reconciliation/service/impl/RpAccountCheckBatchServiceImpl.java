@@ -46,7 +46,6 @@ public class RpAccountCheckBatchServiceImpl implements RpAccountCheckBatchServic
 
 	@Override
 	public PageBean listPage(PageParam pageParam, Map<String, Object> paramMap) {
-
 		return rpAccountCheckBatchDao.listPage(pageParam, paramMap);
 	}
 

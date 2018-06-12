@@ -40,8 +40,10 @@ public class OperatorRealm extends AuthorizingRealm {
 
 	@Autowired
 	private PmsOperatorService pmsOperatorService;
+	
 	@Autowired
 	private PmsOperatorRoleService pmsOperatorRoleService;
+	
 	@Autowired
 	private PmsRolePermissionService pmsRolePermissionService;
 

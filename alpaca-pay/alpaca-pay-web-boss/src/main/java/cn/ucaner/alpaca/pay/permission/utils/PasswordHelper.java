@@ -5,6 +5,8 @@ import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.util.ByteSource;
 
+import com.alibaba.fastjson.JSON;
+
 import cn.ucaner.alpaca.pay.permission.entity.PmsOperator;
 
 /**
@@ -54,15 +56,24 @@ public class PasswordHelper {
 	 * @Autor: Jason - jasonandy@hotail.com
 	 */
 	public static void main(String[] args) {
-		System.out.println(getPwd("Jason", "123"));
+	/*	System.out.println(getPwd("admin", "8D78869F470951332959580424D4BF4F"));
 		for (int i = 0; i < 2; i++) {
 			System.out.println(getPwd("Jason", "123"));
-		}
+		}*/
+		
+		PmsOperator pmsOperator = new  PmsOperator();
+		pmsOperator.setLoginName("alpaca");
+		pmsOperator.setLoginPwd("123456");
+		encryptPassword(pmsOperator);
+		System.out.println(pmsOperator.getsalt());
+		System.out.println(JSON.toJSONString(pmsOperator));
+		System.out.println(getPwd("f042d4512ff186992378fcc886255e6a", "3d34510388a7f5bf27065a373039c234"));
+		
 	}
 
 }
 //Outputs
-//812f4606bc59723fb4700340733827cf
+//304ad365aa87bece81fc42edcff97a45
 
 //812f4606bc59723fb4700340733827cf
 //812f4606bc59723fb4700340733827cf

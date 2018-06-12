@@ -9,11 +9,12 @@
 	<!-- 自动扫描该包，使SpringMVC认为包下用了@controller注解的类是控制器 -->
 	<context:component-scan base-package="cn.ucaner.alpaca.pay.controller,cn.ucaner.alpaca.pay.permission.controller" />
 
-	<!-- 相当于注册了DefaultAnnotationHandlerMapping和AnnotationMethodHandlerAdapter两个bean，配置一些messageconverter。即解决了@Controller注解的使用前提配置。 -->
+	<!-- 相当于注册了DefaultAnnotationHandlerMapping和AnnotationMethodHandlerAdapter两个bean配置一些messageconverter。
+		  即解决了@Controller注解的使用前提配置。 -->
 	<mvc:annotation-driven />
 
 
-	<!-- 定义跳转的文件的前后缀 ，视图模式配置 -->
+	<!-- 定义跳转的文件的前后缀 ，视图模式配置   后期可以优化为FreeMark -->
 	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<!-- 这里的配置我的理解是自动给后面action的方法return的字符串加上前缀和后缀，变成一个 可用的url地址 -->
 		<property name="prefix" value="/jsp/" />
@@ -22,6 +23,7 @@
 
 	<!-- 处理在类级别上的@RequestMapping注解 -->
 	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+	
 	<!-- 处理在方法级别上的@RequestMapping注解 -->
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
 		<property name="messageConverters">
@@ -36,7 +38,7 @@
 						</list>
 					</property>
 				</bean>
-				<!-- 启动JSON格式的配置 -->
+				<!-- 启动JSON格式的配置  实现json的自动转化 SpringMvc-->
 				<bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
 					<!-- 解决 HttpMediaTypeNotAcceptableException: Could not find acceptable representation -->
 					<property name="supportedMediaTypes">
@@ -49,12 +51,12 @@
 		</property>
 	</bean>
 
-
 	<!-- 静态资源问题，不需要进行拦截过滤，主要是针对css，js，image等资源 -->
 	<mvc:resources mapping="/common/**" location="/common/" cache-period="31536000" />
 	<mvc:resources mapping="/dwz/**" location="/dwz/" cache-period="31536000" />
 	<mvc:resources mapping="/favicon.ico" location="/favicon.ico" />
 
+	<!-- spring-mvc-shiro  -->
 	<import resource="classpath:spring/permission/spring-mvc-shiro.xml" />
 
 </beans>
