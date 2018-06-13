@@ -31,7 +31,8 @@ import cn.ucaner.alpaca.pay.notify.enums.NotifyStatusEnum;
 * @version    V1.0
  */
 public class PollingMessageListener implements MessageListener {
-	private static final Log log = LogFactory.getLog(PollingMessageListener.class);
+	
+	private static final Log logger = LogFactory.getLog(PollingMessageListener.class);
 
 	@Autowired
 	private PollingQueue pollingQueue;
@@ -43,7 +44,7 @@ public class PollingMessageListener implements MessageListener {
 		try {
 			ActiveMQTextMessage msg = (ActiveMQTextMessage) message;
 			final String msgText = msg.getText();
-			log.info("== receive bankOrderNo :" + msgText);
+			logger.info("== receive bankOrderNo :" + msgText);
 
 			RpOrderResultQueryVo rpOrderResultQueryVo = new RpOrderResultQueryVo();
 
@@ -58,16 +59,14 @@ public class PollingMessageListener implements MessageListener {
 			rpOrderResultQueryVo.setNotifyRule(JSONObject.toJSONString(notifyParams)); // 保存JSON
 
 			try {
-
 				pollingQueue.addToNotifyTaskDelayQueue(rpOrderResultQueryVo); // 添加到通知队列(第一次通知)
-
 			}  catch (BizException e) {
-				log.error("BizException :", e);
+				logger.error("BizException :", e);
 			} catch (Exception e) {
-				log.error(e);
+				logger.error(e);
 			}
 		} catch (Exception e) {
-			log.error(e);
+			logger.error(e);
 		}
 	}
 

@@ -24,7 +24,7 @@ import cn.ucaner.alpaca.pay.notify.entity.RpOrderResultQueryVo;
  */
 public class PollingTask implements Runnable, Delayed {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PollingTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(PollingTask.class);
 
     private long executeTime;
 
@@ -50,11 +50,11 @@ public class PollingTask implements Runnable, Delayed {
     private long getExecuteTime(RpOrderResultQueryVo rpOrderResultQueryVo) {
         long lastNotifyTime = rpOrderResultQueryVo.getLastNotifyTime().getTime(); // 最后通知时间（上次通知时间）
         Integer notifyTimes = rpOrderResultQueryVo.getNotifyTimes(); // 已通知次数
-        LOG.info("===>pollingTimes:{}",notifyTimes);
+        logger.info("===>pollingTimes:{}",notifyTimes);
         //Integer nextNotifyTimeInterval = pollingParam.getNotifyParams().get(notifyTimes + 1); // 当前发送次数对应的时间间隔数（分钟数）
         Integer nextNotifyTimeInterval = rpOrderResultQueryVo.getNotifyRuleMap().get(String.valueOf(notifyTimes + 1)); // 当前发送次数对应的时间间隔数（分钟数）
         long nextNotifyTime = (nextNotifyTimeInterval == null ? 0 : nextNotifyTimeInterval * 1000) + lastNotifyTime;
-        LOG.info("===>notify id:{}, nextNotifyTime:{}" ,rpOrderResultQueryVo.getId() , DateUtils.formatDate(new Date(nextNotifyTime), "yyyy-MM-dd HH:mm:ss SSS"));
+        logger.info("===>notify id:{}, nextNotifyTime:{}" ,rpOrderResultQueryVo.getId() , DateUtils.formatDate(new Date(nextNotifyTime), "yyyy-MM-dd HH:mm:ss SSS"));
         return nextNotifyTime;
     }
 

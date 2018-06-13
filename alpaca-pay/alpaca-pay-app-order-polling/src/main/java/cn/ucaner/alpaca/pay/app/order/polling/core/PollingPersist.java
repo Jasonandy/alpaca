@@ -25,7 +25,7 @@ import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
 @Service("pollingPersist")
 public class PollingPersist {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PollingPersist.class);
+    private static final Logger logger = LoggerFactory.getLogger(PollingPersist.class);
 
     @Autowired
     private PollingQueue pollingQueue;
@@ -44,39 +44,39 @@ public class PollingPersist {
         rpOrderResultQueryVo.setEditTime(notifyTime); // 取本次通知时间作为最后修改时间
         rpOrderResultQueryVo.setNotifyTimes(notifyTimes + 1); // 通知次数+1
 
-        LOG.info("notifyTimes:{}  , maxNotifyTimes:{} " ,notifyTimes , maxNotifyTimes);
+        logger.info("notifyTimes:{}  , maxNotifyTimes:{} " ,notifyTimes , maxNotifyTimes);
         try{
             boolean processingResult = rpTradePaymentManagerService.processingTradeRecord(rpOrderResultQueryVo.getBankOrderNo());
 
-            LOG.info("order processing result:{}" ,processingResult);
+            logger.info("order processing result:{}" ,processingResult);
             if (!processingResult){//返回失败,说明还未支付
                 // 通知不成功（返回的结果不是success）
                 if (rpOrderResultQueryVo.getNotifyTimes() < maxNotifyTimes) {
                     // 判断是否超过重发次数，未超重发次数的，再次进入延迟发送队列
                     pollingQueue.addToNotifyTaskDelayQueue(rpOrderResultQueryVo);
-                    LOG.info("===>bank order {} need processing again ", rpOrderResultQueryVo.getBankOrderNo());
+                    logger.info("===>bank order {} need processing again ", rpOrderResultQueryVo.getBankOrderNo());
                 } else {
-                    LOG.info("bank order No {} not pay" , rpOrderResultQueryVo.getBankOrderNo());
+                    logger.info("bank order No {} not pay" , rpOrderResultQueryVo.getBankOrderNo());
                 }
             }
 
         }catch (BizException e){
-            LOG.error("订单处理业务异常:", e);
+            logger.error("订单处理业务异常:", e);
             if (rpOrderResultQueryVo.getNotifyTimes() < maxNotifyTimes) {
                 // 判断是否超过重发次数，未超重发次数的，再次进入延迟发送队列
                 pollingQueue.addToNotifyTaskDelayQueue(rpOrderResultQueryVo);
-                LOG.info("===>bank order {} need processing again ", rpOrderResultQueryVo.getBankOrderNo());
+                logger.info("===>bank order {} need processing again ", rpOrderResultQueryVo.getBankOrderNo());
             } else {
-                LOG.info("bank order No {} not pay" , rpOrderResultQueryVo.getBankOrderNo());
+                logger.info("bank order No {} not pay" , rpOrderResultQueryVo.getBankOrderNo());
             }
         }catch (Exception e){
-            LOG.error("订单处理系统异常:", e);
+            logger.error("订单处理系统异常:", e);
             if (rpOrderResultQueryVo.getNotifyTimes() < maxNotifyTimes) {
                 // 判断是否超过重发次数，未超重发次数的，再次进入延迟发送队列
                 pollingQueue.addToNotifyTaskDelayQueue(rpOrderResultQueryVo);
-                LOG.info("===>bank order {} need processing again ", rpOrderResultQueryVo.getBankOrderNo());
+                logger.info("===>bank order {} need processing again ", rpOrderResultQueryVo.getBankOrderNo());
             } else {
-                LOG.info("bank order No {} not pay" , rpOrderResultQueryVo.getBankOrderNo());
+                logger.info("bank order No {} not pay" , rpOrderResultQueryVo.getBankOrderNo());
             }
         }
     }

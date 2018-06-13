@@ -24,7 +24,7 @@ import cn.ucaner.alpaca.pay.app.order.polling.core.PollingTask;
  */
 public class App {
 	
-    private static final Log LOG = LogFactory.getLog(App.class);
+    private static final Log logger = LogFactory.getLog(App.class);
 
     public static DelayQueue<PollingTask> tasks = new DelayQueue<PollingTask>();
 
@@ -43,9 +43,9 @@ public class App {
 
             startThread(); // 启动任务处理线程
 
-            LOG.info("== context start");
+            logger.info("== context start");
         } catch (Exception e) {
-            LOG.error("== application start error:", e);
+            logger.error("== application start error:", e);
             return;
         }
         synchronized (App.class) {
@@ -53,39 +53,41 @@ public class App {
                 try {
                     App.class.wait();
                 } catch (InterruptedException e) {
-                    LOG.error("== synchronized error:", e);
+                    logger.error("== synchronized error:", e);
                 }
             }
         }
     }
 
     private static void startThread() {
-        LOG.info("==>startThread");
+        logger.info("==>startThread");
 
         threadPool.execute(new Runnable() {
             public void run() {
                 try {
                     while (true) {
                         Thread.sleep(100);
-                        LOG.info("==>threadPool.getActiveCount():" + threadPool.getActiveCount());
-                        LOG.info("==>threadPool.getMaxPoolSize():" + threadPool.getMaxPoolSize());
+                        logger.info("==>threadPool.getActiveCount():" + threadPool.getActiveCount());
+                        logger.info("==>threadPool.getMaxPoolSize():" + threadPool.getMaxPoolSize());
                         // 如果当前活动线程等于最大线程，那么不执行
                         if (threadPool.getActiveCount() < threadPool.getMaxPoolSize()) {
-                            LOG.info("==>tasks.size():" + tasks.size());
+                            logger.info("==>tasks.size():" + tasks.size());
                             final PollingTask task = tasks.take(); //使用take方法获取过期任务,如果获取不到,就一直等待,知道获取到数据
                             if (task != null) {
                                 threadPool.execute(new Runnable() {
                                     public void run() {
                                         tasks.remove(task);
                                         task.run(); // 执行通知处理
-                                        LOG.info("==>tasks.size():" + tasks.size());
+                                        logger.info("==>tasks.size():" + tasks.size());
                                     }
                                 });
+                            }else {
+                            	System.out.println("Task is null!");
                             }
                         }
                     }
                 } catch (Exception e) {
-                    LOG.error("系统异常;", e);
+                    logger.error("系统异常;", e);
                 }
             }
         });
