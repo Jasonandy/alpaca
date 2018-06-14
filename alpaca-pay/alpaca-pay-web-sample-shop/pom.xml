@@ -238,14 +238,12 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-			 <!-- 配置Tomcat插件 -->  
 		    <plugin>
 		        <groupId>org.apache.tomcat.maven</groupId>  
 		        <artifactId>tomcat7-maven-plugin</artifactId> 
 		        <version>2.2</version> 
 		        <configuration>  
-		            <!-- 这里配置端口号和访问路径 -->  
-		            <port>9090</port>  
+		            <port>8885</port>  
 		            <path>/shop</path>  
 		        </configuration>  
 		    </plugin>
