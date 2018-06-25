@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.controller;
+package cn.ucaner.alpaca.pay.gateway.controller;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import  cn.ucaner.alpaca.pay.trade.utils.alipay.util.AliPayUtil;
 import  cn.ucaner.alpaca.pay.trade.vo.OrderPayResultVo;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.controller   
+* @Package：cn.ucaner.alpaca.pay.gateway.controller 
 * @ClassName：ScanPayNotifyController   
 * @Description：   <p> 后台通知结果控制类 </p>
 * @Author： -    

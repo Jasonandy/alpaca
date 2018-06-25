@@ -13,7 +13,7 @@ import java.util.Map;
 * 
 * 让用户 不适用任何HttpClient的api 直接调用该接口就可以实现相应的操作
 * </p>
-* @Author： - wubin   
+* @Author： -    
 * @CreatTime：2018年5月11日 上午9:58:08   
 * @Modify By：   
 * @ModifyTime：  2018年5月11日
@@ -21,6 +21,7 @@ import java.util.Map;
 * @version    V1.0
  */
 public interface HttpClientWrapper {
+	
 	/**
 	 * 设置协议头的信息 用户可以根据自己的需求而设定，否则使用默认的设置
 	 * @param headers
@@ -68,8 +69,7 @@ public interface HttpClientWrapper {
   * @throws HttpException
   * @throws IOException
   */
-	public String doRequest(MethodType method, String url, String charset)
-			throws HttpException, IOException;
+	public String doRequest(MethodType method, String url, String charset) throws HttpException, IOException;
 
 	/**
 	 * 无返回值 实现HttpResponseCallBack接口 对流进行处理封转返回值 外部可以利用到流来得到结果 主要考虑的是多线程下载的情况
@@ -84,8 +84,7 @@ public interface HttpClientWrapper {
 	
 	// HttpResponseCallBack 是设置的一个回调类 ，主要是考虑由于httpClient 返回的流 当连接关闭时流也关闭了
 	// 所以利用回调的方式在流关闭之间嵌入用户代码，来操做流
-	public void doRequest(HttpResponseCallBack callback, MethodType method,
-						  String url, Map<String, String> params, String charset)
+	public void doRequest(HttpResponseCallBack callback, MethodType method, String url, Map<String, String> params, String charset)
 			throws HttpException, IOException;
 
 	/**
@@ -101,7 +100,6 @@ public interface HttpClientWrapper {
 
 	// HttpResponseCallBack 是设置的一个回调类 ，主要是考虑由于httpClient 返回的流 当连接关闭时流也关闭了
 	// 所以利用回调的方式在流关闭之间嵌入用户代码，来操做流
-	public void doRequest(HttpResponseCallBack callback, MethodType method,
-						  String url, String charset) throws HttpException, IOException;
+	public void doRequest(HttpResponseCallBack callback, MethodType method,String url, String charset) throws HttpException, IOException;
 
 }

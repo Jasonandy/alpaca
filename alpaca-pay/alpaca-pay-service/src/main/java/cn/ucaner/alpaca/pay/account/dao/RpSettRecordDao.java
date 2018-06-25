@@ -15,4 +15,5 @@ import cn.ucaner.alpaca.pay.common.dao.BaseDao;
 * @version    V1.0
  */
 public interface RpSettRecordDao  extends BaseDao<RpSettRecord> {
+	
 }

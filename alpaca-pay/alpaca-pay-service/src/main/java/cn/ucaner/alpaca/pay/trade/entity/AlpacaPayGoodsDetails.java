@@ -2,19 +2,19 @@ package cn.ucaner.alpaca.pay.trade.entity;
 
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.entity   
-* @ClassName：RoncooPayGoodsDetails   
-* @Description：   <p> 支付商品明细描述</p>
+* @ClassName：AlpacaPayGoodsDetails   
+* @Description：   <p> 支付商品明细描述 </p>
 * @Author： -    
-* @CreatTime：2018年5月11日 上午10:07:07   
+* @CreatTime：2018年6月25日 下午2:23:47   
 * @Modify By：   
-* @ModifyTime：  2018年5月11日
+* @ModifyTime：  2018年6月25日
 * @Modify marker：   
 * @version    V1.0
  */
-public class RoncooPayGoodsDetails {
+public class AlpacaPayGoodsDetails {
 
     /** 构造函数 传入所需参数 **/
-    public RoncooPayGoodsDetails (String goodsId , String goodsName ,Long singlePrice , Integer nums){
+    public AlpacaPayGoodsDetails (String goodsId , String goodsName ,Long singlePrice , Integer nums){
         this.goodsId = goodsId;
         this.goodsName = goodsName;
         this.singlePrice = singlePrice;

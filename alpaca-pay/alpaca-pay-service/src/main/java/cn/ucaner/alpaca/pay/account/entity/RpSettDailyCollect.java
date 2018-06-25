@@ -17,9 +17,7 @@ import cn.ucaner.alpaca.pay.common.entity.BaseEntity;
 * @version    V1.0
  */
 public class RpSettDailyCollect extends BaseEntity {
-	/**
-	 * 序列化
-	 */
+
 	private static final long serialVersionUID = 4096169383852235862L;
 
 	/** 账户编号 **/

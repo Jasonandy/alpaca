@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.controller;
+package cn.ucaner.alpaca.pay.gateway.controller;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.ucaner.alpaca.pay.common.utils.DateUtils;
-import cn.ucaner.alpaca.pay.getway.controller.common.BaseController;
-import cn.ucaner.alpaca.pay.getway.service.CnpPayService;
+import cn.ucaner.alpaca.pay.gateway.controller.common.BaseController;
+import cn.ucaner.alpaca.pay.gateway.service.CnpPayService;
 import cn.ucaner.alpaca.pay.trade.exception.TradeBizException;
 import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
 import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentQueryService;
@@ -30,7 +30,7 @@ import cn.ucaner.alpaca.pay.user.exception.UserBizException;
 import cn.ucaner.alpaca.pay.user.service.RpUserPayConfigService;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.controller   
+* @Package：cn.ucaner.alpaca.pay.gateway.controller  
 * @ClassName：F2FPayController   
 * @Description：   <p> F2FPayController </p>
 * @Author： -    
@@ -60,7 +60,6 @@ public class F2FPayController extends BaseController {
 
     /**
      * 条码支付,商户通过前置设备获取到用户支付授权码后,请求支付网关支付.
-     *
      * @return
      */
     @RequestMapping("/doPay")

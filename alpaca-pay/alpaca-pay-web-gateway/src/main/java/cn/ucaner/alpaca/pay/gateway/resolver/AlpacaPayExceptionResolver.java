@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.resolver;
+package cn.ucaner.alpaca.pay.gateway.resolver;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,10 +13,10 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
 import cn.ucaner.alpaca.pay.common.exception.BizException;
-import cn.ucaner.alpaca.pay.getway.utils.JsonUtils;
+import cn.ucaner.alpaca.pay.gateway.utils.JsonUtils;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.resolver   
+* @Package：cn.ucaner.alpaca.pay.gateway.resolver 
 * @ClassName：AlpacaPayExceptionResolver   
 * @Description：   <p> AlpacaPayExceptionResolver</p>
 * @Author： -    
@@ -39,9 +39,9 @@ public class AlpacaPayExceptionResolver implements HandlerExceptionResolver {
             try {
                 response.setContentType("text/text;charset=UTF-8");
                 JsonUtils.responseJson(response, bizException.getMsg());
-
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("errorMsg", bizException.getMsg());//将错误信息传递给view
+                
                 return new ModelAndView("exception/exception",map);
             } catch (IOException e) {
                 LOG.error("系统异常:", e);

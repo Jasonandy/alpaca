@@ -25,7 +25,7 @@ import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 import cn.ucaner.alpaca.pay.notify.service.RpNotifyService;
 import cn.ucaner.alpaca.pay.trade.dao.RpTradePaymentOrderDao;
 import cn.ucaner.alpaca.pay.trade.dao.RpTradePaymentRecordDao;
-import cn.ucaner.alpaca.pay.trade.entity.RoncooPayGoodsDetails;
+import cn.ucaner.alpaca.pay.trade.entity.AlpacaPayGoodsDetails;
 import cn.ucaner.alpaca.pay.trade.entity.RpTradePaymentOrder;
 import cn.ucaner.alpaca.pay.trade.entity.RpTradePaymentRecord;
 import cn.ucaner.alpaca.pay.trade.entity.weixinpay.WeiXinPrePay;
@@ -256,7 +256,7 @@ public class RpTradePaymentManagerServiceImpl implements RpTradePaymentManagerSe
      * @param payWay              商户支付配置
      * @return
      */
-    private F2FPayResultVo getF2FPayResultVo(RpTradePaymentOrder rpTradePaymentOrder, RpPayWay payWay, String payKey, String merchantPaySecret, String authCode, List<RoncooPayGoodsDetails> roncooPayGoodsDetailses) {
+    private F2FPayResultVo getF2FPayResultVo(RpTradePaymentOrder rpTradePaymentOrder, RpPayWay payWay, String payKey, String merchantPaySecret, String authCode, List<AlpacaPayGoodsDetails> alpacaPayGoodsDetailses) {
 
         F2FPayResultVo f2FPayResultVo = new F2FPayResultVo();
         String payWayCode = payWay.getPayWayCode();// 支付方式
@@ -310,7 +310,7 @@ public class RpTradePaymentManagerServiceImpl implements RpTradePaymentManagerSe
             if (rpUserPayInfo == null) {
                 throw new UserBizException(UserBizException.USER_PAY_CONFIG_ERRPR, "商户支付配置有误");
             }
-            Map<String, Object> resultMap = AliPayUtil.tradePay(rpTradePaymentRecord.getBankOrderNo(), authCode, rpTradePaymentOrder.getProductName(), rpTradePaymentRecord.getOrderAmount(), "", roncooPayGoodsDetailses);
+            Map<String, Object> resultMap = AliPayUtil.tradePay(rpTradePaymentRecord.getBankOrderNo(), authCode, rpTradePaymentOrder.getProductName(), rpTradePaymentRecord.getOrderAmount(), "", alpacaPayGoodsDetailses);
             //支付条码支付--统一根据订单轮询去确认支付结果
             rpNotifyService.orderSend(rpTradePaymentRecord.getBankOrderNo());
         } else {
@@ -1179,7 +1179,7 @@ public class RpTradePaymentManagerServiceImpl implements RpTradePaymentManagerSe
      * @param payWay            商户支付配置
      * @return
      */
-    private ProgramPayResultVo getProgramPayResultVo(RpTradePaymentOrder tradePaymentOrder, RpPayWay payWay, String merchantPaySecret, String openId, List<RoncooPayGoodsDetails> roncooPayGoodsDetailses) {
+    private ProgramPayResultVo getProgramPayResultVo(RpTradePaymentOrder tradePaymentOrder, RpPayWay payWay, String merchantPaySecret, String openId, List<AlpacaPayGoodsDetails> alpacaPayGoodsDetails) {
 
         ProgramPayResultVo resultVo = new ProgramPayResultVo();
         String payWayCode = payWay.getPayWayCode();// 支付方式
@@ -1202,7 +1202,7 @@ public class RpTradePaymentManagerServiceImpl implements RpTradePaymentManagerSe
         rpTradePaymentRecordDao.insert(rpTradePaymentRecord);
 
         if (PayWayEnum.WEIXIN.name().equals(payWayCode)) {// 微信支付
-            Map<String, Object> resultMap = WeiXinPayUtil.appletPay(rpTradePaymentRecord.getBankOrderNo(), rpTradePaymentRecord.getProductName(), rpTradePaymentRecord.getOrderAmount(), rpTradePaymentRecord.getOrderIp(), rpTradePaymentRecord.getNotifyUrl(), openId, roncooPayGoodsDetailses);
+            Map<String, Object> resultMap = WeiXinPayUtil.appletPay(rpTradePaymentRecord.getBankOrderNo(), rpTradePaymentRecord.getProductName(), rpTradePaymentRecord.getOrderAmount(), rpTradePaymentRecord.getOrderIp(), rpTradePaymentRecord.getNotifyUrl(), openId, alpacaPayGoodsDetails);
             if (resultMap == null || resultMap.isEmpty()) {
                 resultVo.setStatus(PublicEnum.NO.name());
                 resultVo.setBankReturnMsg("请求支付失败!");

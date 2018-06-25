@@ -17,9 +17,6 @@ import java.util.Date;
  */
 public class DailyCollectAccountHistoryVo implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2451289258390618916L;
 
 	/**

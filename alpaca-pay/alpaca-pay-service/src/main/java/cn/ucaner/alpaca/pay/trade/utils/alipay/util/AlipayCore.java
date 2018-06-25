@@ -12,8 +12,7 @@ import java.util.*;
 * @Package：cn.ucaner.alpaca.pay.trade.utils.alipay.util   
 * @ClassName：AlipayCore   
 * @Description：   <p> 支付宝接口公用函数类
-* 该类是请求、通知返回两个文件所调用的公用函数核心处理文件，不需要修改
-* </p>
+* 该类是请求、通知返回两个文件所调用的公用函数核心处理文件，不需要修改</p>
 * @Author： - wubin   
 * @CreatTime：2018年5月11日 上午10:03:08   
 * @Modify By：   

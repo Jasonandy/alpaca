@@ -65,16 +65,10 @@ public class HttpRequest {
         this.resultType = resultType;
     }
 
-    /**
-     * @return Returns the clientIp.
-     */
     public String getClientIp() {
         return clientIp;
     }
 
-    /**
-     * @param clientIp The clientIp to set.
-     */
     public void setClientIp(String clientIp) {
         this.clientIp = clientIp;
     }
@@ -127,16 +121,10 @@ public class HttpRequest {
         this.timeout = timeout;
     }
 
-    /**
-     * @return Returns the charset.
-     */
     public String getCharset() {
         return charset;
     }
 
-    /**
-     * @param charset The charset to set.
-     */
     public void setCharset(String charset) {
         this.charset = charset;
     }

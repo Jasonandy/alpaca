@@ -10,7 +10,6 @@ import cn.ucaner.alpaca.pay.account.entity.RpAccountHistory;
 import cn.ucaner.alpaca.pay.account.vo.DailyCollectAccountHistoryVo;
 import cn.ucaner.alpaca.pay.common.dao.impl.BaseDaoImpl;
 
-
 /**
 * @Package：cn.ucaner.alpaca.pay.account.dao.impl   
 * @ClassName：RpAccountHistoryDaoImpl   

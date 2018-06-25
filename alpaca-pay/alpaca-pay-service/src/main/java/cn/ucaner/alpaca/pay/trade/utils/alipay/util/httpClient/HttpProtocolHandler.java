@@ -25,7 +25,7 @@ import java.util.List;
 /**
 * @Package：cn.ucaner.alpaca.pay.trade.utils.alipay.util.httpClient   
 * @ClassName：HttpProtocolHandler   
-* @Description：   <p> HttpClient方式访问  获取远程HTTP数据</p>
+* @Description：   <p> HttpClient方式访问  获取远程HTTP数据 {@link https://www.cnblogs.com/zhun/p/5588383.html}</p>
 * @Author： -    
 * @CreatTime：2018年5月11日 上午10:04:50   
 * @Modify By：   
@@ -56,13 +56,12 @@ public class HttpProtocolHandler {
     /**
      * HTTP连接管理器，该连接管理器必须是线程安全的.
      */
-    private HttpConnectionManager      connectionManager;
+    private HttpConnectionManager  connectionManager;
 
-    private static HttpProtocolHandler httpProtocolHandler                 = new HttpProtocolHandler();
+    private static HttpProtocolHandler httpProtocolHandler  = new HttpProtocolHandler();
 
     /**
      * 工厂方法
-     * 
      * @return
      */
     public static HttpProtocolHandler getInstance() {
@@ -73,7 +72,10 @@ public class HttpProtocolHandler {
      * 私有的构造方法
      */
     private HttpProtocolHandler() {
-        // 创建一个线程安全的HTTP连接池
+    	
+    	/**
+    	 * 创建一个线程安全的HTTP连接池
+    	 */
         connectionManager = new MultiThreadedHttpConnectionManager();
         connectionManager.getParams().setDefaultMaxConnectionsPerHost(defaultMaxConnPerHost);
         connectionManager.getParams().setMaxTotalConnections(defaultMaxTotalConn);
@@ -81,13 +83,11 @@ public class HttpProtocolHandler {
         IdleConnectionTimeoutThread ict = new IdleConnectionTimeoutThread();
         ict.addConnectionManager(connectionManager);
         ict.setConnectionTimeout(defaultIdleConnTimeout);
-
         ict.start();
     }
 
     /**
      * 执行Http请求
-     * 
      * @param request 请求数据
      * @param strParaFileName 文件类型的参数名
      * @param strFilePath 文件路径
@@ -174,7 +174,6 @@ public class HttpProtocolHandler {
 
     /**
      * 将NameValuePairs数组转变为字符串
-     * 
      * @param nameValues
      * @return
      */

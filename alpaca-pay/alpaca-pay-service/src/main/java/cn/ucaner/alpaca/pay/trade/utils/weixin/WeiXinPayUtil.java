@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.ucaner.alpaca.pay.common.utils.StringUtil;
-import cn.ucaner.alpaca.pay.trade.entity.RoncooPayGoodsDetails;
+import cn.ucaner.alpaca.pay.trade.entity.AlpacaPayGoodsDetails;
 import cn.ucaner.alpaca.pay.trade.utils.MD5Util;
 import cn.ucaner.alpaca.pay.trade.utils.WeiXinPayUtils;
 import cn.ucaner.alpaca.pay.trade.utils.WeixinConfigUtil;
@@ -88,7 +88,7 @@ public class WeiXinPayUtil {
      *
      * @return
      */
-    public static Map<String, Object> appletPay(String outTradeNo, String body, BigDecimal totalAmount, String spbillCreateIp, String notifyUrl, String openid, List<RoncooPayGoodsDetails> goodsDetails) {
+    public static Map<String, Object> appletPay(String outTradeNo, String body, BigDecimal totalAmount, String spbillCreateIp, String notifyUrl, String openid, List<AlpacaPayGoodsDetails> goodsDetails) {
         String nonce_str = getnonceStr();
         Integer totalFee = totalAmount.multiply(BigDecimal.valueOf(100L)).intValue();
         String tradeType = "JSAPI";
@@ -107,7 +107,7 @@ public class WeiXinPayUtil {
         paramMap.put("openid", openid);
         if (goodsDetails != null && !goodsDetails.isEmpty()) {
             List<SortedMap<String, Object>> goodList = new ArrayList<>();
-            for (RoncooPayGoodsDetails goodsDetail : goodsDetails) {
+            for (AlpacaPayGoodsDetails goodsDetail : goodsDetails) {
                 SortedMap<String, Object> goodsDetailMap = new TreeMap<>();
                 goodsDetailMap.put("goods_id", goodsDetail.getGoodsId());
                 goodsDetailMap.put("quantity", goodsDetail.getNums());

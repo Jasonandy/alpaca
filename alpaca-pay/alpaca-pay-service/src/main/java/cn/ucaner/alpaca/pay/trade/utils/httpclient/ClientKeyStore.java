@@ -15,7 +15,11 @@ import javax.net.ssl.KeyManagerFactory;
  */
 public class ClientKeyStore {
 	
+	/**
+	 * javax.net.ssl.KeyManagerFactory 
+	 */
 	private KeyManagerFactory keyManagerFactory;
+	
 	
 	ClientKeyStore(KeyManagerFactory keyManagerFactory){
 		this.keyManagerFactory = keyManagerFactory;

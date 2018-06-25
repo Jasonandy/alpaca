@@ -9,7 +9,7 @@ import java.util.Map;
 * @Package：cn.ucaner.alpaca.pay.user.enums   
 * @ClassName：BankCodeEnum   
 * @Description：   <p> 银行枚举</p>
-* @Author： - wubin   
+* @Author： -    
 * @CreatTime：2018年5月10日 下午11:15:43   
 * @Modify By：   
 * @ModifyTime：  2018年5月10日

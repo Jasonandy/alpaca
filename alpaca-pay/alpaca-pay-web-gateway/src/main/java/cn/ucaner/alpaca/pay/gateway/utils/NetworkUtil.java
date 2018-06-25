@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.utils;
+package cn.ucaner.alpaca.pay.gateway.utils;
 
 import java.io.IOException;
 
@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.utils   
+* @Package：cn.ucaner.alpaca.pay.gateway.utils   
 * @ClassName：NetworkUtil   
 * @Description：   <p>  常用获取客户端信息的工具</p>
 * @Author： -    

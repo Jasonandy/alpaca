@@ -24,7 +24,7 @@ import java.security.SecureRandom;
  */
 public class AESUtil {
 
-    private static final String ENCODE_RULES = "zheng";
+    private static final String ENCODE_RULES = "Alpaca";
 
     /**
      * 加密
@@ -125,7 +125,7 @@ public class AESUtil {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (IllegalBlockSizeException e) {
-            throw new RuntimeException("兄弟，配置文件中的密码需要使用AES加密，请使用ccn.ucaner.alpaca.common.util.AESUtil工具类修改这些值！");
+            throw new RuntimeException("兄弟，配置文件中的密码需要使用AES加密，请使用cn.ucaner.alpaca.common.util.AESUtil工具类修改这些值！");
             //e.printStackTrace();
         } catch (BadPaddingException e) {
             e.printStackTrace();

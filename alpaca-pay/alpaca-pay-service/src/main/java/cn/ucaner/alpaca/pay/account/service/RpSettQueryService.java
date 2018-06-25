@@ -22,11 +22,8 @@ public interface RpSettQueryService {
 
 	/**
 	 * 根据参数分页查询结算记录
-	 * 
 	 * @param pageParam
-	 * @param params
-	 *            ：map的key为 ：accountNo、userNo、settStatus...可以参考实体
-	 * 
+	 * @param params ：map的key为 ：accountNo、userNo、settStatus...可以参考实体
 	 * @return
 	 * @throws BizException
 	 */
@@ -36,8 +33,7 @@ public interface RpSettQueryService {
 	 * 根据参数分页查询结算日汇总记录
 	 * 
 	 * @param pageParam
-	 * @param params
-	 *            ：map的key为 ：accountNo...可以参考实体
+	 * @param params ：map的key为 ：accountNo...可以参考实体
 	 * 
 	 * @return
 	 * @throws BizException

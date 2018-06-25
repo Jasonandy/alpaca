@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.controller;
+package cn.ucaner.alpaca.pay.gateway.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import cn.ucaner.alpaca.pay.common.enums.PayWayEnum;
 import cn.ucaner.alpaca.pay.common.utils.DateUtils;
 import cn.ucaner.alpaca.pay.common.utils.StringUtil;
-import cn.ucaner.alpaca.pay.getway.controller.common.BaseController;
-import cn.ucaner.alpaca.pay.getway.service.CnpPayService;
-import cn.ucaner.alpaca.pay.getway.utils.JsonUtils;
+import cn.ucaner.alpaca.pay.gateway.controller.common.BaseController;
+import cn.ucaner.alpaca.pay.gateway.service.CnpPayService;
+import cn.ucaner.alpaca.pay.gateway.utils.JsonUtils;
 import cn.ucaner.alpaca.pay.notify.service.RpNotifyService;
 import cn.ucaner.alpaca.pay.trade.exception.TradeBizException;
 import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
@@ -37,7 +37,7 @@ import cn.ucaner.alpaca.pay.user.exception.UserBizException;
 import cn.ucaner.alpaca.pay.user.service.RpUserPayConfigService;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.controller   
+* @Package：cn.ucaner.alpaca.pay.gateway.controller 
 * @ClassName：ScanPayController   
 * @Description：   <p> 扫码支付控制类 </p>
 * @Author： -    

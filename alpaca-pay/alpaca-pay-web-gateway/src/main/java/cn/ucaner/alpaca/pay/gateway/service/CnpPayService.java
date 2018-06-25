@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.service;
+package cn.ucaner.alpaca.pay.gateway.service;
 
 import java.io.IOException;
 
@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 
 import cn.ucaner.alpaca.pay.common.enums.SecurityRatingEnum;
 import cn.ucaner.alpaca.pay.common.utils.StringUtil;
-import cn.ucaner.alpaca.pay.getway.utils.NetworkUtil;
+import cn.ucaner.alpaca.pay.gateway.utils.NetworkUtil;
 import cn.ucaner.alpaca.pay.trade.exception.TradeBizException;
 import cn.ucaner.alpaca.pay.user.entity.RpUserPayConfig;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.service   
+* @Package：cn.ucaner.alpaca.pay.gateway.service   
 * @ClassName：CnpPayService   
 * @Description：   <p> CnpPayService</p>
 * @Author： -    

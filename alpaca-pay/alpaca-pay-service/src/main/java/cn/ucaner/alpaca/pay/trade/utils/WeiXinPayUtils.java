@@ -43,7 +43,6 @@ public class WeiXinPayUtils {
 
     /**
      * 发送xml数据,获取返回结果
-     *
      * @param requestUrl
      * @param requestMethod
      * @param xmlStr
@@ -102,7 +101,6 @@ public class WeiXinPayUtils {
 
     /**
      * 生成预支付XML
-     *
      * @param weiXinPrePay
      * @param partnerKey
      * @return

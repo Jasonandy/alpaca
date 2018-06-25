@@ -1,5 +1,6 @@
 package cn.ucaner.alpaca.pay.trade.vo;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -16,9 +17,11 @@ import cn.ucaner.alpaca.pay.common.enums.PayWayEnum;
 * @Modify marker：   
 * @version    V1.0
  */
-public class RpPayGateWayPageShowVo {
+public class RpPayGateWayPageShowVo  implements Serializable{
 
-    /** 订单金额 **/
+	private static final long serialVersionUID = 5835030395662690008L;
+
+	/** 订单金额 **/
     private BigDecimal orderAmount;
 
     /** 产品名称 **/

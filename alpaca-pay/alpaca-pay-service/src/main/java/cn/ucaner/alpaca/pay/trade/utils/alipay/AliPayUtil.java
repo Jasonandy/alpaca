@@ -30,7 +30,7 @@ import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpProtocolH
 import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpRequest;
 import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpResponse;
 import cn.ucaner.alpaca.pay.reconciliation.utils.alipay.httpClient.HttpResultType;
-import cn.ucaner.alpaca.pay.trade.entity.RoncooPayGoodsDetails;
+import cn.ucaner.alpaca.pay.trade.entity.AlpacaPayGoodsDetails;
 import cn.ucaner.alpaca.pay.trade.utils.alipay.config.AlipayConfigUtil;
 import cn.ucaner.alpaca.pay.trade.utils.alipay.sign.MD5;
 
@@ -64,7 +64,7 @@ public class AliPayUtil {
      * @param roncooPayGoodsDetailses
      * @return
      */
-    public static Map<String, Object> tradePay(String outTradeNo, String authCode, String subject, BigDecimal amount, String body, List<RoncooPayGoodsDetails> roncooPayGoodsDetailses) {
+    public static Map<String, Object> tradePay(String outTradeNo, String authCode, String subject, BigDecimal amount, String body, List<AlpacaPayGoodsDetails> alpacaPayGoodsDetailses) {
         logger.info("======>支付宝被扫");
         String charset = "UTF-8";
         String format = "json";
@@ -89,14 +89,14 @@ public class AliPayUtil {
         paramMap.put("timeout_express", timeExpress);
 
         // 商品明细列表，需填写购买商品详细信息，
-        if (roncooPayGoodsDetailses != null && roncooPayGoodsDetailses.size() > 0) {
+        if (alpacaPayGoodsDetailses != null && alpacaPayGoodsDetailses.size() > 0) {
             List<SortedMap<String, Object>> goodsList = new ArrayList<>();
-            for (RoncooPayGoodsDetails roncooPayGoodsDetails : roncooPayGoodsDetailses) {
+            for (AlpacaPayGoodsDetails alpacaPayGoodsDetails : alpacaPayGoodsDetailses) {
                 SortedMap<String, Object> goodsMap = new TreeMap<>();
-                goodsMap.put("goods_id", roncooPayGoodsDetails.getGoodsId());
-                goodsMap.put("goods_name", roncooPayGoodsDetails.getGoodsName());
-                goodsMap.put("quantity", roncooPayGoodsDetails.getNums());
-                goodsMap.put("price", roncooPayGoodsDetails.getSinglePrice());
+                goodsMap.put("goods_id", alpacaPayGoodsDetails.getGoodsId());
+                goodsMap.put("goods_name", alpacaPayGoodsDetails.getGoodsName());
+                goodsMap.put("quantity", alpacaPayGoodsDetails.getNums());
+                goodsMap.put("price", alpacaPayGoodsDetails.getSinglePrice());
                 goodsList.add(goodsMap);
             }
             paramMap.put("goods_detail", goodsList);

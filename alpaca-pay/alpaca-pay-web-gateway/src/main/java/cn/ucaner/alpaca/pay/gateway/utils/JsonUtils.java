@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.utils;
+package cn.ucaner.alpaca.pay.gateway.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import com.alibaba.fastjson.JSONObject;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.utils   
+* @Package：cn.ucaner.alpaca.pay.gateway.utils   
 * @ClassName：JsonUtils   
 * @Description：   <p> JsonUtils工具类,用来通过流的方式将Json数据写回前端 </p>
 * @Author： -    

@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 * @version    V1.0
  */
 public class SimpleHttpUtils {
+	
 	private static final Logger logger = Logger.getLogger(SimpleHttpUtils.class);
 
 	/**
@@ -83,8 +84,7 @@ public class SimpleHttpUtils {
 	 * @param charSet
 	 * @return 通讯失败返回null, 否则返回服务端输出
 	 */
-	public static String httpRequest(String url, Map<String,String> params, String method,
-			String charSet, Map<String,String> headers) {
+	public static String httpRequest(String url, Map<String,String> params, String method,String charSet, Map<String,String> headers) {
 		SimpleHttpParam param = new SimpleHttpParam(url);
 		if(null != param){
 			param.setParameters(params);
@@ -463,9 +463,6 @@ public class SimpleHttpUtils {
         return result;
     }
 
-	/**
-	 *
-	 */
 	private static class TrustAnyTrustManager implements X509TrustManager {
 	    
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {

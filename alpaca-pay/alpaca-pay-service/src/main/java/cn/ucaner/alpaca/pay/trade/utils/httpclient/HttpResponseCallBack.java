@@ -16,5 +16,11 @@ import java.io.InputStream;
  */
 public interface HttpResponseCallBack {
 
+	/**
+	 * @Description: processResponse 
+	 * @param responseBody
+	 * @throws IOException 
+	 * @Autor: Jason - jasonandy@hotmail.com
+	 */
 	public void processResponse(InputStream responseBody) throws IOException;
 }

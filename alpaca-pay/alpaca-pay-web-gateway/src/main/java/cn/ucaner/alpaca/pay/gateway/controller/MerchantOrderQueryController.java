@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.controller;
+package cn.ucaner.alpaca.pay.gateway.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.controller   
+* @Package：cn.ucaner.alpaca.pay.gateway.controller  
 * @ClassName：MerchantOrderQueryController   
 * @Description：   <p> 商户查询订单结果 </p>
 * @Author： -    

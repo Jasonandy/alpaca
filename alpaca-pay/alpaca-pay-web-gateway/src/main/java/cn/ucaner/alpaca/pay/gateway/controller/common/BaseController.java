@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.controller.common;
+package cn.ucaner.alpaca.pay.gateway.controller.common;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -23,9 +23,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cn.ucaner.alpaca.pay.common.utils.StringUtil;
 
-
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.controller.common   
+* @Package：cn.ucaner.alpaca.pay.gateway.controller.common   
 * @ClassName：BaseController   
 * @Description：   <p> 支付网关Controller基础类 </p>
 * @Author： -    

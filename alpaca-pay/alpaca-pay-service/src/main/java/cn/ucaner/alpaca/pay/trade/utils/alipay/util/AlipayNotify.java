@@ -28,6 +28,7 @@ import java.util.Map;
 public class AlipayNotify {
 
     private static final Logger LOG = LoggerFactory.getLogger(AlipayNotify.class);
+    
     /**
      * 支付宝消息验证地址
      */
@@ -115,8 +116,7 @@ public class AlipayNotify {
         try {
             URL url = new URL(urlvalue);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection
-                .getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             inputLine = in.readLine().toString();
         } catch (Exception e) {
             LOG.error("alipay checkUrl exception:",e);

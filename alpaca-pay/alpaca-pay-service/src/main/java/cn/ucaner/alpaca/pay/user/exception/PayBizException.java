@@ -18,9 +18,6 @@ import cn.ucaner.alpaca.pay.common.exception.BizException;
  */
 public class PayBizException extends BizException {
 
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = -7163126205323125757L;
 
 	/** 支付方式已存在 **/

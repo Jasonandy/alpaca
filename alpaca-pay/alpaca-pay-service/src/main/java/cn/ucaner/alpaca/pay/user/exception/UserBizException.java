@@ -9,7 +9,7 @@ import cn.ucaner.alpaca.pay.common.exception.BizException;
 * @Package：cn.ucaner.alpaca.pay.user.exception   
 * @ClassName：UserBizException   
 * @Description：   <p> 用户业务异常类 </p>
-* @Author： - wubin   
+* @Author： -    
 * @CreatTime：2018年5月10日 下午11:10:26   
 * @Modify By：   
 * @ModifyTime：  2018年5月10日
@@ -18,9 +18,6 @@ import cn.ucaner.alpaca.pay.common.exception.BizException;
  */
 public class UserBizException extends BizException {
 
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = -6402548375645868682L;
 
 	/** 用户不存在 **/

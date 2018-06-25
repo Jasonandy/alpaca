@@ -11,7 +11,7 @@
 	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd">
      
     <!-- 自动扫描该包，使SpringMVC认为包下用了@controller注解的类是控制器 -->
-	<context:component-scan base-package="cn.ucaner.alpaca.pay.getway.controller" />
+	<context:component-scan base-package="cn.ucaner.alpaca.pay.gateway.controller" />
 
 	<!-- 相当于注册了DefaultAnnotationHandlerMapping和AnnotationMethodHandlerAdapter两个bean，配置一些messageconverter。即解决了@Controller注解的使用前提配置。  -->
 	<mvc:annotation-driven/>
@@ -28,5 +28,5 @@
 	<mvc:resources mapping="/pay_files/**" location="/pay_files/" cache-period="31536000"/>
 	<mvc:resources mapping="/images/**" location="/images/" cache-period="31536000"/>
 
-	<bean id="alpacaPayExceptionResolver" class="cn.ucaner.alpaca.pay.getway.resolver.AlpacaPayExceptionResolver"></bean>
+	<bean id="alpacaPayExceptionResolver" class="cn.ucaner.alpaca.pay.gateway.resolver.AlpacaPayExceptionResolver"></bean>
 </beans>

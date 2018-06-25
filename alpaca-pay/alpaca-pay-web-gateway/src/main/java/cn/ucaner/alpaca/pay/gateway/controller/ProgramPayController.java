@@ -1,4 +1,4 @@
-package cn.ucaner.alpaca.pay.getway.controller;
+package cn.ucaner.alpaca.pay.gateway.controller;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.ucaner.alpaca.pay.common.utils.DateUtils;
-import cn.ucaner.alpaca.pay.getway.controller.common.BaseController;
-import cn.ucaner.alpaca.pay.getway.service.CnpPayService;
+import cn.ucaner.alpaca.pay.gateway.controller.common.BaseController;
+import cn.ucaner.alpaca.pay.gateway.service.CnpPayService;
 import cn.ucaner.alpaca.pay.trade.exception.TradeBizException;
 import cn.ucaner.alpaca.pay.trade.service.RpTradePaymentManagerService;
 import cn.ucaner.alpaca.pay.trade.utils.MerchantApiUtil;
@@ -28,7 +28,7 @@ import cn.ucaner.alpaca.pay.user.exception.UserBizException;
 import cn.ucaner.alpaca.pay.user.service.RpUserPayConfigService;
 
 /**
-* @Package：cn.ucaner.alpaca.pay.getway.controller   
+* @Package：cn.ucaner.alpaca.pay.gateway.controller   
 * @ClassName：ProgramPayController   
 * @Description：   <p> ProgramPayController </p>
 * @Author： -    

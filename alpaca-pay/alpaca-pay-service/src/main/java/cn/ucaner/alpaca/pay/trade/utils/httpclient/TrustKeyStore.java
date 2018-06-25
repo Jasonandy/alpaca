@@ -14,6 +14,10 @@ import javax.net.ssl.TrustManagerFactory;
 * @version    V1.0
  */
 public class TrustKeyStore {
+	
+	/**
+	 * javax.net.ssl.TrustManagerFactory
+	 */
 	private TrustManagerFactory trustManagerFactory;
 	
 	TrustKeyStore(TrustManagerFactory trustManagerFactory){
